@@ -21,9 +21,17 @@ public class Ports {
 	// ACTUAL ROBOT VARIABLES //
 	//************************//
 	public static class ActualRobot {	
+
+		// DRIVETRAIN
 		public static final int[] 
 			TURN = new int[] { 6, 1, 3, 11 },
 			DRIVE = new int[] { 8, 7, 5, 13 }; // Right back, right front, left front, left back
+
+		// HATCH INTAKE
+		public static final int
+			LEADSCREW = 0,
+			HATCH_SOLENOID = 0;
+
 	}
 	
 	//***************************//

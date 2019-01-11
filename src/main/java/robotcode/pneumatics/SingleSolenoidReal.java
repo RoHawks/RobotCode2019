@@ -1,4 +1,4 @@
-package robotcode.systems;
+package robotcode.pneumatics;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.Solenoid;

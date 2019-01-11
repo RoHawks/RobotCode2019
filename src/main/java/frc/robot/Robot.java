@@ -15,6 +15,7 @@ import autonomous.commands.AutonomousCommand;
 import autonomous.routines.DefaultRoutine;
 import autonomous.routines.DoNothingRoutine;
 import constants.DriveConstants;
+import constants.HatchIntakeConstants;
 import constants.Ports;
 import constants.RunConstants;
 import constants.RobotState;
@@ -31,6 +32,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import resource.ResourceFunctions;
 import robotcode.driving.DriveTrain;
 import robotcode.driving.Wheel;
+import robotcode.pneumatics.SingleSolenoidReal;
+import robotcode.systems.HatchIntake;;
 import sensors.RobotAngle;
 import sensors.TalonAbsoluteEncoder;
 
@@ -54,6 +57,13 @@ public class Robot extends SampleRobot {
 
 	// gyro
 	private AHRS mNavX;
+
+	// hatch intake
+	private HatchIntake mHatchIntake;
+	private WPI_TalonSRX mLeadscrewTalon;
+	private TalonAbsoluteEncoder mLeadscrewEncoder;
+//	private SingleSolenoidReal mHatchSolenoid;
+
 	private RobotAngle mRobotAngle;
 
 	// PDP and compressor
@@ -86,14 +96,18 @@ public class Robot extends SampleRobot {
 	public void robotInit() {
 
 		mController = new XboxController(Ports.XBOX);
-		mNavX = new AHRS(Ports.NAVX);
+		//mNavX = new AHRS(Ports.NAVX);
 		mPDP = new PowerDistributionPanel();
 
 		if (RunConstants.RUNNING_DRIVE) {
 			driveInit();
 		}
+
+		if (RunConstants.RUNNING_HATCH) {
+			HatchIntakeInit();
+		}
 		
-		if(RunConstants.SECONDARY_JOYSTICK) {
+		if (RunConstants.SECONDARY_JOYSTICK) {
 			mJoystick = new Joystick(Ports.JOYSTICK);
 		}
 		
@@ -154,7 +168,39 @@ public class Robot extends SampleRobot {
 
 		while (isOperatorControl() && isEnabled()) {
 
-			swerveDrive();
+			if (RunConstants.RUNNING_DRIVE) {
+				swerveDrive();
+			}
+
+			if (RunConstants.RUNNING_HATCH) {
+				if(mController.getBumper(Hand.kLeft)){
+					mHatchIntake.setSpeed(-0.2);
+				}
+				else if(mController.getBumper(Hand.kRight)){
+					mHatchIntake.setSpeed(0.2);
+				}
+				else if(mController.getStartButtonReleased()){
+					mHatchIntake.zero();
+				}
+				else if(mController.getAButton()){
+					mHatchIntake.set(5);
+				}
+				else if(mController.getBButton()){
+					mHatchIntake.set(10);
+				}
+				else if(mController.getXButton()){
+					mHatchIntake.set(15);
+				}
+				else if(mController.getYButton()){
+					mHatchIntake.set(20);
+				}
+				else{
+					mHatchIntake.setSpeed(0);
+				}
+				
+				SmartDashboard.putNumber("Leadscrew ticks", mLeadscrewTalon.getSelectedSensorPosition());
+				SmartDashboard.putNumber("Leadscrew inches", HatchIntake.leadscrewTickToInch(mLeadscrewTalon.getSelectedSensorPosition()));
+			}
 
 			if (RunConstants.RUNNING_EVERYTHING) {
 				doWork();
@@ -311,6 +357,25 @@ public class Robot extends SampleRobot {
 
 	public DriveTrain getDriveTrain() {
 		return mDriveTrain;
+	}
+
+	public void HatchIntakeInit(){
+		mLeadscrewTalon = new WPI_TalonSRX(Ports.ActualRobot.LEADSCREW);
+
+        mLeadscrewTalon.setInverted(HatchIntakeConstants.LeadScrew.REVERSED);
+		mLeadscrewTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 10);
+		mLeadscrewTalon.setSensorPhase(HatchIntakeConstants.LeadScrew.ENCODER_REVERSED);
+
+		mLeadscrewTalon.setNeutralMode(NeutralMode.Brake);
+        mLeadscrewTalon.config_kP(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_P, 10);
+        mLeadscrewTalon.config_kI(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_I, 10);
+        mLeadscrewTalon.config_kD(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_D, 10);
+        mLeadscrewTalon.config_IntegralZone(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_IZONE, 10);
+		mLeadscrewTalon.configAllowableClosedloopError(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_TOLERANCE, 10);
+		
+		mLeadscrewEncoder = new TalonAbsoluteEncoder(mLeadscrewTalon, HatchIntakeConstants.LeadScrew.OFFSET);
+
+		mHatchIntake = new HatchIntake(mLeadscrewTalon);
 	}
 
 	private void addLogValueDouble(StringBuilder pLogString, double pVal) {
