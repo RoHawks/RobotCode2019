@@ -8,78 +8,64 @@
 package robotcode.systems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import robotcode.pneumatics.SingleSolenoidReal;
 import constants.HatchIntakeConstants;
-import constants.RunConstants;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import sensors.LeadscrewEncoder;
 
 public class HatchIntake {
 
-//    private SingleSolenoidReal mRotaryPiston;
+    private SingleSolenoidReal mRotaryPiston;
     private WPI_TalonSRX mLeadscrew;
+    private LeadscrewEncoder mEncoder;
 
-    public HatchIntake(/*SingleSolenoidReal pPiston, */WPI_TalonSRX pMotor) {
-        /*if ( RunConstants.RUNNING_PNEUMATICS ) {
-            mRotaryPiston = pPiston;
-        }*/
-        mLeadscrew = pMotor;
+    public HatchIntake(SingleSolenoidReal pRotaryPiston, WPI_TalonSRX pLeadscrewMotor, LeadscrewEncoder pEncoder) {
+        mRotaryPiston = pRotaryPiston;
+        mLeadscrew = pLeadscrewMotor;
+        mEncoder = pEncoder;
     }
 
-	//**********//
-	// RESOURCE //
-	//**********//
-
-    public static double leadscrewTickToInch(double pTick) {
-        return 1 / (HatchIntakeConstants.LeadScrew.PITCH * 4096) * pTick;
+    // **************//
+    // ROTARY PISTON //
+    // **************//
+    private void expand() {
+        mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.OPEN);
     }
 
-    public static double leadscrewInchToTick(double pInch) {
-        return HatchIntakeConstants.LeadScrew.PITCH * 4096 * pInch;
+    private void contract() {
+        mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.CLOSE);
     }
 
-    //********//
-    // PISTON //
-    //********//
-    // private void intake(){
-    //     if ( RunConstants.RUNNING_PNEUMATICS ) {
-    //         mRotaryPiston.set(HatchIntakeConstants.Piston.OPEN);
-    //     }
-    // }
-
-    // private void release(){
-    //     if ( RunConstants.RUNNING_PNEUMATICS ) {
-    //         mRotaryPiston.set(HatchIntakeConstants.Piston.CLOSE);
-    //     }
-    // }
-
-    //************//
+    // ************//
     // LEAD SCREW //
-    //************//
+    // ************//
 
-    public void setSpeed(double pSpeed){
+    public void setSpeed(double pSpeed) {
         mLeadscrew.set(ControlMode.PercentOutput, pSpeed);
     }
 
-    public void set(double pInchMeasurement){
+    public void setPosition(double pInchMeasurement) {
         SmartDashboard.putNumber("Leadscrew Inch Goal", pInchMeasurement);
-        double goal = leadscrewInchToTick(pInchMeasurement);
+        double goal = LeadscrewEncoder.leadscrewInchToTick(pInchMeasurement);
         SmartDashboard.putNumber("Leadscrew Tick Goal", goal);
 
         mLeadscrew.set(ControlMode.Position, goal);
         SmartDashboard.putNumber("Leadscrew motor goal ticks", mLeadscrew.getClosedLoopTarget());
-        SmartDashboard.putNumber("Leadscrew motor goal inches", leadscrewTickToInch(mLeadscrew.getClosedLoopTarget()));
+        SmartDashboard.putNumber("Leadscrew motor goal inches", LeadscrewEncoder.leadscrewTickToInch(mLeadscrew.getClosedLoopTarget()));
         SmartDashboard.putNumber("Leadscrew motor output", mLeadscrew.getMotorOutputPercent());
         SmartDashboard.putNumber("Leadscrew error", mLeadscrew.getClosedLoopError());
     }
 
-    public void zero(){
+    public void zero() {
         mLeadscrew.setSelectedSensorPosition(0);
     }
 
-    //set method that takes in an inch measurement, then sets motor to tick value w PID
-
 }
+
+//Potentially add methods to check if hit the limit switches, if so, disable movement in one direction
+//Have preset positions
+//Get offset each time it hits limit switch to recenter it/zero it
+//Depending on strategy we want, either zero it and don't have an offset, or have an offset and never zero it/get offset
+//again each time you hit limit switch

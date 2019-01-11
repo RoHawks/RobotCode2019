@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 public class HatchIntakeConstants {
 
-    public static class Piston {
+    public static class RotaryPiston {
 
         public static final Value OPEN = Value.kForward, CLOSE = Value.kReverse; //Need to check
 

@@ -33,7 +33,8 @@ import resource.ResourceFunctions;
 import robotcode.driving.DriveTrain;
 import robotcode.driving.Wheel;
 import robotcode.pneumatics.SingleSolenoidReal;
-import robotcode.systems.HatchIntake;;
+import robotcode.systems.HatchIntake;
+import sensors.LeadscrewEncoder;
 import sensors.RobotAngle;
 import sensors.TalonAbsoluteEncoder;
 
@@ -61,8 +62,8 @@ public class Robot extends SampleRobot {
 	// hatch intake
 	private HatchIntake mHatchIntake;
 	private WPI_TalonSRX mLeadscrewTalon;
-	private TalonAbsoluteEncoder mLeadscrewEncoder;
-//	private SingleSolenoidReal mHatchSolenoid;
+	private LeadscrewEncoder mLeadscrewEncoder;
+	private SingleSolenoidReal mHatchRotaryPiston;
 
 	private RobotAngle mRobotAngle;
 
@@ -183,23 +184,23 @@ public class Robot extends SampleRobot {
 					mHatchIntake.zero();
 				}
 				else if(mController.getAButton()){
-					mHatchIntake.set(5);
+					mHatchIntake.setPosition(5);
 				}
 				else if(mController.getBButton()){
-					mHatchIntake.set(10);
+					mHatchIntake.setPosition(10);
 				}
 				else if(mController.getXButton()){
-					mHatchIntake.set(15);
+					mHatchIntake.setPosition(15);
 				}
 				else if(mController.getYButton()){
-					mHatchIntake.set(20);
+					mHatchIntake.setPosition(20);
 				}
 				else{
 					mHatchIntake.setSpeed(0);
 				}
 				
-				SmartDashboard.putNumber("Leadscrew ticks", mLeadscrewTalon.getSelectedSensorPosition());
-				SmartDashboard.putNumber("Leadscrew inches", HatchIntake.leadscrewTickToInch(mLeadscrewTalon.getSelectedSensorPosition()));
+				SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
+				SmartDashboard.putNumber("Leadscrew inches", mLeadscrewEncoder.getDistanceInInchesFromEnd());
 			}
 
 			if (RunConstants.RUNNING_EVERYTHING) {
@@ -373,9 +374,11 @@ public class Robot extends SampleRobot {
         mLeadscrewTalon.config_IntegralZone(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_IZONE, 10);
 		mLeadscrewTalon.configAllowableClosedloopError(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_TOLERANCE, 10);
 		
-		mLeadscrewEncoder = new TalonAbsoluteEncoder(mLeadscrewTalon, HatchIntakeConstants.LeadScrew.OFFSET);
+		mLeadscrewEncoder = new LeadscrewEncoder(mLeadscrewTalon, HatchIntakeConstants.LeadScrew.OFFSET);
 
-		mHatchIntake = new HatchIntake(mLeadscrewTalon);
+		mHatchRotaryPiston = new SingleSolenoidReal(Ports.ActualRobot.HATCH_ROTARY_SOLENOID);
+
+		mHatchIntake = new HatchIntake(mHatchRotaryPiston, mLeadscrewTalon, mLeadscrewEncoder);
 	}
 
 	private void addLogValueDouble(StringBuilder pLogString, double pVal) {

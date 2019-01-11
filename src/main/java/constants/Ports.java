@@ -30,7 +30,7 @@ public class Ports {
 		// HATCH INTAKE
 		public static final int
 			LEADSCREW = 0,
-			HATCH_SOLENOID = 0;
+			HATCH_ROTARY_SOLENOID = 0;
 
 	}
 	
