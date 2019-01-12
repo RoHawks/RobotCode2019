@@ -11,28 +11,108 @@ import constants.CameraConstants;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
-public class Limelight extends VisionCamera{
+public class Limelight extends VisionCamera {
 
-    private double mFOV = 59.6; //degrees
+    private double mFOV = 59.6; // degrees
 
-    public Limelight(){
+    public Limelight() {
 
     }
+
+    // ******** //
+    // RESOURCE //
+    // ******** //
 
     public double getDoubleFromNetworkTable(String key) {
         return NetworkTableInstance.getDefault().getTable("limelight").getEntry(key).getDouble(0);
     }
 
-    public NetworkTableEntry getEntryFromNetworkTable (String key){
+    public NetworkTableEntry getEntryFromNetworkTable(String key) {
         return NetworkTableInstance.getDefault().getTable("limelight").getEntry(key);
     }
 
-    public double xAngleToDistance(double angle){
-        return (CameraConstants.Limelight.HEIGHT * Math.tan(Math.toRadians(getDoubleFromNetworkTable("tx"))));
+    // ********* //
+    // DISTANCES //
+    // ********* //
+    public double xAngleToDistance(double angle) {
+        return (CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(getDoubleFromNetworkTable("tx"))));
     }
 
-    public double yAngleToDistance(double angle){
-        return (CameraConstants.Limelight.HEIGHT * Math.tan(Math.toRadians(getDoubleFromNetworkTable("ty"))));
+    public double yAngleToDistance(double angle) {
+        return (CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(getDoubleFromNetworkTable("ty"))));
+    }
+
+
+
+    // ************ //
+    // LED SETTINGS //
+    // ************ //
+    public void setLedFromPipeline(){
+        getEntryFromNetworkTable("ledMode").setNumber(0);
+    }
+
+    public void setLedOff(){
+        getEntryFromNetworkTable("ledMode").setNumber(1);
+    }
+
+    public void setLedBlink(){
+        getEntryFromNetworkTable("ledMode").setNumber(2);
+    }
+
+    public void setLedOn(){
+        getEntryFromNetworkTable("ledMode").setNumber(3);
+    }
+
+
+
+    // *********** //
+    // CAMERA MODE //
+    // *********** //
+    public void setVisionProcessor(){
+        getEntryFromNetworkTable("camMode").setNumber(0);
+    }
+
+    public void setDriverCamera(){
+        getEntryFromNetworkTable("camMode").setNumber(1);
+    }
+
+
+
+    // ******** //
+    // PIPELINE //
+    // ******** //
+    public void setPipeline(int pPipeline){
+        getEntryFromNetworkTable("pipeline").setNumber(pPipeline);
+    }
+
+
+
+    // ****** //
+    // STREAM //
+    // ****** //
+    public void setStreamStandard(){
+        getEntryFromNetworkTable("stream").setNumber(0);
+    }
+    
+    public void setStreamMain(){
+        getEntryFromNetworkTable("stream").setNumber(1);
+    }
+    
+    public void setStreamSecondary(){
+        getEntryFromNetworkTable("stream").setNumber(2);
+    }
+
+
+
+    // ******** //
+    // SNAPSHOT //
+    // ******** //
+    public void stopSnapshot(){
+        getEntryFromNetworkTable("snapshot").setNumber(0);
+    }
+
+    public void startSnapshot(){
+        getEntryFromNetworkTable("snapshot").setNumber(1);
     }
 
 

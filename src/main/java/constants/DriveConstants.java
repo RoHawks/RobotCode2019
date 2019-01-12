@@ -36,14 +36,14 @@ public class DriveConstants {
 	// ACTUAL ROBOT VARIABLES //
 	//**************************//
 	public static class ActualRobot {
-		public static final boolean[] 
+		public static final boolean[]
 			TURN_INVERTED = new boolean[] { false, false, false, false },
-			DRIVE_INVERTED = new boolean[] { true, false, false, false },
-			ENCODER_REVERSED = new boolean[] { true, true, true, true };
-		
+			DRIVE_INVERTED = new boolean[] { false, false, false, false },
+			ENCODER_REVERSED = new boolean[] { false, false, false, false };
+	
 		public static final double[] 
-			X_OFF = new double[] { -27.438/2.0, 27.438/2.0 , 27.438/2.0 , -27.438/2.0 },
-			Y_OFF = new double[] { 22.563/2.0, 22.563/2.0 , -22.563/2.0 , -22.563/2.0 },
+			X_OFF = new double[] { -29.25/2.0, 29.25/2.0 , 29.25/2.0 , -29.25/2.0 }, //27.5 along y, 29.25 along x
+			Y_OFF = new double[] { 27.5/2.0, 27.5/2.0 , -27.5/2.0 , -27.5/2.0 },
 			
 			ROTATION_P = new double[] { 1.0, 1.0, 1.0, 1.0 },
 			ROTATION_I = new double[] { 0.001, 0.001, 0.001, 0.001 },

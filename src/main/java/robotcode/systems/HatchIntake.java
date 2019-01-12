@@ -15,7 +15,8 @@ import robotcode.pneumatics.SingleSolenoidReal;
 import constants.CameraConstants;
 import constants.HatchIntakeConstants;
 import constants.RunConstants;
-import constants.CameraConstants.Limelight;
+import constants.CameraConstants.LimelightConstants;
+import robotcode.camera.*;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -29,20 +30,21 @@ public class HatchIntake {
     private DoubleSolenoidReal mRotaryPiston, mLinearPiston;
     private WPI_TalonSRX mLeadscrew;
     private LeadscrewEncoder mEncoder;
+    private Limelight mHatchCamera;
 
     private LeadscrewState mLeadscrewState;
 
     public HatchIntake(DoubleSolenoidReal pRotaryPiston, WPI_TalonSRX pLeadscrewMotor, LeadscrewEncoder pEncoder,
-            DoubleSolenoidReal pLinearPiston, Joystick pJoystick) {
+            DoubleSolenoidReal pLinearPiston, Limelight pHatchCamera, Joystick pJoystick) {
         mLeadscrew = pLeadscrewMotor;
         mEncoder = pEncoder;
-        if (RunConstants.RUNNING_PNEUMATICS) {
-            mRotaryPiston = pRotaryPiston;
-            mLinearPiston = pLinearPiston;
-        }
+        mRotaryPiston = pRotaryPiston;
+        mLinearPiston = pLinearPiston;
+
+        mHatchCamera = pHatchCamera;
 
         mJoystick = pJoystick;
-        mLeadscrewState = LeadscrewState.MANUAL;        /*** DEFAULT TO MANUAL ***/
+        mLeadscrewState = LeadscrewState.MANUAL; /*** DEFAULT TO MANUAL ***/
     }
 
     public enum LeadscrewState {
@@ -52,7 +54,7 @@ public class HatchIntake {
     // **************//
     // ROTARY PISTON //
     // **************//
-    public void expand() { 
+    public void expand() {
         if (RunConstants.RUNNING_PNEUMATICS) {
             mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.OPEN);
         }
@@ -81,65 +83,81 @@ public class HatchIntake {
     }
 
     // ************//
-    // LEAD SCREW //
+    // LEAD SCREW  //
     // ************//
 
-    // public void enactMovement(){
-    //     if(mJoystick.getRawButtonReleased(1)){
-    //         mLeadscrewState = LeadscrewState.MANUAL;
-    //     }
-    //     else if(mJoystick.getRawButtonReleased(2)){
-    //         mLeadscrewState = LeadscrewState.CAMERA_ALIGN;
-    //     }
-    //     else if(mJoystick.getRawButtonReleased(3)){
-    //         mLeadscrewState = LeadscrewState.LOADING_STATION;
-    //     }
-    //     switch(mLeadscrewState){
-    //         case MANUAL:
-    //             mLeadscrew.set(ControlMode.PercentOutput, mJoystick.getX() * mJoystick.getX() * 0.5);
-    //         case CAMERA_ALIGN:
-    //             centerWithCamera();
-    //         case LOADING_STATION:
-    //             setPosition(HatchIntakeConstants.LeadScrew.LOADING_STATION);
-    //     }
-    // }
-
-
+    public void enactMovement() {
+        SmartDashboard.putString("leadscrewsstate", mLeadscrewState.toString());
+        if (mJoystick.getRawButtonReleased(1)) {
+            mLeadscrewState = LeadscrewState.MANUAL;
+        } else if (mJoystick.getRawButtonReleased(2)) {
+            mLeadscrewState = LeadscrewState.CAMERA_ALIGN;
+        } else if (mJoystick.getRawButtonReleased(3)) {
+            mLeadscrewState = LeadscrewState.LOADING_STATION;
+        }
+        if (mJoystick.getRawButtonReleased(4)) {
+            expand();
+        } else if (mJoystick.getRawButtonReleased(5)) {
+            contract();
+        }
+        if (mJoystick.getRawButtonReleased(6)) {
+            in();
+        } else if (mJoystick.getRawButtonReleased(6)) {
+            out();
+        }
+        if (mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
+            zero();
+        }
+        
+        switch (mLeadscrewState) {
+        case MANUAL:
+            setSpeed(mJoystick.getX() > 0.25 ? mJoystick.getX() * mJoystick.getX() * 0.5 : 0);
+            SmartDashboard.putNumber("speed", mJoystick.getX() * mJoystick.getX() * 0.5);
+            //mHatchCamera.startSnapshot();
+        default:
+            setSpeed(0);
+        // case CAMERA_ALIGN:
+        //     centerWithCamera();
+        // case LOADING_STATION:
+        //     setPosition(HatchIntakeConstants.LeadScrew.LOADING_STATION);
+        //     mHatchCamera.startSnapshot();
+        }
+        
+    }
 
     // returns whether the leadscrew is close to the edges
     public boolean getInSoftLimit() {
-        double position = LeadscrewEncoder.leadscrewTickToInch(mLeadscrew.getSelectedSensorPosition());
+        double position = mEncoder.getDistanceInInchesFromEnd();
         return (position < HatchIntakeConstants.LeadScrew.SOFT_LIMIT
                 || position > HatchIntakeConstants.LeadScrew.LENGTH - HatchIntakeConstants.LeadScrew.SOFT_LIMIT);
     }
 
-
-
     // sets raw speed of leadscrew, slows down if close to end
-    // + is right, - is left
+    // - is right, + is left
     public void setSpeed(double pSpeed) {
         double speed = pSpeed;
-        // if (getInSoftLimit()){       /*** SLOW IT DOWN IF CLOSE TO END ***/
-        //     speed /= 2;
-        // }
-        mLeadscrew.set(ControlMode.PercentOutput, pSpeed);
+        if (getInSoftLimit()) { /*** SLOW IT DOWN IF CLOSE TO END ***/
+            speed /= 2;
+        }
+        mLeadscrew.set(ControlMode.PercentOutput, speed);
     }
 
+    // ************************** //
+    // WITHOUT OFFSET (with zero) //
+    // ************************** //
 
-    
     // sets position of leadscrew using pid, slows down if close to end
-    // 0 is left, 'HatchConstants.Leadscrew.LENGTH' is right
+    // 0 is right, 'HatchConstants.Leadscrew.LENGTH' is left
     public void setPosition(double pInchMeasurement) {
         SmartDashboard.putNumber("Leadscrew Inch Goal", pInchMeasurement);
         double goal = LeadscrewEncoder.leadscrewInchToTick(pInchMeasurement);
         SmartDashboard.putNumber("Leadscrew Tick Goal", goal);
 
-        // if(getInSoftLimit()){        /*** SLOW IT DOWN IF CLOSE TO END ***/
-        //     mLeadscrew.config_kP(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_P / 2, 10);
-        // }
-        // else{
-        //     mLeadscrew.config_kP(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_P, 10);
-        // }
+        if (getInSoftLimit()) { /*** SLOW IT DOWN IF CLOSE TO END ***/
+            mLeadscrew.config_kP(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_P / 2, 10);
+        } else {
+            mLeadscrew.config_kP(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_P, 10);
+        }
 
         mLeadscrew.set(ControlMode.Position, goal);
         SmartDashboard.putNumber("Leadscrew motor goal ticks", mLeadscrew.getClosedLoopTarget());
@@ -150,17 +168,16 @@ public class HatchIntake {
     }
 
 
-
     // aligns the leadscrew with the tape using limelight
     // currently only works with x dimension, no skew
     public void centerWithCamera() {
-        double error = CameraConstants.Limelight.HEIGHT
-                * NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
-        SmartDashboard.putNumber("Limelight error", error);
-        setPosition((HatchIntakeConstants.LeadScrew.LENGTH / 2) + error);
+        mHatchCamera.stopSnapshot();
+        double error = mHatchCamera.xAngleToDistance(0);
+        double goal = (HatchIntakeConstants.LeadScrew.LENGTH / 2) - error;
+        double goal_estimate = (int) (goal * 2);
+        goal = goal_estimate / 2;
+        setPosition(goal);
     }
-
-
 
     // sets the current position of the lead screw to be zero
     // only for no offset or limit switch
@@ -168,6 +185,34 @@ public class HatchIntake {
         mLeadscrew.setSelectedSensorPosition(0);
     }
 
+
+
+    // *********** //
+    // WITH OFFSET // 
+    // *********** //
+    public void setPositionWithOffset(double pInchMeasurement) {
+        SmartDashboard.putNumber("Leadscrew Inch Goal", pInchMeasurement);
+        double goal = LeadscrewEncoder.leadscrewInchToTick(pInchMeasurement) + HatchIntakeConstants.LeadScrew.OFFSET;
+        SmartDashboard.putNumber("Leadscrew Tick Goal", goal);
+
+        if (getInSoftLimit()) { /*** SLOW IT DOWN IF CLOSE TO END ***/
+            mLeadscrew.config_kP(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_P / 2, 10);
+        } else {
+            mLeadscrew.config_kP(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_P, 10);
+        }
+
+        mLeadscrew.set(ControlMode.Position, goal);
+        SmartDashboard.putNumber("Leadscrew motor goal ticks", mLeadscrew.getClosedLoopTarget());
+        SmartDashboard.putNumber("Leadscrew motor goal inches",
+                LeadscrewEncoder.leadscrewTickToInch(mLeadscrew.getClosedLoopTarget()));
+        SmartDashboard.putNumber("Leadscrew motor output", mLeadscrew.getMotorOutputPercent());
+        SmartDashboard.putNumber("Leadscrew error", mLeadscrew.getClosedLoopError());
+    }
+
+
+    public void zeroWithOffset(){
+        mLeadscrew.setSelectedSensorPosition(HatchIntakeConstants.LeadScrew.OFFSET);
+    }
 }
 
 // Potentially add methods to check if hit the limit switches, if so, disable

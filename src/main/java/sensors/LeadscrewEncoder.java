@@ -15,15 +15,15 @@ public class LeadscrewEncoder {
     private WPI_TalonSRX mTalon;
     private int mOffset;
 
-    public LeadscrewEncoder(WPI_TalonSRX pTalon, int pOffset){
+    public LeadscrewEncoder(WPI_TalonSRX pTalon, int pOffset) {
         mTalon = pTalon;
         mOffset = pOffset;
     }
 
-    public int getOffset(){
+    public int getOffset() {
         return mOffset;
     }
-    
+
     // **********//
     // RESOURCE //
     // **********//
@@ -40,15 +40,15 @@ public class LeadscrewEncoder {
     // MEASUREMENT //
     // ***********//
 
-    public int getRawTicks(){
+    public int getRawTicks() {
         return mTalon.getSelectedSensorPosition(0);
     }
 
-    public int getTicksFromEnd(){
+    public int getTicksFromEnd() {
         return getRawTicks() - mOffset;
     }
 
-    public double getDistanceInInchesFromEnd(){
+    public double getDistanceInInchesFromEnd() {
         return leadscrewTickToInch(getTicksFromEnd());
     }
 

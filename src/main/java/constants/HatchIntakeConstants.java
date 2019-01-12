@@ -13,37 +13,45 @@ public class HatchIntakeConstants {
 
     public static class RotaryPiston {
 
-        public static final Value OPEN = Value.kForward, CLOSE = Value.kReverse; //Need to check
+        public static final 
+            Value OPEN = Value.kForward,
+            CLOSE = Value.kReverse;
 
     }
 
     public static class LinearPiston {
-        public static final Value OPEN = Value.kForward, CLOSE = Value.kReverse; //Need to check
+        public static final Value
+            OPEN = Value.kForward, 
+            CLOSE = Value.kReverse;
     }
 
     public static class LeadScrew {
 
         public static final double 
             PITCH = 12.0,
-            LENGTH = 0,
-            SOFT_LIMIT = 0;
+            LENGTH = 15.125,
+            SOFT_LIMIT = 3;
 
-        public static final int OFFSET = 0;
-	
-        public static final boolean	ENCODER_REVERSED = false, REVERSED = false;
-        
-        public static final double
+        public static final int 
+            OFFSET = 0;
+
+        public static final boolean
+            ENCODER_REVERSED = true,
+            REVERSED = false;
+
+        public static final double 
             LOADING_STATION = LENGTH / 2;
+
         public static class PID {
 
             public static final double 
-                LEADSCREW_P = 0.5, 
-                LEADSCREW_I = 0.0,
-                LEADSCREW_D = 0.0;
-            
+                LEADSCREW_P = 0.1, 
+                LEADSCREW_I = 0.0003, 
+                LEADSCREW_D = 0.0001;
+
             public static final int 
-                LEADSCREW_TOLERANCE = 0,
-                LEADSCREW_IZONE = 0;
+                LEADSCREW_TOLERANCE = 0, 
+                LEADSCREW_IZONE = 1000;
 
         }
 

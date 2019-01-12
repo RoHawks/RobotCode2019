@@ -18,7 +18,9 @@ import constants.HatchIntakeConstants;
 import constants.Ports;
 import constants.RunConstants;
 import constants.RobotState;
+import constants.CameraConstants;
 import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
@@ -29,9 +31,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import resource.ResourceFunctions;
-import robotcode.driving.DriveTrain;
-import robotcode.driving.Wheel;
+import robotcode.driving.*;
 import robotcode.pneumatics.*;
+import robotcode.camera.*;
 import robotcode.systems.HatchIntake;
 import sensors.LeadscrewEncoder;
 import sensors.RobotAngle;
@@ -57,6 +59,7 @@ public class Robot extends SampleRobot {
 
 	// gyro
 	private AHRS mNavX;
+	private RobotAngle mRobotAngle;
 
 	// hatch intake
 	private HatchIntake mHatchIntake;
@@ -65,7 +68,8 @@ public class Robot extends SampleRobot {
 	private DoubleSolenoidReal mHatchRotaryPiston;
 	private DoubleSolenoidReal mHatchLinearPiston;
 
-	private RobotAngle mRobotAngle;
+	// limelight
+	private Limelight mHatchCamera;
 
 	// PDP and compressor
 	private PowerDistributionPanel mPDP;
@@ -104,12 +108,12 @@ public class Robot extends SampleRobot {
 			driveInit();
 		}
 
-		if (RunConstants.RUNNING_HATCH) {
-			hatchIntakeInit();
-		}
-
 		if (RunConstants.SECONDARY_JOYSTICK) {
 			mJoystick = new Joystick(Ports.JOYSTICK);
+		}
+
+		if (RunConstants.RUNNING_HATCH) {
+			hatchIntakeInit();
 		}
 
 		if (RunConstants.RUNNING_CAMERA) {
@@ -118,9 +122,7 @@ public class Robot extends SampleRobot {
 			camera.setFPS(30);
 		}
 
-		if (RunConstants.RUNNING_PNEUMATICS) {
-			mCompressor = new Compressor(Ports.COMPRESSOR);
-		}
+		mCompressor = new Compressor(Ports.COMPRESSOR);
 	}
 
 	@Override
@@ -167,48 +169,47 @@ public class Robot extends SampleRobot {
 		startGame();
 
 		while (isOperatorControl() && isEnabled()) {
-
 			if (RunConstants.RUNNING_DRIVE) {
 				swerveDrive();
 			}
 
 			if (RunConstants.RUNNING_HATCH) {
-				if (mController.getBumper(Hand.kLeft)) {
-					mHatchIntake.setSpeed(-0.6);
-				} else if (mController.getBumper(Hand.kRight)) {
-					mHatchIntake.setSpeed(0.6);
-				} else if (mController.getStartButtonReleased()) {
+				// mHatchIntake.enactMovement();
+				if (Math.abs(mJoystick.getX()) > 0.25) {
+					mHatchIntake.setSpeed(-mJoystick.getX());
+				} else if (mJoystick.getRawButton(1)) {
 					mHatchIntake.zero();
-				} else if (mController.getAButton()) {
-					mHatchIntake.setPosition(5);
-				} else if (mController.getBButton()) {
-					mHatchIntake.setPosition(10);
-				} else if (mController.getXButton()) {
-					mHatchIntake.setPosition(13);
+				} else if (mJoystick.getRawButton(2)) {
+					mHatchIntake.centerWithCamera();
 				} else {
 					mHatchIntake.setSpeed(0);
 				}
 
-				//ROTARY PISTON
-				if(mController.getTriggerAxis(Hand.kRight) > 0.25){
+				// ROTARY PISTON
+				if (mJoystick.getRawButton(4)) {
 					mHatchIntake.expand();
-				}
-				else{
+				} else {
 					mHatchIntake.contract();
 				}
 
-				//LINEAR PISTON
-				if(mController.getTriggerAxis(Hand.kLeft) > 0.25){
+				// LINEAR PISTON
+				if (mJoystick.getRawButton(5)) {
 					mHatchIntake.out();
-				}
-				else{
+				} else {
 					mHatchIntake.in();
 				}
-
-				SmartDashboard.putNumber("Right Trigger", mController.getTriggerAxis(Hand.kRight));
-				SmartDashboard.putNumber("Left Trigger", mController.getTriggerAxis(Hand.kLeft));
+				SmartDashboard.putNumber("Joystickx", mJoystick.getX());
+				SmartDashboard.putBoolean("Forward Limit Switch Closed",
+						mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());
+				SmartDashboard.putBoolean("Reverse Limit Switch Closed",
+						mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
 				SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
 				SmartDashboard.putNumber("Leadscrew inches", mLeadscrewEncoder.getDistanceInInchesFromEnd());
+				SmartDashboard.putNumber("Limelight angle",
+						NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0));
+				SmartDashboard.putNumber("Limelight error",
+						CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(
+								NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0))));
 			}
 
 			if (RunConstants.RUNNING_EVERYTHING) {
@@ -249,6 +250,8 @@ public class Robot extends SampleRobot {
 
 			if (RunConstants.RUNNING_PNEUMATICS) {
 				mCompressor.start();
+			} else {
+				mCompressor.stop();
 			}
 
 			mInGame = true;
@@ -273,12 +276,10 @@ public class Robot extends SampleRobot {
 			}
 		}
 
-		//SmartDashboard.putString("AUTO ROUTINE:", mAutonomousRoutine.toString());
+		// SmartDashboard.putString("AUTO ROUTINE:", mAutonomousRoutine.toString());
 
 		Timer.delay(0.005); // wait for a motor update time
 	}
-
-	
 
 	private void tankDrive() {
 		if (RunConstants.RUNNING_DRIVE) {
@@ -384,10 +385,16 @@ public class Robot extends SampleRobot {
 
 		mLeadscrewEncoder = new LeadscrewEncoder(mLeadscrewTalon, HatchIntakeConstants.LeadScrew.OFFSET);
 
-		mHatchRotaryPiston = new DoubleSolenoidReal(Ports.ActualRobot.HATCH_ROTARY_SOLENOID_IN, Ports.ActualRobot.HATCH_ROTARY_SOLENOID_OUT);
-		mHatchLinearPiston = new DoubleSolenoidReal(Ports.ActualRobot.HATCH_LINEAR_SOLENOID_IN, Ports.ActualRobot.HATCH_LINEAR_SOLENOID_OUT);
+		mHatchRotaryPiston = new DoubleSolenoidReal(Ports.ActualRobot.HATCH_ROTARY_SOLENOID_IN,
+				Ports.ActualRobot.HATCH_ROTARY_SOLENOID_OUT);
+		mHatchLinearPiston = new DoubleSolenoidReal(Ports.ActualRobot.HATCH_LINEAR_SOLENOID_IN,
+				Ports.ActualRobot.HATCH_LINEAR_SOLENOID_OUT);
 
-		mHatchIntake = new HatchIntake( mHatchRotaryPiston,  mLeadscrewTalon, mLeadscrewEncoder , mHatchLinearPiston, mJoystick );
+		mHatchCamera = new Limelight();
+		mHatchCamera.setPipeline(0);
+
+		mHatchIntake = new HatchIntake(mHatchRotaryPiston, mLeadscrewTalon, mLeadscrewEncoder, mHatchLinearPiston,
+				mHatchCamera, mJoystick);
 	}
 
 	private void addLogValueDouble(StringBuilder pLogString, double pVal) {
