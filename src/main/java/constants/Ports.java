@@ -29,8 +29,9 @@ public class Ports {
 
 		// HATCH INTAKE
 		public static final int
-			LEADSCREW = 0,
-			HATCH_ROTARY_SOLENOID = 0;
+			LEADSCREW = 11,
+			HATCH_ROTARY_SOLENOID = 0,
+			HATCH_LINEAR_SOLENOID = 0;
 
 	}
 	

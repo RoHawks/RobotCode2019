@@ -17,13 +17,17 @@ public class HatchIntakeConstants {
 
     }
 
+    public static class LinearPiston {
+        public static final Value OPEN = Value.kForward, CLOSE = Value.kReverse; //Need to check
+    }
+
     public static class LeadScrew {
 
         public static final double PITCH = 12.0;
 
         public static final int OFFSET = 0;
 	
-        public static final boolean	ENCODER_REVERSED = true, REVERSED = false;
+        public static final boolean	ENCODER_REVERSED = false, REVERSED = false;
         
         public static class PID {
 

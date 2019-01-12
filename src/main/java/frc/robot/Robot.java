@@ -2,7 +2,6 @@
 
 package frc.robot;
 
-import java.awt.SecondaryLoop;
 import java.util.ArrayList;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -63,7 +62,8 @@ public class Robot extends SampleRobot {
 	private HatchIntake mHatchIntake;
 	private WPI_TalonSRX mLeadscrewTalon;
 	private LeadscrewEncoder mLeadscrewEncoder;
-	private SingleSolenoidReal mHatchRotaryPiston;
+	// private SingleSolenoidReal mHatchRotaryPiston;
+	// private SingleSolenoidReal mHatchLinearPiston;
 
 	private RobotAngle mRobotAngle;
 
@@ -97,7 +97,7 @@ public class Robot extends SampleRobot {
 	public void robotInit() {
 
 		mController = new XboxController(Ports.XBOX);
-		//mNavX = new AHRS(Ports.NAVX);
+		mNavX = new AHRS(Ports.NAVX);
 		mPDP = new PowerDistributionPanel();
 
 		if (RunConstants.RUNNING_DRIVE) {
@@ -105,19 +105,19 @@ public class Robot extends SampleRobot {
 		}
 
 		if (RunConstants.RUNNING_HATCH) {
-			HatchIntakeInit();
+			hatchIntakeInit();
 		}
-		
+
 		if (RunConstants.SECONDARY_JOYSTICK) {
 			mJoystick = new Joystick(Ports.JOYSTICK);
 		}
-		
+
 		if (RunConstants.RUNNING_CAMERA) {
 			UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
 			camera.setResolution(240, 180);
 			camera.setFPS(30);
 		}
-		
+
 		if (RunConstants.RUNNING_PNEUMATICS) {
 			mCompressor = new Compressor(Ports.COMPRESSOR);
 		}
@@ -130,8 +130,7 @@ public class Robot extends SampleRobot {
 
 		if (mAutonomousRoutine == AutonomousRoutineType.DEFAULT) {
 			autonomousCommands = (new DefaultRoutine(this)).getAutonomousCommands();
-		}
-		else {
+		} else {
 			autonomousCommands = (new DoNothingRoutine()).getAutonomousCommands();
 		}
 
@@ -174,31 +173,22 @@ public class Robot extends SampleRobot {
 			}
 
 			if (RunConstants.RUNNING_HATCH) {
-				if(mController.getBumper(Hand.kLeft)){
-					mHatchIntake.setSpeed(-0.2);
-				}
-				else if(mController.getBumper(Hand.kRight)){
-					mHatchIntake.setSpeed(0.2);
-				}
-				else if(mController.getStartButtonReleased()){
+				if (mController.getBumper(Hand.kLeft)) {
+					mHatchIntake.setSpeed(-0.6);
+				} else if (mController.getBumper(Hand.kRight)) {
+					mHatchIntake.setSpeed(0.6);
+				} else if (mController.getStartButtonReleased()) {
 					mHatchIntake.zero();
-				}
-				else if(mController.getAButton()){
+				} else if (mController.getAButton()) {
 					mHatchIntake.setPosition(5);
-				}
-				else if(mController.getBButton()){
+				} else if (mController.getBButton()) {
 					mHatchIntake.setPosition(10);
-				}
-				else if(mController.getXButton()){
-					mHatchIntake.setPosition(15);
-				}
-				else if(mController.getYButton()){
-					mHatchIntake.setPosition(20);
-				}
-				else{
+				} else if (mController.getXButton()) {
+					mHatchIntake.setPosition(13);
+				} else {
 					mHatchIntake.setSpeed(0);
 				}
-				
+
 				SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
 				SmartDashboard.putNumber("Leadscrew inches", mLeadscrewEncoder.getDistanceInInchesFromEnd());
 			}
@@ -221,11 +211,11 @@ public class Robot extends SampleRobot {
 
 	private void doWork() {
 		switch (mCurrentState) {
-			case DEFAULT:
-				doSomeAction();
-				break;
-			default:
-				throw new RuntimeException("Unknown state");
+		case DEFAULT:
+			doSomeAction();
+			break;
+		default:
+			throw new RuntimeException("Unknown state");
 		}
 
 		SmartDashboard.putString("Current State", mCurrentState.name());
@@ -242,9 +232,6 @@ public class Robot extends SampleRobot {
 			if (RunConstants.RUNNING_PNEUMATICS) {
 				mCompressor.start();
 			}
-			else {
-				mCompressor.stop();
-			}
 
 			mInGame = true;
 		}
@@ -255,21 +242,25 @@ public class Robot extends SampleRobot {
 		endGame();
 
 		while (this.isDisabled()) {
-			if (mJoystick.getTriggerPressed()) {
-				// rotate autonomous routines to select which one to start with:
-				if (mAutonomousRoutine == AutonomousRoutineType.DEFAULT) {
-					mAutonomousRoutine = AutonomousRoutineType.DO_NOTHING;
-				}
-				else if (mAutonomousRoutine == AutonomousRoutineType.DO_NOTHING) {
-					mAutonomousRoutine = AutonomousRoutineType.DEFAULT;
+			if (RunConstants.SECONDARY_JOYSTICK) {
+
+				if (mJoystick.getTriggerPressed()) {
+					// rotate autonomous routines to select which one to start with:
+					if (mAutonomousRoutine == AutonomousRoutineType.DEFAULT) {
+						mAutonomousRoutine = AutonomousRoutineType.DO_NOTHING;
+					} else if (mAutonomousRoutine == AutonomousRoutineType.DO_NOTHING) {
+						mAutonomousRoutine = AutonomousRoutineType.DEFAULT;
+					}
 				}
 			}
-
-			SmartDashboard.putString("AUTO ROUTINE:", mAutonomousRoutine.toString());
-
-			Timer.delay(0.005); // wait for a motor update time
 		}
+
+		//SmartDashboard.putString("AUTO ROUTINE:", mAutonomousRoutine.toString());
+
+		Timer.delay(0.005); // wait for a motor update time
 	}
+
+	
 
 	private void tankDrive() {
 		if (RunConstants.RUNNING_DRIVE) {
@@ -307,8 +298,7 @@ public class Robot extends SampleRobot {
 				D_PID = DriveConstants.PrototypeRobot.ROTATION_D[i];
 				iZone = DriveConstants.PrototypeRobot.ROTATION_IZONE[i];
 				rotTol = DriveConstants.PrototypeRobot.ROTATION_TOLERANCE[i];
-			}
-			else {
+			} else {
 				turnPort = Ports.ActualRobot.TURN[i];
 				turnEncoderReversed = DriveConstants.ActualRobot.ENCODER_REVERSED[i];
 				turnReversed = DriveConstants.ActualRobot.TURN_INVERTED[i];
@@ -360,25 +350,29 @@ public class Robot extends SampleRobot {
 		return mDriveTrain;
 	}
 
-	public void HatchIntakeInit(){
+	public void hatchIntakeInit() {
 		mLeadscrewTalon = new WPI_TalonSRX(Ports.ActualRobot.LEADSCREW);
 
-        mLeadscrewTalon.setInverted(HatchIntakeConstants.LeadScrew.REVERSED);
+		mLeadscrewTalon.setInverted(HatchIntakeConstants.LeadScrew.REVERSED);
 		mLeadscrewTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 10);
 		mLeadscrewTalon.setSensorPhase(HatchIntakeConstants.LeadScrew.ENCODER_REVERSED);
 
 		mLeadscrewTalon.setNeutralMode(NeutralMode.Brake);
-        mLeadscrewTalon.config_kP(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_P, 10);
-        mLeadscrewTalon.config_kI(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_I, 10);
-        mLeadscrewTalon.config_kD(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_D, 10);
-        mLeadscrewTalon.config_IntegralZone(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_IZONE, 10);
+		mLeadscrewTalon.config_kP(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_P, 10);
+		mLeadscrewTalon.config_kI(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_I, 10);
+		mLeadscrewTalon.config_kD(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_D, 10);
+		mLeadscrewTalon.config_IntegralZone(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_IZONE, 10);
 		mLeadscrewTalon.configAllowableClosedloopError(0, HatchIntakeConstants.LeadScrew.PID.LEADSCREW_TOLERANCE, 10);
-		
+
 		mLeadscrewEncoder = new LeadscrewEncoder(mLeadscrewTalon, HatchIntakeConstants.LeadScrew.OFFSET);
 
-		mHatchRotaryPiston = new SingleSolenoidReal(Ports.ActualRobot.HATCH_ROTARY_SOLENOID);
+		// mHatchRotaryPiston = new
+		// SingleSolenoidReal(Ports.ActualRobot.HATCH_ROTARY_SOLENOID);
+		// mHatchLinearPiston = new
+		// SingleSolenoidReal(Ports.ActualRobot.HATCH_LINEAR_SOLENOID);
 
-		mHatchIntake = new HatchIntake(mHatchRotaryPiston, mLeadscrewTalon, mLeadscrewEncoder);
+		mHatchIntake = new HatchIntake(/* mHatchRotaryPiston, */ mLeadscrewTalon,
+				mLeadscrewEncoder/* , mHatchLinearPiston */);
 	}
 
 	private void addLogValueDouble(StringBuilder pLogString, double pVal) {

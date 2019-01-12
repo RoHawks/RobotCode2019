@@ -17,27 +17,41 @@ import sensors.LeadscrewEncoder;
 
 public class HatchIntake {
 
-    private SingleSolenoidReal mRotaryPiston;
+    //private SingleSolenoidReal mRotaryPiston/*, mLinearPiston*/;
     private WPI_TalonSRX mLeadscrew;
     private LeadscrewEncoder mEncoder;
 
-    public HatchIntake(SingleSolenoidReal pRotaryPiston, WPI_TalonSRX pLeadscrewMotor, LeadscrewEncoder pEncoder) {
-        mRotaryPiston = pRotaryPiston;
+    public HatchIntake(/*SingleSolenoidReal pRotaryPiston,*/ WPI_TalonSRX pLeadscrewMotor, LeadscrewEncoder pEncoder
+    /*, SingleSolenoidReal pLinearPiston*/) {
+        //mRotaryPiston = pRotaryPiston;
         mLeadscrew = pLeadscrewMotor;
         mEncoder = pEncoder;
+        //mLinearPiston = pLinearPiston;
     }
 
     // **************//
     // ROTARY PISTON //
     // **************//
-    private void expand() {
-        mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.OPEN);
+    // public void expand() {
+    //     mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.OPEN);
+    // }
+
+    // public void contract() {
+    //     mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.CLOSE);
+    // }
+
+    // **************//
+    // LINEAR PISTON //
+    // **************//
+
+/*     public void in() {
+        mLinearPiston.set(HatchIntakeConstants.LinearPiston.CLOSE);
     }
 
-    private void contract() {
-        mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.CLOSE);
+    public void out() {
+        mLinearPiston.set(HatchIntakeConstants.LinearPiston.OPEN);
     }
-
+ */
     // ************//
     // LEAD SCREW //
     // ************//

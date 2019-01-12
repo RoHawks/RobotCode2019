@@ -11,8 +11,11 @@ package constants;
  * Add your docs here.
  */
 public class CameraConstants {
+
     public static class Limelight {
-        public static final double 
-            HEIGHT = 12.9375;
+
+        public static final double HEIGHT = 12.9375;
+        
     }
+
 }
