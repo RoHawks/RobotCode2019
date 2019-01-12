@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import resource.ResourceFunctions;
 import robotcode.driving.DriveTrain;
 import robotcode.driving.Wheel;
-import robotcode.pneumatics.SingleSolenoidReal;
+import robotcode.pneumatics.*;
 import robotcode.systems.HatchIntake;
 import sensors.LeadscrewEncoder;
 import sensors.RobotAngle;
@@ -62,8 +62,8 @@ public class Robot extends SampleRobot {
 	private HatchIntake mHatchIntake;
 	private WPI_TalonSRX mLeadscrewTalon;
 	private LeadscrewEncoder mLeadscrewEncoder;
-	// private SingleSolenoidReal mHatchRotaryPiston;
-	// private SingleSolenoidReal mHatchLinearPiston;
+	private DoubleSolenoidReal mHatchRotaryPiston;
+	private DoubleSolenoidReal mHatchLinearPiston;
 
 	private RobotAngle mRobotAngle;
 
@@ -189,6 +189,24 @@ public class Robot extends SampleRobot {
 					mHatchIntake.setSpeed(0);
 				}
 
+				//ROTARY PISTON
+				if(mController.getTriggerAxis(Hand.kRight) > 0.25){
+					mHatchIntake.expand();
+				}
+				else{
+					mHatchIntake.contract();
+				}
+
+				//LINEAR PISTON
+				if(mController.getTriggerAxis(Hand.kLeft) > 0.25){
+					mHatchIntake.out();
+				}
+				else{
+					mHatchIntake.in();
+				}
+
+				SmartDashboard.putNumber("Right Trigger", mController.getTriggerAxis(Hand.kRight));
+				SmartDashboard.putNumber("Left Trigger", mController.getTriggerAxis(Hand.kLeft));
 				SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
 				SmartDashboard.putNumber("Leadscrew inches", mLeadscrewEncoder.getDistanceInInchesFromEnd());
 			}
@@ -366,13 +384,10 @@ public class Robot extends SampleRobot {
 
 		mLeadscrewEncoder = new LeadscrewEncoder(mLeadscrewTalon, HatchIntakeConstants.LeadScrew.OFFSET);
 
-		// mHatchRotaryPiston = new
-		// SingleSolenoidReal(Ports.ActualRobot.HATCH_ROTARY_SOLENOID);
-		// mHatchLinearPiston = new
-		// SingleSolenoidReal(Ports.ActualRobot.HATCH_LINEAR_SOLENOID);
+		mHatchRotaryPiston = new DoubleSolenoidReal(Ports.ActualRobot.HATCH_ROTARY_SOLENOID_IN, Ports.ActualRobot.HATCH_ROTARY_SOLENOID_OUT);
+		mHatchLinearPiston = new DoubleSolenoidReal(Ports.ActualRobot.HATCH_LINEAR_SOLENOID_IN, Ports.ActualRobot.HATCH_LINEAR_SOLENOID_OUT);
 
-		mHatchIntake = new HatchIntake(/* mHatchRotaryPiston, */ mLeadscrewTalon,
-				mLeadscrewEncoder/* , mHatchLinearPiston */);
+		mHatchIntake = new HatchIntake( mHatchRotaryPiston,  mLeadscrewTalon, mLeadscrewEncoder , mHatchLinearPiston, mJoystick );
 	}
 
 	private void addLogValueDouble(StringBuilder pLogString, double pVal) {

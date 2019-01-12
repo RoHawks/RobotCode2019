@@ -23,16 +23,21 @@ public class HatchIntakeConstants {
 
     public static class LeadScrew {
 
-        public static final double PITCH = 12.0;
+        public static final double 
+            PITCH = 12.0,
+            LENGTH = 0,
+            SOFT_LIMIT = 0;
 
         public static final int OFFSET = 0;
 	
         public static final boolean	ENCODER_REVERSED = false, REVERSED = false;
         
+        public static final double
+            LOADING_STATION = LENGTH / 2;
         public static class PID {
 
             public static final double 
-                LEADSCREW_P = 0.0, 
+                LEADSCREW_P = 0.5, 
                 LEADSCREW_I = 0.0,
                 LEADSCREW_D = 0.0;
             

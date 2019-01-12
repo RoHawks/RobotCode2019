@@ -1,6 +1,7 @@
 package robotcode.pneumatics;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import constants.RunConstants;
 import edu.wpi.first.wpilibj.Solenoid;
 
 public class SingleSolenoidReal {
@@ -12,15 +13,24 @@ public class SingleSolenoidReal {
 
 	public void set(Value pDirection) {
 		// forward maps to true, backward maps to false
-		mSingleSolenoid.set(pDirection == Value.kForward);
+		if(RunConstants.RUNNING_PNEUMATICS){
+			mSingleSolenoid.set(pDirection == Value.kForward);
+		}
 	}
 
 	public Value get() {
-		return mSingleSolenoid.get() ? Value.kForward : Value.kReverse;
+		if(RunConstants.RUNNING_PNEUMATICS){
+			return mSingleSolenoid.get() ? Value.kForward : Value.kReverse;
+		}
+		else{
+			return Value.kOff;
+		}
 	}
 
 	public void setOpposite() {
-		this.set(this.get().equals(Value.kForward) ? Value.kReverse : Value.kForward);
+		if(RunConstants.RUNNING_PNEUMATICS){
+			this.set(this.get().equals(Value.kForward) ? Value.kReverse : Value.kForward);
+		}
 	}
 
 }
