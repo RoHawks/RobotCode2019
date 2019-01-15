@@ -88,6 +88,7 @@ public class HatchIntake {
 
     public void enactMovement() {
         SmartDashboard.putString("leadscrewsstate", mLeadscrewState.toString());
+        
         if (mJoystick.getRawButtonReleased(1)) {
             mLeadscrewState = LeadscrewState.MANUAL;
         } else if (mJoystick.getRawButtonReleased(2)) {
@@ -95,32 +96,35 @@ public class HatchIntake {
         } else if (mJoystick.getRawButtonReleased(3)) {
             mLeadscrewState = LeadscrewState.LOADING_STATION;
         }
-        if (mJoystick.getRawButtonReleased(4)) {
+        
+        if (mJoystick.getRawButton(4)) {
             expand();
-        } else if (mJoystick.getRawButtonReleased(5)) {
+        } else {
             contract();
         }
-        if (mJoystick.getRawButtonReleased(6)) {
-            in();
-        } else if (mJoystick.getRawButtonReleased(6)) {
+        if (mJoystick.getRawButton(5)) {
             out();
+        } else {
+            in();
         }
+
         if (mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
-            zero();
+            //zero();
         }
         
         switch (mLeadscrewState) {
         case MANUAL:
-            setSpeed(mJoystick.getX() > 0.25 ? mJoystick.getX() * mJoystick.getX() * 0.5 : 0);
+            setSpeed(Math.abs(mJoystick.getX()) > 0.25 ? -1 * mJoystick.getX() * Math.abs(mJoystick.getX()) * 0.8 : 0);
             SmartDashboard.putNumber("speed", mJoystick.getX() * mJoystick.getX() * 0.5);
-            //mHatchCamera.startSnapshot();
+            break;
+        case CAMERA_ALIGN:
+            centerWithCamera();
+            break;
+        case LOADING_STATION:
+            setPosition(HatchIntakeConstants.LeadScrew.LOADING_STATION);
+            break;
         default:
             setSpeed(0);
-        // case CAMERA_ALIGN:
-        //     centerWithCamera();
-        // case LOADING_STATION:
-        //     setPosition(HatchIntakeConstants.LeadScrew.LOADING_STATION);
-        //     mHatchCamera.startSnapshot();
         }
         
     }
@@ -171,12 +175,12 @@ public class HatchIntake {
     // aligns the leadscrew with the tape using limelight
     // currently only works with x dimension, no skew
     public void centerWithCamera() {
-        mHatchCamera.stopSnapshot();
         double error = mHatchCamera.xAngleToDistance(0);
         double goal = (HatchIntakeConstants.LeadScrew.LENGTH / 2) - error;
-        double goal_estimate = (int) (goal * 2);
-        goal = goal_estimate / 2;
-        setPosition(goal);
+        SmartDashboard.putNumber("Distance from Camera", goal - mEncoder.getDistanceInInchesFromEnd());
+        if(Math.abs(goal - mEncoder.getDistanceInInchesFromEnd()) > HatchIntakeConstants.LeadScrew.LEADSCREW_CAMERA_TOLERANCE){
+            setPosition(goal);
+        } 
     }
 
     // sets the current position of the lead screw to be zero
@@ -213,6 +217,13 @@ public class HatchIntake {
     public void zeroWithOffset(){
         mLeadscrew.setSelectedSensorPosition(HatchIntakeConstants.LeadScrew.OFFSET);
     }
+
+
+    
+    // ****** //
+    // CAMERA //
+    // ****** //
+
 }
 
 // Potentially add methods to check if hit the limit switches, if so, disable

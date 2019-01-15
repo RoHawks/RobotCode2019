@@ -174,30 +174,30 @@ public class Robot extends SampleRobot {
 			}
 
 			if (RunConstants.RUNNING_HATCH) {
-				// mHatchIntake.enactMovement();
-				if (Math.abs(mJoystick.getX()) > 0.25) {
-					mHatchIntake.setSpeed(-mJoystick.getX());
-				} else if (mJoystick.getRawButton(1)) {
-					mHatchIntake.zero();
-				} else if (mJoystick.getRawButton(2)) {
-					mHatchIntake.centerWithCamera();
-				} else {
-					mHatchIntake.setSpeed(0);
-				}
+				mHatchIntake.enactMovement();
+				// if (Math.abs(mJoystick.getX()) > 0.25) {
+				// 	mHatchIntake.setSpeed(-mJoystick.getX());
+				// } else if (mJoystick.getRawButton(1)) {
+				// 	mHatchIntake.zero();
+				// } else if (mJoystick.getRawButton(2)) {
+				// 	mHatchIntake.centerWithCamera();
+				// } else {
+				// 	mHatchIntake.setSpeed(0);
+				// }
 
-				// ROTARY PISTON
-				if (mJoystick.getRawButton(4)) {
-					mHatchIntake.expand();
-				} else {
-					mHatchIntake.contract();
-				}
+				// // ROTARY PISTON
+				// if (mJoystick.getRawButton(4)) {
+				// 	mHatchIntake.expand();
+				// } else {
+				// 	mHatchIntake.contract();
+				// }
 
-				// LINEAR PISTON
-				if (mJoystick.getRawButton(5)) {
-					mHatchIntake.out();
-				} else {
-					mHatchIntake.in();
-				}
+				// // LINEAR PISTON
+				// if (mJoystick.getRawButton(5)) {
+				// 	mHatchIntake.out();
+				// } else {
+				// 	mHatchIntake.in();
+				// }
 				SmartDashboard.putNumber("Joystickx", mJoystick.getX());
 				SmartDashboard.putBoolean("Forward Limit Switch Closed",
 						mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());

@@ -16,8 +16,8 @@ public class DriveConstants {
 			MAX_EMERGENCY_VOLTAGE = 0.5;
 
 	public static final double 
-			MAX_ANGULAR_VELOCITY = 1.0,
-			MAX_LINEAR_VELOCITY = 0.8;
+			MAX_ANGULAR_VELOCITY = 0.75,
+			MAX_LINEAR_VELOCITY = 0.75;
 
 	
 	//*****************//
@@ -25,8 +25,8 @@ public class DriveConstants {
 	//*****************//
 	public static class SwerveSpeeds {
 		public static final double 
-			SPEED_MULT = 1.0,
-			ANGULAR_SPEED_MULT = 1.0,
+			SPEED_MULT = 0.75,
+			ANGULAR_SPEED_MULT = 0.75,
 			NUDGE_MOVE_SPEED = 0.2,
 			NUDGE_TURN_SPEED = 0.2;
 	}
@@ -37,9 +37,9 @@ public class DriveConstants {
 	//**************************//
 	public static class ActualRobot {
 		public static final boolean[]
-			TURN_INVERTED = new boolean[] { false, false, false, false },
-			DRIVE_INVERTED = new boolean[] { false, false, false, false },
-			ENCODER_REVERSED = new boolean[] { false, false, false, false };
+			TURN_INVERTED = new boolean[] { true, true, true, true },
+			DRIVE_INVERTED = new boolean[] { true, false, true, true },
+			ENCODER_REVERSED = new boolean[] { true, true, true, true };
 	
 		public static final double[] 
 			X_OFF = new double[] { -29.25/2.0, 29.25/2.0 , 29.25/2.0 , -29.25/2.0 }, //27.5 along y, 29.25 along x
@@ -50,7 +50,7 @@ public class DriveConstants {
 			ROTATION_D = new double[] { 0, 0, 0, 0 };
 
 		public static final int[] 
-			OFFSETS = new int[] { 75, 2269, 3056, 1252 },
+			OFFSETS = new int[] { 1588, 1186, 3163, 163},
 			
 			ROTATION_IZONE = new int[] { 500, 500, 500, 500 },
 			ROTATION_TOLERANCE = new int[] { 3, 3, 3, 3 };
