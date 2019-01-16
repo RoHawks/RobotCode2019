@@ -344,9 +344,6 @@ public class Robot extends SampleRobot {
 		mHatchLinearPiston = new DoubleSolenoidReal(Ports.ActualRobot.HATCH_LINEAR_SOLENOID_IN,
 				Ports.ActualRobot.HATCH_LINEAR_SOLENOID_OUT);
 
-		mHatchCamera = new Limelight();
-		mHatchCamera.setPipeline(0);
-
 		mHatchIntake = new HatchIntake(mHatchRotaryPiston, mHatchLinearPiston, mJoystick);
 	}
 
@@ -365,15 +362,14 @@ public class Robot extends SampleRobot {
 		mLeadscrewTalon.configAllowableClosedloopError(0, LeadscrewConstants.PID.LEADSCREW_TOLERANCE, 10);
 
 		mLeadscrewEncoder = new LeadscrewEncoder(mLeadscrewTalon, LeadscrewConstants.OFFSET);
+		
+		mHatchCamera = new Limelight();
+		mHatchCamera.setPipeline(1);
 
 		mLeadscrew = new Leadscrew(mLeadscrewTalon, mLeadscrewEncoder, mHatchCamera, mJoystick);
+		
 	}
 
-<<<<<<< HEAD
-		mHatchCamera = new Limelight();
-		mHatchCamera.setPipeline(CameraConstants.LimelightConstants.PIPELINE);
-=======
->>>>>>> 3a475c6c639caafe6353af3f0ef8b6491c96c039
 
 
 

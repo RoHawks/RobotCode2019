@@ -15,10 +15,10 @@ public class LeadscrewConstants {
         PITCH = 12.0, 
         LENGTH = 14.875, 
         SOFT_LIMIT = 3, 
-        LEADSCREW_CAMERA_TOLERANCE = 0.25; // inches
+        LEADSCREW_CAMERA_TOLERANCE = 0.1; // inches
 
     public static final int 
-        OFFSET = -23002;
+        OFFSET = 0;
 
     public static final boolean 
         ENCODER_REVERSED = true, 
@@ -35,7 +35,7 @@ public class LeadscrewConstants {
             LEADSCREW_D = 0.0001;
 
         public static final int 
-            LEADSCREW_TOLERANCE = 0, 
+            LEADSCREW_TOLERANCE = 500, 
             LEADSCREW_IZONE = 1000;
     }
 }

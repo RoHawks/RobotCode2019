@@ -6,7 +6,7 @@ public class RunConstants {
 		RUNNING_HATCH = true,
 		RUNNING_LEADSCREW = true,
 		RUNNING_PNEUMATICS = false,
-		RUNNING_CAMERA = false,
+		RUNNING_CAMERA = true,
 		SECONDARY_JOYSTICK = true,
 		IS_PROTOTYPE = false,
 		
