@@ -7,8 +7,6 @@
 
 package robotcode.camera;
 
-import edu.wpi.first.networktables.NetworkTableInstance;
-
 public abstract class VisionCamera {
   
     private Double mFOV = null;

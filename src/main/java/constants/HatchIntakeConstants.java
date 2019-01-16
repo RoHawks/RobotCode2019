@@ -25,6 +25,7 @@ public class HatchIntakeConstants {
             CLOSE = Value.kReverse;
     }
 
+<<<<<<< HEAD
     public static class LeadScrew {
 
         public static final double 
@@ -57,4 +58,6 @@ public class HatchIntakeConstants {
 
     }
 
+=======
+>>>>>>> 3a475c6c639caafe6353af3f0ef8b6491c96c039
 }
