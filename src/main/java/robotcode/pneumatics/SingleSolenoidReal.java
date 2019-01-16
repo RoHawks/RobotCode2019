@@ -13,24 +13,15 @@ public class SingleSolenoidReal {
 
 	public void set(Value pDirection) {
 		// forward maps to true, backward maps to false
-		if(RunConstants.RUNNING_PNEUMATICS){
-			mSingleSolenoid.set(pDirection == Value.kForward);
-		}
+		mSingleSolenoid.set(pDirection == Value.kForward);
 	}
 
 	public Value get() {
-		if(RunConstants.RUNNING_PNEUMATICS){
-			return mSingleSolenoid.get() ? Value.kForward : Value.kReverse;
-		}
-		else{
-			return Value.kOff;
-		}
+		return mSingleSolenoid.get() ? Value.kForward : Value.kReverse;
 	}
 
 	public void setOpposite() {
-		if(RunConstants.RUNNING_PNEUMATICS){
-			this.set(this.get().equals(Value.kForward) ? Value.kReverse : Value.kForward);
-		}
+		this.set(this.get().equals(Value.kForward) ? Value.kReverse : Value.kForward);
 	}
 
 }

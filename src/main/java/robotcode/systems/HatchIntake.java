@@ -109,7 +109,7 @@ public class HatchIntake {
         }
 
         if (mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
-            //zero();
+          zero();
         }
         
         switch (mLeadscrewState) {
@@ -213,6 +213,14 @@ public class HatchIntake {
         SmartDashboard.putNumber("Leadscrew error", mLeadscrew.getClosedLoopError());
     }
 
+    public void centerWithCameraWithOffset() {
+        double error = mHatchCamera.xAngleToDistance(0);
+        double goal = (HatchIntakeConstants.LeadScrew.LENGTH / 2) - error;
+        SmartDashboard.putNumber("Distance from Camera", goal - mEncoder.getDistanceInInchesFromEnd());
+        if(Math.abs(goal - mEncoder.getDistanceInInchesFromEnd()) > HatchIntakeConstants.LeadScrew.LEADSCREW_CAMERA_TOLERANCE){
+            setPosition(goal);
+        } 
+    }
 
     public void zeroWithOffset(){
         mLeadscrew.setSelectedSensorPosition(HatchIntakeConstants.LeadScrew.OFFSET);

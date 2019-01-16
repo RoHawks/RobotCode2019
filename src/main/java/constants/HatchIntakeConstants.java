@@ -29,19 +29,19 @@ public class HatchIntakeConstants {
 
         public static final double 
             PITCH = 12.0,
-            LENGTH = 14.875,
+            LENGTH = 14.75,
             SOFT_LIMIT = 3,
             LEADSCREW_CAMERA_TOLERANCE = 0.25; // inches
 
         public static final int 
-            OFFSET = -23002;
+            OFFSET = 0;
 
         public static final boolean
             ENCODER_REVERSED = true,
             REVERSED = false;
 
         public static final double 
-            LOADING_STATION = LENGTH / 2;
+            LOADING_STATION = 5;
 
         public static class PID {
 
@@ -51,7 +51,7 @@ public class HatchIntakeConstants {
                 LEADSCREW_D = 0.0001;
 
             public static final int 
-                LEADSCREW_TOLERANCE = 0, 
+                LEADSCREW_TOLERANCE = 500, 
                 LEADSCREW_IZONE = 1000;
         }
 

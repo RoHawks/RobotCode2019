@@ -204,6 +204,7 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putBoolean("Reverse Limit Switch Closed",
 						mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
 				SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
+				SmartDashboard.putNumber("leadscrew cooked ticks", mLeadscrewEncoder.getTicksFromEnd());
 				SmartDashboard.putNumber("Leadscrew inches", mLeadscrewEncoder.getDistanceInInchesFromEnd());
 				SmartDashboard.putNumber("Limelight angle",
 						NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0));
@@ -391,7 +392,7 @@ public class Robot extends SampleRobot {
 				Ports.ActualRobot.HATCH_LINEAR_SOLENOID_OUT);
 
 		mHatchCamera = new Limelight();
-		mHatchCamera.setPipeline(0);
+		mHatchCamera.setPipeline(CameraConstants.LimelightConstants.PIPELINE);
 
 		mHatchIntake = new HatchIntake(mHatchRotaryPiston, mLeadscrewTalon, mLeadscrewEncoder, mHatchLinearPiston,
 				mHatchCamera, mJoystick);
