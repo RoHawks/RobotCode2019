@@ -40,9 +40,9 @@ public class HatchIntake {
         mJoystick = pJoystick;
     }
 
-    private enum HatchIntakeState {
-        MANUAL, //combine these into intake class? name for intake class? states for hatchintake
-    }
+    // private enum HatchIntakeState {
+    //     MANUAL, //combine these into intake class? name for intake class? states for hatchintake
+    // }
 
     // **************//
     // ROTARY PISTON //
