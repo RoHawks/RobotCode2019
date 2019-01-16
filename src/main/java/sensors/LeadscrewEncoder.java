@@ -8,7 +8,7 @@
 package sensors;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import constants.HatchIntakeConstants;
+import constants.LeadscrewConstants;
 
 public class LeadscrewEncoder {
 
@@ -28,26 +28,52 @@ public class LeadscrewEncoder {
     // RESOURCE //
     // **********//
 
+    /**
+     * converts tick unit into inches
+     * @param pTick length in ticks
+     * @return the equivalent length in inches
+     */
     public static double leadscrewTickToInch(double pTick) {
-        return 1 / (HatchIntakeConstants.LeadScrew.PITCH * 4096) * pTick;
+        return 1 / (LeadscrewConstants.PITCH * 4096) * pTick;
     }
 
+    /**
+     * converts inch lengths to ticks
+     * @param pInch length in inches
+     * @return equivalent length in ticks
+     */
     public static double leadscrewInchToTick(double pInch) {
-        return HatchIntakeConstants.LeadScrew.PITCH * 4096 * pInch;
+        return LeadscrewConstants.PITCH * 4096 * pInch;
     }
+
+
+
+
 
     // ***********//
     // MEASUREMENT //
     // ***********//
 
+    /**
+     * 
+     * @return the value of the leadscrew encoder at the current position
+     */
     public int getRawTicks() {
         return mTalon.getSelectedSensorPosition(0);
     }
 
+    /**
+     * 
+     * @return the number of ticks from the end of the leadscrew (wherever it was zeroed)
+     */
     public int getTicksFromEnd() {
         return getRawTicks() - mOffset;
     }
 
+    /**
+     * 
+     * @return the distance from the end of the leadscrew (where it was zeroed) in inches
+     */
     public double getDistanceInInchesFromEnd() {
         return leadscrewTickToInch(getTicksFromEnd());
     }
