@@ -88,12 +88,12 @@ public class HatchIntake {
 
     public void enactMovement() {
         // rotary piston
-        if (mJoystick.getRawButton(JoystickConstants.HatchIntakeButtons.EXPAND_CONTRACT)) {
+        if (mJoystick.getRawButtonReleased(JoystickConstants.HatchIntakeButtons.EXPAND_CONTRACT)) {
             setRotaryOpposite();
         }
 
         // linear piston
-        if (mJoystick.getRawButton(JoystickConstants.HatchIntakeButtons.IN_OUT)) {
+        if (mJoystick.getRawButtonReleased(JoystickConstants.HatchIntakeButtons.IN_OUT)) {
             setLinearOpposite();
         }
     }

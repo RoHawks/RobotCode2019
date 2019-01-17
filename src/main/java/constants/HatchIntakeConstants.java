@@ -14,8 +14,8 @@ public class HatchIntakeConstants {
     public static class RotaryPiston {
 
         public static final 
-            Value OPEN = Value.kForward,
-            CLOSE = Value.kReverse;
+            Value OPEN = Value.kReverse,
+            CLOSE = Value.kForward;
 
     }
 

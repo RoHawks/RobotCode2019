@@ -158,8 +158,7 @@ public class Leadscrew {
     // ***** WITH OFFSET *****//
     /**
      * sets position of leadscrew using talon's pid (requires an absolute encoder),
-     * halves P constant if close to end 0 is right,
-     * 'HatchConstants.Leadscrew.LENGTH' is left
+     * halves P constant if close to end 0 is right, 'HatchConstants.Leadscrew.LENGTH' is left
      * 
      * @param pInchMeasurement how far from the right edge the intake should move
      */
@@ -184,6 +183,21 @@ public class Leadscrew {
     }
 
 
+
+    // ********//
+    // GETTERS //
+    // ********//
+    public WPI_TalonSRX getTalon() {
+        return mLeadscrew;
+    }
+
+    public LeadscrewState getLeadscrewState() {
+        return mLeadscrewState;
+    }
+
+    public LeadscrewEncoder getLeadscrewEncoder() {
+        return mEncoder;
+    }
     
     // ****** //
     // CAMERA //

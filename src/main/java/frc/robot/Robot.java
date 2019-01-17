@@ -33,6 +33,7 @@ import robotcode.driving.*;
 import robotcode.pneumatics.*;
 import robotcode.camera.*;
 import robotcode.systems.HatchIntake;
+import robotcode.systems.Intake;
 import robotcode.systems.Leadscrew;
 import sensors.LeadscrewEncoder;
 import sensors.RobotAngle;
@@ -72,6 +73,9 @@ public class Robot extends SampleRobot {
 
 	// limelight
 	private Limelight mHatchCamera;
+
+	// intake
+	private Intake mIntake;
 
 	// PDP and compressor
 	private PowerDistributionPanel mPDP;
@@ -143,6 +147,10 @@ public class Robot extends SampleRobot {
 			camera.setFPS(30);
 		}
 
+		if (RunConstants.RUNNING_LEADSCREW && RunConstants.RUNNING_HATCH) {
+			intakeInit();
+		}
+
 		mCompressor = new Compressor(Ports.COMPRESSOR);
 	}
 
@@ -184,6 +192,7 @@ public class Robot extends SampleRobot {
 		}
 	}
 
+	private boolean done_intaking = true;
 	public void operatorControl() {
 		// start game, again
 		startGame();
@@ -194,11 +203,11 @@ public class Robot extends SampleRobot {
 			}
 
 			if (RunConstants.RUNNING_HATCH) {
-				mHatchIntake.enactMovement();
+				//mHatchIntake.enactMovement();
 			}
 
-			if (RunConstants.RUNNING_LEADSCREW) {
-				mLeadscrew.enactMovement();
+			if (RunConstants.RUNNING_LEADSCREW) { // test this then test intake.intake() lol
+				//mLeadscrew.enactMovement();
 				SmartDashboard.putBoolean("Forward Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());
 				SmartDashboard.putBoolean("Reverse Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
 				SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
@@ -210,6 +219,15 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putNumber("Leadscrew motor goal inches", LeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getClosedLoopTarget()));
 				SmartDashboard.putNumber("Leadscrew motor output", mLeadscrewTalon.getMotorOutputPercent());
 				SmartDashboard.putNumber("Leadscrew error", mLeadscrewTalon.getClosedLoopError());
+			}
+
+			if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW){
+				if(!done_intaking || mJoystick.getRawButtonReleased(8)){
+					SmartDashboard.putNumber("INTAKING STEP", 7);
+					done_intaking = mIntake.intakePanel();
+					SmartDashboard.putBoolean("done intaking", done_intaking);
+					SmartDashboard.putNumber("thing going on", System.currentTimeMillis());
+				}
 			}
 
 			if (RunConstants.RUNNING_EVERYTHING) {
@@ -368,6 +386,10 @@ public class Robot extends SampleRobot {
 
 		mLeadscrew = new Leadscrew(mLeadscrewTalon, mLeadscrewEncoder, mHatchCamera, mJoystick);
 		
+	}
+
+	public void intakeInit() {
+		mIntake = new Intake(mHatchIntake, mLeadscrew);
 	}
 
 
