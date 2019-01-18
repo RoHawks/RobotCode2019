@@ -3,9 +3,9 @@ package constants;
 public class RunConstants {
 	public static boolean
 		RUNNING_DRIVE = true,
-		RUNNING_HATCH = true,
 		RUNNING_LEADSCREW = true,
 		RUNNING_PNEUMATICS = true,
+		RUNNING_HATCH = RUNNING_PNEUMATICS && true,
 		RUNNING_CAMERA = true,
 		SECONDARY_JOYSTICK = true,
 		IS_PROTOTYPE = false,

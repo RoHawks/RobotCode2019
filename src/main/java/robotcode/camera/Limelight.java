@@ -11,7 +11,7 @@ import constants.CameraConstants;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
-public class Limelight extends VisionCamera {
+public class Limelight {
 
     private double mFOV = 59.6; // degrees
 
@@ -34,14 +34,13 @@ public class Limelight extends VisionCamera {
     // ********* //
     // DISTANCES //
     // ********* //
-    public double xAngleToDistance(double angle) {
+    public double xAngleToDistance() {
         return (CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(getDoubleFromNetworkTable("tx"))));
     }
 
-    public double yAngleToDistance(double angle) {
+    public double yAngleToDistance() {
         return (CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(getDoubleFromNetworkTable("ty"))));
     }
-
 
 
     // ************ //

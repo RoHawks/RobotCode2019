@@ -37,8 +37,6 @@ public class Leadscrew {
     // camera
     private Limelight mHatchCamera;
 
-
-
     // ***********//
     // INITIALIZE //
     // ***********//
@@ -116,7 +114,6 @@ public class Leadscrew {
         mLeadscrew.set(ControlMode.PercentOutput, speed);
     }
 
-    // ***** WITHOUT OFFSET (with zero) *****//
     /**
      * sets position of leadscrew using talon's pid, halves P constant if close to
      * end 0 is right, 'HatchConstants.Leadscrew.LENGTH' is left
@@ -140,7 +137,7 @@ public class Leadscrew {
      * dimension
      */
     public void centerWithCamera() {
-        double error = mHatchCamera.xAngleToDistance(0);
+        double error = mHatchCamera.xAngleToDistance();
         double goal = (LeadscrewConstants.LENGTH / 2) - error;
         SmartDashboard.putNumber("Distance from Camera", goal - mEncoder.getDistanceInInchesFromEnd());
         if (Math.abs(goal - mEncoder.getDistanceInInchesFromEnd()) > LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
@@ -155,33 +152,14 @@ public class Leadscrew {
         mLeadscrew.setSelectedSensorPosition(0);
     }
 
-    // ***** WITH OFFSET *****//
-    /**
-     * sets position of leadscrew using talon's pid (requires an absolute encoder),
-     * halves P constant if close to end 0 is right, 'HatchConstants.Leadscrew.LENGTH' is left
-     * 
-     * @param pInchMeasurement how far from the right edge the intake should move
-     */
-    public void setPositionWithOffset(double pInchMeasurement) {
-        double goal = LeadscrewEncoder.leadscrewInchToTick(pInchMeasurement) + LeadscrewConstants.OFFSET;
-
-        if (getInSoftLimit()) { /*** SLOW IT DOWN IF CLOSE TO END ***/
-            mLeadscrew.config_kP(0, LeadscrewConstants.PID.LEADSCREW_P / 2, 10);
-        } else {
-            mLeadscrew.config_kP(0, LeadscrewConstants.PID.LEADSCREW_P, 10);
+    public void leadscrewInitialZero() {
+        while (!mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
+            mLeadscrew.set(ControlMode.PercentOutput, getInSoftLimit() ? -0.2 : -0.7);
         }
-
-        mLeadscrew.set(ControlMode.Position, goal);
+        
+        mLeadscrew.set(ControlMode.PercentOutput, 0);
+        zero();
     }
-
-    /**
-     * sets the current position of the leadscrew to be offset use this with
-     * absolute encoder and 'setPositionWithOffset'
-     */
-    public void zeroWithOffset() {
-        mLeadscrew.setSelectedSensorPosition(LeadscrewConstants.OFFSET);
-    }
-
 
 
     // ********//

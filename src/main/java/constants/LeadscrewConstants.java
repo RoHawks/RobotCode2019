@@ -17,9 +17,6 @@ public class LeadscrewConstants {
         SOFT_LIMIT = 3, 
         LEADSCREW_CAMERA_TOLERANCE = 0.1; // inches
 
-    public static final int 
-        OFFSET = 0;
-
     public static final boolean 
         ENCODER_REVERSED = true, 
         REVERSED = false;

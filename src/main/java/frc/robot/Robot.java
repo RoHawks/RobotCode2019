@@ -57,7 +57,7 @@ public class Robot extends SampleRobot {
 	private WPI_TalonSRX[] mDrive = new WPI_TalonSRX[4];
 	private TalonAbsoluteEncoder[] mEncoder = new TalonAbsoluteEncoder[4];
 
-	// gyro
+	// gyro`
 	private AHRS mNavX;
 	private RobotAngle mRobotAngle;
 
@@ -111,9 +111,11 @@ public class Robot extends SampleRobot {
 
 			if (RunConstants.RUNNING_PNEUMATICS) {
 				mCompressor.start();
-			} else {
-				mCompressor.stop();
 			}
+
+			mHatchIntake.contract();
+
+			mLeadscrew.leadscrewInitialZero();
 
 			mInGame = true;
 		}
@@ -223,11 +225,20 @@ public class Robot extends SampleRobot {
 
 			if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW){
 				if(!done_intaking || mJoystick.getRawButtonReleased(8)){
-					SmartDashboard.putNumber("INTAKING STEP", 7);
 					done_intaking = mIntake.intakePanel();
 					SmartDashboard.putBoolean("done intaking", done_intaking);
-					SmartDashboard.putNumber("thing going on", System.currentTimeMillis());
+					SmartDashboard.putNumber("current time", System.currentTimeMillis());
 				}
+				else if(Math.abs(mJoystick.getX()) > 0.25){
+					mLeadscrew.setSpeed(mJoystick.getX());
+				}
+				else{
+					mLeadscrew.setSpeed(0);
+				}
+			}
+
+			if(mJoystick.getRawButton(10)){
+				mHatchIntake.contract();
 			}
 
 			if (RunConstants.RUNNING_EVERYTHING) {
@@ -263,7 +274,6 @@ public class Robot extends SampleRobot {
 	}
 
 	public void disabled() {
-		endGame();
 
 		while (this.isDisabled()) {
 			if (RunConstants.SECONDARY_JOYSTICK) {
@@ -282,9 +292,6 @@ public class Robot extends SampleRobot {
 		// SmartDashboard.putString("AUTO ROUTINE:", mAutonomousRoutine.toString());
 		Timer.delay(0.005); // wait for a motor update time
 	}
-
-
-
 
 
 	// ***************//
@@ -379,7 +386,7 @@ public class Robot extends SampleRobot {
 		mLeadscrewTalon.config_IntegralZone(0, LeadscrewConstants.PID.LEADSCREW_IZONE, 10);
 		mLeadscrewTalon.configAllowableClosedloopError(0, LeadscrewConstants.PID.LEADSCREW_TOLERANCE, 10);
 
-		mLeadscrewEncoder = new LeadscrewEncoder(mLeadscrewTalon, LeadscrewConstants.OFFSET);
+		mLeadscrewEncoder = new LeadscrewEncoder(mLeadscrewTalon);
 		
 		mHatchCamera = new Limelight();
 		mHatchCamera.setPipeline(1);
@@ -389,11 +396,8 @@ public class Robot extends SampleRobot {
 	}
 
 	public void intakeInit() {
-		mIntake = new Intake(mHatchIntake, mLeadscrew);
+		mIntake = new Intake(mHatchIntake, mLeadscrew, mHatchCamera);
 	}
-
-
-
 
 
 	// ******//
@@ -420,9 +424,6 @@ public class Robot extends SampleRobot {
 	public DriveTrain getDriveTrain() {
 		return mDriveTrain;
 	}
-
-
-
 
 
 	// ********//

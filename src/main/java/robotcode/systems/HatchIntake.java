@@ -28,8 +28,6 @@ public class HatchIntake {
         mRotaryPiston,
         mLinearPiston;
 
-
-
     // ***********//
     // INITIALIZE //
     // ***********//
@@ -48,42 +46,30 @@ public class HatchIntake {
     // ROTARY PISTON //
     // **************//
     public void expand() {
-        if (RunConstants.RUNNING_PNEUMATICS) {
-            mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.OPEN);
-        }
+        mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.OPEN);
     }
 
     public void contract() {
-        if (RunConstants.RUNNING_PNEUMATICS) {
-            mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.CLOSE);
-        }
+        mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.CLOSE);
     }
 
     public void setRotaryOpposite() {
-        if (RunConstants.RUNNING_PNEUMATICS) {
-            mRotaryPiston.setOpposite();
-        }
+        mRotaryPiston.setOpposite();
     }
 
     // **************//
     // LINEAR PISTON //
     // **************//
     public void in() {
-        if (RunConstants.RUNNING_PNEUMATICS) {
-            mLinearPiston.set(HatchIntakeConstants.LinearPiston.CLOSE);
-        }
+        mLinearPiston.set(HatchIntakeConstants.LinearPiston.CLOSE);
     }
 
     public void out() {
-        if (RunConstants.RUNNING_PNEUMATICS) {
-            mLinearPiston.set(HatchIntakeConstants.LinearPiston.OPEN);
-        }
+        mLinearPiston.set(HatchIntakeConstants.LinearPiston.OPEN);
     }
 
     public void setLinearOpposite() {
-        if (RunConstants.RUNNING_PNEUMATICS) {
             mLinearPiston.setOpposite();
-        }
     }
 
     public void enactMovement() {

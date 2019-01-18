@@ -13,15 +13,9 @@ import constants.LeadscrewConstants;
 public class LeadscrewEncoder {
 
     private WPI_TalonSRX mTalon;
-    private int mOffset;
 
-    public LeadscrewEncoder(WPI_TalonSRX pTalon, int pOffset) {
+    public LeadscrewEncoder(WPI_TalonSRX pTalon) {
         mTalon = pTalon;
-        mOffset = pOffset;
-    }
-
-    public int getOffset() {
-        return mOffset;
     }
 
     // **********//
@@ -47,9 +41,6 @@ public class LeadscrewEncoder {
     }
 
 
-
-
-
     // ***********//
     // MEASUREMENT //
     // ***********//
@@ -67,7 +58,7 @@ public class LeadscrewEncoder {
      * @return the number of ticks from the end of the leadscrew (wherever it was zeroed)
      */
     public int getTicksFromEnd() {
-        return getRawTicks() - mOffset;
+        return getRawTicks();
     }
 
     /**
