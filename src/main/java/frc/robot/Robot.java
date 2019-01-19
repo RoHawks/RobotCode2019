@@ -21,6 +21,7 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
@@ -32,6 +33,7 @@ import resource.ResourceFunctions;
 import robotcode.driving.*;
 import robotcode.pneumatics.*;
 import robotcode.camera.*;
+import robotcode.systems.BallIntake;
 import robotcode.systems.HatchIntake;
 import robotcode.systems.Intake;
 import robotcode.systems.Leadscrew;
@@ -65,6 +67,10 @@ public class Robot extends SampleRobot {
 	private HatchIntake mHatchIntake;
 	private DoubleSolenoidReal mHatchRotaryPiston;
 	private DoubleSolenoidReal mHatchLinearPiston;
+
+	// ball intake
+	private BallIntake mBallIntake;
+	private DoubleSolenoidReal mLeftBallPiston, mRightBallPiston;
 
 	// leadscrew
 	private WPI_TalonSRX mLeadscrewTalon;
@@ -113,9 +119,12 @@ public class Robot extends SampleRobot {
 				mCompressor.start();
 			}
 
-			mHatchIntake.contract();
+			if (RunConstants.RUNNING_HATCH){
+				mHatchIntake.contract();
+			}
 
 			mLeadscrew.leadscrewInitialZero();
+			mLeadscrew.setPosition(LeadscrewConstants.LENGTH/2);
 
 			mInGame = true;
 		}
@@ -141,6 +150,10 @@ public class Robot extends SampleRobot {
 
 		if (RunConstants.RUNNING_LEADSCREW) {
 			leadscrewInit();
+		}
+
+		if (RunConstants.RUNNING_BALL){
+			ballInit();
 		}
 
 		if (RunConstants.RUNNING_CAMERA) {
@@ -204,12 +217,12 @@ public class Robot extends SampleRobot {
 				swerveDrive();
 			}
 
-			if (RunConstants.RUNNING_HATCH) {
-				//mHatchIntake.enactMovement();
+			if (RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_LEADSCREW) {
+				mHatchIntake.enactMovement();
 			}
 
-			if (RunConstants.RUNNING_LEADSCREW) { // test this then test intake.intake() lol
-				//mLeadscrew.enactMovement();
+			if (RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_HATCH) { // test this then test intake.intake() lol
+				mLeadscrew.enactMovement();
 				SmartDashboard.putBoolean("Forward Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());
 				SmartDashboard.putBoolean("Reverse Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
 				SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
@@ -221,6 +234,10 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putNumber("Leadscrew motor goal inches", LeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getClosedLoopTarget()));
 				SmartDashboard.putNumber("Leadscrew motor output", mLeadscrewTalon.getMotorOutputPercent());
 				SmartDashboard.putNumber("Leadscrew error", mLeadscrewTalon.getClosedLoopError());
+			}
+			
+			if (RunConstants.RUNNING_BALL) {
+				//DO STUFF
 			}
 
 			if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW){
@@ -356,6 +373,12 @@ public class Robot extends SampleRobot {
 				Ports.ActualRobot.HATCH_LINEAR_SOLENOID_OUT);
 
 		mHatchIntake = new HatchIntake(mHatchRotaryPiston, mHatchLinearPiston, mJoystick);
+	}
+
+	public void ballInit() {
+		mLeftBallPiston = new DoubleSolenoidReal(Ports.ActualRobot.BALL_LEFT_SOLENOID_IN, Ports.ActualRobot.BALL_LEFT_SOLENOID_OUT);
+		mRightBallPiston = new DoubleSolenoidReal(Ports.ActualRobot.BALL_RIGHT_SOLENOID_IN, Ports.ActualRobot.BALL_RIGHT_SOLENOID_OUT);
+		mBallIntake = new BallIntake(mLeftBallPiston, mRightBallPiston);
 	}
 
 	public void leadscrewInit() {

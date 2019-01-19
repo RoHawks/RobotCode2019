@@ -163,7 +163,6 @@ public class Leadscrew {
         while (!mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
             mLeadscrew.set(ControlMode.PercentOutput, getInSoftLimit() ? -0.2 : -0.7);
         }
-        
         mLeadscrew.set(ControlMode.PercentOutput, 0);
         zero();
     }

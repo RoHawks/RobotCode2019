@@ -2,10 +2,11 @@ package constants;
 
 public class RunConstants {
 	public static boolean
-		RUNNING_DRIVE = false,
+		RUNNING_DRIVE = true,
 		RUNNING_LEADSCREW = true,
-		RUNNING_PNEUMATICS = true,
+		RUNNING_PNEUMATICS = false,
 		RUNNING_HATCH = RUNNING_PNEUMATICS && true,
+		RUNNING_BALL = RUNNING_PNEUMATICS && true,
 		RUNNING_CAMERA = true,
 		SECONDARY_JOYSTICK = true,
 		IS_PROTOTYPE = false,
