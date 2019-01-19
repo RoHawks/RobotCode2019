@@ -224,21 +224,7 @@ public class Robot extends SampleRobot {
 			}
 
 			if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW){
-				if(!done_intaking || mJoystick.getRawButtonReleased(8)){
-					done_intaking = mIntake.intakePanel();
-					SmartDashboard.putBoolean("done intaking", done_intaking);
-					SmartDashboard.putNumber("current time", System.currentTimeMillis());
-				}
-				else if(Math.abs(mJoystick.getX()) > 0.25){
-					mLeadscrew.setSpeed(mJoystick.getX());
-				}
-				else{
-					mLeadscrew.setSpeed(0);
-				}
-			}
-
-			if(mJoystick.getRawButton(10)){
-				mHatchIntake.contract();
+				mIntake.enactMovement();
 			}
 
 			if (RunConstants.RUNNING_EVERYTHING) {
@@ -396,7 +382,7 @@ public class Robot extends SampleRobot {
 	}
 
 	public void intakeInit() {
-		mIntake = new Intake(mHatchIntake, mLeadscrew, mHatchCamera);
+		mIntake = new Intake(mHatchIntake, mLeadscrew, mHatchCamera, mJoystick);
 	}
 
 

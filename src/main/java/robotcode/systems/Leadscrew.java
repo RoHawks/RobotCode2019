@@ -37,6 +37,7 @@ public class Leadscrew {
     // camera
     private Limelight mHatchCamera;
 
+    
     // ***********//
     // INITIALIZE //
     // ***********//
@@ -55,9 +56,13 @@ public class Leadscrew {
 
 
 
-    // ***********//
-    // LEAD SCREW //
-    // ***********//
+    // *********//
+    // DO STUFF //
+    // *********//
+    
+    /**
+     * Control of ONLY leadscrew -- manual, camera align, or fixed loading station distance
+     */
     public void enactMovement() {
 
         // change states
@@ -101,8 +106,7 @@ public class Leadscrew {
     }
 
     /**
-     * sets raw speed of leadscrew, halves speed if close to end + is left, - is
-     * right
+     * sets raw speed of leadscrew, halves speed if close to end + is left, - is right
      * 
      * @param pSpeed percent output of motor
      */
@@ -115,7 +119,7 @@ public class Leadscrew {
     }
 
     /**
-     * sets position of leadscrew using talon's pid, halves P constant if close to
+     * sets position of leadscrew using talon's pid, halves P constant if close to 
      * end 0 is right, 'HatchConstants.Leadscrew.LENGTH' is left
      * 
      * @param pInchMeasurement how far from the right edge the intake should move
@@ -152,6 +156,9 @@ public class Leadscrew {
         mLeadscrew.setSelectedSensorPosition(0);
     }
 
+    /**
+     * when the robot starts up, drive the leadscrew to the end that zeroes it and set to zero
+     */
     public void leadscrewInitialZero() {
         while (!mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
             mLeadscrew.set(ControlMode.PercentOutput, getInSoftLimit() ? -0.2 : -0.7);
@@ -177,9 +184,4 @@ public class Leadscrew {
         return mEncoder;
     }
     
-    // ****** //
-    // CAMERA //
-    // ****** //
-
-    // to be implement if necessary/wanted
 }
