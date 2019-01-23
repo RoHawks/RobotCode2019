@@ -9,8 +9,8 @@ package robotcode.systems;
 
 import constants.JoystickConstants;
 import constants.LeadscrewConstants;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import robotcode.LocalJoystick;
 import robotcode.camera.Limelight;
 
 
@@ -22,7 +22,7 @@ public class Intake {
     private HatchIntake mHatchIntake;
     private Leadscrew mLeadscrew;
     private Limelight mLimelight;
-    private Joystick mJoystick;
+    private LocalJoystick mJoystick;
 
     private IntakeState mIntakeState;
 
@@ -30,7 +30,7 @@ public class Intake {
     // INITIALIZE //
     // ***********//
 
-    public Intake(HatchIntake pHatchIntake, Leadscrew pLeadscrew, Limelight pLimelight, Joystick pJoystick) {
+    public Intake(HatchIntake pHatchIntake, Leadscrew pLeadscrew, Limelight pLimelight, LocalJoystick pJoystick) {
         mHatchIntake = pHatchIntake;
         mLeadscrew = pLeadscrew;
         mLimelight = pLimelight;
@@ -49,8 +49,6 @@ public class Intake {
     // *********//
     private boolean mDoneIntakingHatch = true;
     private boolean mDoneScoringHatch = true;
-    private boolean mDoneIntakingBall = true;
-    private boolean mDoneScoringBall = true;
     public void enactMovement() {
         if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.INTAKE_HATCH)) {
             mIntakeState = IntakeState.HATCH_INTAKE;

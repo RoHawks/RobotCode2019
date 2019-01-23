@@ -16,6 +16,7 @@ import constants.LeadscrewConstants;
 import constants.Ports;
 import constants.RunConstants;
 import constants.RobotState;
+import constants.BallIntakeConstants;
 import constants.CameraConstants;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.networktables.*;
@@ -32,6 +33,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import resource.ResourceFunctions;
 import robotcode.driving.*;
 import robotcode.pneumatics.*;
+import robotcode.LocalJoystick;
 import robotcode.camera.*;
 import robotcode.systems.BallIntake;
 import robotcode.systems.HatchIntake;
@@ -50,7 +52,7 @@ public class Robot extends SampleRobot {
 
 	// controllers
 	private XboxController mController;
-	private Joystick mJoystick;
+	private LocalJoystick mJoystick;
 
 	// drive train
 	private DriveTrain mDriveTrain;
@@ -70,7 +72,7 @@ public class Robot extends SampleRobot {
 
 	// ball intake
 	private BallIntake mBallIntake;
-	private DoubleSolenoidReal mLeftBallPiston, mRightBallPiston;
+	private WPI_TalonSRX mBallHolder;
 
 	// leadscrew
 	private WPI_TalonSRX mLeadscrewTalon;
@@ -141,7 +143,7 @@ public class Robot extends SampleRobot {
 		}
 
 		if (RunConstants.SECONDARY_JOYSTICK) {
-			mJoystick = new Joystick(Ports.JOYSTICK);
+			mJoystick = new LocalJoystick(Ports.JOYSTICK);
 		}
 
 		if (RunConstants.RUNNING_HATCH) {
@@ -207,7 +209,7 @@ public class Robot extends SampleRobot {
 		}
 	}
 
-	private boolean done_intaking = true;
+	
 	public void operatorControl() {
 		// start game, again
 		startGame();
@@ -237,7 +239,9 @@ public class Robot extends SampleRobot {
 			}
 			
 			if (RunConstants.RUNNING_BALL) {
-				//DO STUFF
+				SmartDashboard.putNumber("Ball Holder Raw Ticks", mBallHolder.getSelectedSensorPosition());
+				SmartDashboard.putNumber("Ball Holder Cooked Ticks", mBallHolder.getSelectedSensorPosition() + BallIntakeConstants.HOLDER_OFFSET);
+				mBallIntake.enactMovement();
 			}
 
 			if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW){
@@ -255,6 +259,11 @@ public class Robot extends SampleRobot {
 					SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].getMotorOutputPercent());
 				}
 			}
+
+			mJoystick.updateProfile();
+			SmartDashboard.putNumber("JOYSTICK PROFILE NUMBER", mJoystick.getProfile());
+			SmartDashboard.putString("JOYSTICK PROFILE", (mJoystick.getProfile() == 0) ? "HATCH/LEADSCREW" : "BALL");
+			SmartDashboard.putBoolean("BUTTON 21 XD", mJoystick.getRawButton(21));
 
 			Timer.delay(0.005); // wait for a motor update time
 		}
@@ -376,9 +385,20 @@ public class Robot extends SampleRobot {
 	}
 
 	public void ballInit() {
-		mLeftBallPiston = new DoubleSolenoidReal(Ports.ActualRobot.BALL_LEFT_SOLENOID_IN, Ports.ActualRobot.BALL_LEFT_SOLENOID_OUT);
-		mRightBallPiston = new DoubleSolenoidReal(Ports.ActualRobot.BALL_RIGHT_SOLENOID_IN, Ports.ActualRobot.BALL_RIGHT_SOLENOID_OUT);
-		mBallIntake = new BallIntake(mLeftBallPiston, mRightBallPiston);
+		mBallHolder = new WPI_TalonSRX(Ports.ActualRobot.BALL_HOLDER);
+		
+		mBallHolder.setInverted(BallIntakeConstants.REVERSED);
+		mBallHolder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 10);
+		mBallHolder.setSensorPhase(BallIntakeConstants.ENCODER_REVERSED);
+		mBallHolder.setNeutralMode(NeutralMode.Brake);
+
+		mBallHolder.config_kP(0, BallIntakeConstants.PID.HOLDER_P,10);
+		mBallHolder.config_kI(0, BallIntakeConstants.PID.HOLDER_I, 10);
+		mBallHolder.config_kD(0, BallIntakeConstants.PID.HOLDER_D, 10);
+		mBallHolder.config_IntegralZone(0, BallIntakeConstants.PID.HOLDER_IZONE, 10);
+		mBallHolder.configAllowableClosedloopError(0, BallIntakeConstants.PID.HOLDER_TOLERANCE, 10);
+
+		mBallIntake = new BallIntake(mBallHolder, mJoystick);
 	}
 
 	public void leadscrewInit() {
@@ -387,8 +407,8 @@ public class Robot extends SampleRobot {
 		mLeadscrewTalon.setInverted(LeadscrewConstants.REVERSED);
 		mLeadscrewTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 10);
 		mLeadscrewTalon.setSensorPhase(LeadscrewConstants.ENCODER_REVERSED);
-
 		mLeadscrewTalon.setNeutralMode(NeutralMode.Brake);
+
 		mLeadscrewTalon.config_kP(0, LeadscrewConstants.PID.LEADSCREW_P, 10);
 		mLeadscrewTalon.config_kI(0, LeadscrewConstants.PID.LEADSCREW_I, 10);
 		mLeadscrewTalon.config_kD(0, LeadscrewConstants.PID.LEADSCREW_D, 10);

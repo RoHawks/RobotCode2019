@@ -7,12 +7,10 @@
 
 package robotcode.systems;
 
+import robotcode.LocalJoystick;
 import robotcode.pneumatics.DoubleSolenoidReal;
 import constants.HatchIntakeConstants;
 import constants.JoystickConstants;
-import constants.RunConstants;
-
-import edu.wpi.first.wpilibj.*;
 
 public class HatchIntake {
 
@@ -21,7 +19,7 @@ public class HatchIntake {
     // **********//
 
     // joysticks used
-    private Joystick mJoystick;
+    private LocalJoystick mJoystick;
 
     // pistons
     private DoubleSolenoidReal 
@@ -31,7 +29,7 @@ public class HatchIntake {
     // ***********//
     // INITIALIZE //
     // ***********//
-    public HatchIntake(DoubleSolenoidReal pRotaryPiston, DoubleSolenoidReal pLinearPiston, Joystick pJoystick) {
+    public HatchIntake(DoubleSolenoidReal pRotaryPiston, DoubleSolenoidReal pLinearPiston, LocalJoystick pJoystick) {
         mRotaryPiston = pRotaryPiston;
         mLinearPiston = pLinearPiston;
 

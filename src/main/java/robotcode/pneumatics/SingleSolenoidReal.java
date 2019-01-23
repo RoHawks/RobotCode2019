@@ -1,7 +1,6 @@
 package robotcode.pneumatics;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import constants.RunConstants;
 import edu.wpi.first.wpilibj.Solenoid;
 
 public class SingleSolenoidReal {

@@ -12,8 +12,8 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import constants.JoystickConstants;
 import constants.LeadscrewConstants;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import robotcode.LocalJoystick;
 import robotcode.camera.Limelight;
 import sensors.LeadscrewEncoder;
 
@@ -27,7 +27,7 @@ public class Leadscrew {
     // **********//
 
     // joysticks used
-    private Joystick mJoystick;
+    private LocalJoystick mJoystick;
 
     // leadscrew
     private WPI_TalonSRX mLeadscrew;
@@ -41,7 +41,7 @@ public class Leadscrew {
     // ***********//
     // INITIALIZE //
     // ***********//
-    public Leadscrew(WPI_TalonSRX pLeadscrew, LeadscrewEncoder pEncoder, Limelight pLimelight, Joystick pJoystick) {
+    public Leadscrew(WPI_TalonSRX pLeadscrew, LeadscrewEncoder pEncoder, Limelight pLimelight, LocalJoystick pJoystick) {
         mLeadscrew = pLeadscrew;
         mEncoder = pEncoder;
         mHatchCamera = pLimelight;
@@ -82,7 +82,7 @@ public class Leadscrew {
         // do stuff
         switch (mLeadscrewState) {
         case MANUAL:
-            setSpeed(Math.abs(mJoystick.getX()) > 0.25 ? -1 * mJoystick.getX() * Math.abs(mJoystick.getX()) * 0.8 : 0);
+            setSpeed(Math.abs(mJoystick.getX(JoystickConstants.LEADSCREW_PROFILE)) > 0.25 ? -1 * mJoystick.getX(JoystickConstants.LEADSCREW_PROFILE) * Math.abs(mJoystick.getX(JoystickConstants.LEADSCREW_PROFILE)) * 0.8 : 0);
             break;
         case CAMERA_ALIGN:
             centerWithCamera();

@@ -30,15 +30,18 @@ public class Ports {
 
 		// HATCH INTAKE
 		public static final int
-			LEADSCREW = 11,
 			HATCH_ROTARY_SOLENOID_IN = 1,
 			HATCH_ROTARY_SOLENOID_OUT = 7,
 			HATCH_LINEAR_SOLENOID_IN = 5,
-			HATCH_LINEAR_SOLENOID_OUT = 6,
-			BALL_LEFT_SOLENOID_IN = 100,
-			BALL_LEFT_SOLENOID_OUT = 101,
-			BALL_RIGHT_SOLENOID_IN = 102,
-			BALL_RIGHT_SOLENOID_OUT = 103;
+			HATCH_LINEAR_SOLENOID_OUT = 6;
+
+		// LEADSCREW
+		public static final int
+			LEADSCREW = 11;
+
+		// BALL INTAKE
+		public static final int	
+			BALL_HOLDER = 100; //changethis
 
 	}
 	

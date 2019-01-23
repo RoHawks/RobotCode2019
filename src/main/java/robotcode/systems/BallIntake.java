@@ -7,7 +7,12 @@
 
 package robotcode.systems;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+
 import constants.BallIntakeConstants;
+import constants.JoystickConstants;
+import robotcode.LocalJoystick;
 import robotcode.pneumatics.DoubleSolenoidReal;
 
 /**
@@ -15,21 +20,77 @@ import robotcode.pneumatics.DoubleSolenoidReal;
  */
 public class BallIntake {
 
-    private DoubleSolenoidReal mLeftPiston, mRightPiston;
+    private LocalJoystick mJoystick;
+    
+    private WPI_TalonSRX mBallHolder;
+    private DoubleSolenoidReal mStopperPiston; 
+    
+    private BallIntakeState mBallIntakeState;
 
-    public BallIntake(DoubleSolenoidReal pLeftPiston, DoubleSolenoidReal pRightPiston) {
-        mLeftPiston = pLeftPiston;
-        mRightPiston = pRightPiston;
+    public BallIntake(WPI_TalonSRX pHolder, LocalJoystick pJoystick) {
+        mBallHolder = pHolder;
+        mJoystick = pJoystick;
+        mBallIntakeState = BallIntakeState.MANUAL;
     }
 
-    public void open() {
-        mLeftPiston.set(BallIntakeConstants.LEFT_OPEN);
-        mRightPiston.set(BallIntakeConstants.RIGHT_OPEN);
+    private enum BallIntakeState{
+        CARGOSHIP, ROCKET, HOLD, MANUAL
     }
 
-    public void close() {
-        mLeftPiston.set(BallIntakeConstants.LEFT_CLOSE);
-        mRightPiston.set(BallIntakeConstants.RIGHT_CLOSE);
+    public void enactMovement() {
+        if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.HOLD)) {
+            mBallIntakeState = BallIntakeState.HOLD;
+        } else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.SCORE_CARGOSHIP)) {
+            mBallIntakeState = BallIntakeState.CARGOSHIP;
+        } else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.SCORE_ROCKET)) {
+            mBallIntakeState = BallIntakeState.ROCKET;
+        } else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.MANUAL)) {
+            mBallIntakeState = BallIntakeState.MANUAL;
+        }
+
+        switch(mBallIntakeState){
+            case HOLD:
+                hold();
+                break;
+            case CARGOSHIP:
+                scoreCargoship();
+                break;
+            case ROCKET:
+                scoreRocket();
+                break;
+            case MANUAL:
+                setVelocity((mJoystick.getY(JoystickConstants.BALL_PROFILE) > 0.25) ? mJoystick.getY(JoystickConstants.BALL_PROFILE) : 0);
+                break;
+        }
+    }
+
+
+    // *****************//
+    // MOVE TO CONSTANT //
+    // *****************//
+
+    public void scoreRocket() {
+        setPosition(BallIntakeConstants.Positions.HOLDER_SCORE_ROCKET_POSITION);
+    }
+
+    public void scoreCargoship() {
+        setPosition(BallIntakeConstants.Positions.HOLDER_SCORE_CARGOSHIP_POSITION);
+    }
+
+    public void hold() {
+        setPosition(BallIntakeConstants.Positions.HOLDER_HOLD);
+    }
+
+
+    // *****************//
+    // GENERAL MOVEMENT //
+    // *****************//
+    public void setPosition(int pTicks) {
+        mBallHolder.set(ControlMode.Position, pTicks + BallIntakeConstants.HOLDER_OFFSET);
+    }
+
+    public void setVelocity(double pVel) {
+        mBallHolder.set(ControlMode.PercentOutput, pVel);
     }
 
 }
