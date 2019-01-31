@@ -14,7 +14,7 @@ public class LeadscrewConstants {
     public static final double 
         PITCH = 12.0, 
         LENGTH = 14.875, 
-        SOFT_LIMIT = 3, 
+        SOFT_LIMIT = 1, 
         LEADSCREW_CAMERA_TOLERANCE = 0.1; // inches
 
     public static final boolean 
@@ -22,7 +22,7 @@ public class LeadscrewConstants {
         REVERSED = false;
 
     public static final double 
-        LOADING_STATION = LENGTH / 2;
+        MIDDLE = LENGTH / 2;
 
     public static class PID {
 

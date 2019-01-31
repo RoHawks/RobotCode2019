@@ -15,9 +15,8 @@ public class JoystickConstants {
 
     public static class LeadscrewButtons {
         public static final int
-            MANUAL = 1,
-            CAMERA_ALIGN = 2,
-            LOADING_STATION = 3;
+            MANUAL = 6,
+            CAMERA_ALIGN = 2;
     }
 
     public static class IntakeButtons {
@@ -29,7 +28,9 @@ public class JoystickConstants {
             MANUAL = 11;
     }
 
-    public static class BallGateButtons {
+
+    public static class 
+    BallGateButtons {
         public static final int
             SCORE_ROCKET = 14, //4
             SCORE_CARGOSHIP = 15, //5

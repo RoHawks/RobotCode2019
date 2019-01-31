@@ -17,9 +17,7 @@ import robotcode.LocalJoystick;
 import robotcode.camera.Limelight;
 import sensors.LeadscrewEncoder;
 
-/**
- * Add your docs here.
- */
+
 public class Leadscrew {
 
     // **********//
@@ -32,7 +30,7 @@ public class Leadscrew {
     // leadscrew
     private WPI_TalonSRX mLeadscrew;
     private LeadscrewEncoder mEncoder;
-    private LeadscrewState mLeadscrewState;
+    private LeadscrewState mLeadscrewState = LeadscrewState.IDLE; // DEFAULT TO MANUAL
 
     // camera
     private Limelight mHatchCamera;
@@ -46,14 +44,11 @@ public class Leadscrew {
         mEncoder = pEncoder;
         mHatchCamera = pLimelight;
         mJoystick = pJoystick;
-
-        mLeadscrewState = LeadscrewState.MANUAL; // ***** DEFAULT TO MANUAL *****//
     }
 
     private enum LeadscrewState {
-        MANUAL, CAMERA_ALIGN, LOADING_STATION
+        MANUAL, CAMERA_ALIGN, IDLE
     }
-
 
 
     // *********//
@@ -66,12 +61,14 @@ public class Leadscrew {
     public void enactMovement() {
 
         // change states
-        if (mJoystick.getRawButtonReleased(JoystickConstants.LeadscrewButtons.MANUAL)) {
+        if (mJoystick.getRawButton(JoystickConstants.LeadscrewButtons.MANUAL)) {
             mLeadscrewState = LeadscrewState.MANUAL;
-        } else if (mJoystick.getRawButtonReleased(JoystickConstants.LeadscrewButtons.CAMERA_ALIGN)) {
+        } 
+        else if (mJoystick.getRawButtonReleased(JoystickConstants.LeadscrewButtons.CAMERA_ALIGN)) {
             mLeadscrewState = LeadscrewState.CAMERA_ALIGN;
-        } else if (mJoystick.getRawButtonReleased(JoystickConstants.LeadscrewButtons.LOADING_STATION)) {
-            mLeadscrewState = LeadscrewState.LOADING_STATION;
+        } 
+        else{
+            mLeadscrewState = LeadscrewState.IDLE;
         }
 
         // zero sensor
@@ -81,18 +78,19 @@ public class Leadscrew {
 
         // do stuff
         switch (mLeadscrewState) {
-        case MANUAL:
-            setSpeed(Math.abs(mJoystick.getX(JoystickConstants.LEADSCREW_PROFILE)) > 0.25 ? -1 * mJoystick.getX(JoystickConstants.LEADSCREW_PROFILE) * Math.abs(mJoystick.getX(JoystickConstants.LEADSCREW_PROFILE)) * 0.8 : 0);
-            break;
-        case CAMERA_ALIGN:
-            centerWithCamera();
-            break;
-        case LOADING_STATION:
-            setPosition(LeadscrewConstants.LOADING_STATION);
-            break;
-        default:
-            setSpeed(0);
-        }
+            case MANUAL:
+                setSpeed(Math.abs(mJoystick.getX(JoystickConstants.LEADSCREW_PROFILE)) > 0.25 ? -1 * mJoystick.getX(JoystickConstants.LEADSCREW_PROFILE) * Math.abs(mJoystick.getX(JoystickConstants.LEADSCREW_PROFILE)) * 0.8 : 0);
+                break;
+            case CAMERA_ALIGN:
+                centerWithCamera();
+                break;
+            case IDLE:
+                setSpeed(0);
+                break;
+            default:
+                setSpeed(0);
+                throw new RuntimeException("Unknown leadscrew state");
+            }
 
     }
 
@@ -112,8 +110,8 @@ public class Leadscrew {
      */
     public void setSpeed(double pSpeed) {
         double speed = pSpeed;
-        if (getInSoftLimit()) { /*** SLOW IT DOWN IF CLOSE TO END ***/
-            speed /= 2;
+        if (getInSoftLimit()) { // SLOW IT DOWN IF CLOSE TO END
+            speed = Math.signum(speed) * Math.min(0.2, Math.abs(speed));
         }
         mLeadscrew.set(ControlMode.PercentOutput, speed);
     }
@@ -127,11 +125,13 @@ public class Leadscrew {
     public void setPosition(double pInchMeasurement) {
         double goal = LeadscrewEncoder.leadscrewInchToTick(pInchMeasurement);
 
-        if (getInSoftLimit()) { /*** SLOW IT DOWN IF CLOSE TO END ***/
-            mLeadscrew.config_kP(0, LeadscrewConstants.PID.LEADSCREW_P / 2, 10);
-        } else {
+        // if (getInSoftLimit()) { /*** SLOW IT DOWN IF CLOSE TO END ***/
+        //     mLeadscrew.config_kP(0, LeadscrewConstants.PID.LEADSCREW_P / 2, 10);
+        // } 
+        // else {
             mLeadscrew.config_kP(0, LeadscrewConstants.PID.LEADSCREW_P, 10);
-        }
+        //}
+        SmartDashboard.putNumber("ERROR IN SETPOSITION METHOD", goal - mEncoder.getDistanceInInchesFromEnd());
 
         mLeadscrew.set(ControlMode.Position, goal);
     }
@@ -162,6 +162,10 @@ public class Leadscrew {
     public void leadscrewInitialZero() {
         while (!mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
             mLeadscrew.set(ControlMode.PercentOutput, getInSoftLimit() ? -0.2 : -0.7);
+            SmartDashboard.putNumber("is zeroing", System.currentTimeMillis());
+            SmartDashboard.putNumber("Talon zeroing error value", mLeadscrew.getClosedLoopError());
+            SmartDashboard.putNumber("Talon zeroing target value", mLeadscrew.getClosedLoopTarget());
+
         }
         mLeadscrew.set(ControlMode.PercentOutput, 0);
         zero();

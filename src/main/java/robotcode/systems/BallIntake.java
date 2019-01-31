@@ -15,9 +15,7 @@ import constants.JoystickConstants;
 import robotcode.LocalJoystick;
 import robotcode.pneumatics.DoubleSolenoidReal;
 
-/**
- * Add your docs here.
- */
+
 public class BallIntake {
 
     private LocalJoystick mJoystick;
@@ -40,11 +38,14 @@ public class BallIntake {
     public void enactMovement() {
         if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.HOLD)) {
             mBallIntakeState = BallIntakeState.HOLD;
-        } else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.SCORE_CARGOSHIP)) {
+        } 
+        else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.SCORE_CARGOSHIP)) {
             mBallIntakeState = BallIntakeState.CARGOSHIP;
-        } else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.SCORE_ROCKET)) {
+        } 
+        else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.SCORE_ROCKET)) {
             mBallIntakeState = BallIntakeState.ROCKET;
-        } else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.MANUAL)) {
+        } 
+        else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.MANUAL)) {
             mBallIntakeState = BallIntakeState.MANUAL;
         }
 
@@ -59,7 +60,7 @@ public class BallIntake {
                 scoreRocket();
                 break;
             case MANUAL:
-                setVelocity((mJoystick.getY(JoystickConstants.BALL_PROFILE) > 0.25) ? mJoystick.getY(JoystickConstants.BALL_PROFILE) : 0);
+                setVelocity(Math.abs(mJoystick.getZ(JoystickConstants.BALL_PROFILE)) > 0.25 ? Math.signum(mJoystick.getZ(JoystickConstants.BALL_PROFILE)) * mJoystick.getZ(JoystickConstants.BALL_PROFILE) * mJoystick.getZ(JoystickConstants.BALL_PROFILE): 0);
                 break;
         }
     }
@@ -86,11 +87,23 @@ public class BallIntake {
     // GENERAL MOVEMENT //
     // *****************//
     public void setPosition(int pTicks) {
-        mBallHolder.set(ControlMode.Position, pTicks + BallIntakeConstants.HOLDER_OFFSET);
+        mBallHolder.set(ControlMode.Position, pTicks + BallIntakeConstants.LOWEST_POINT);
+        
     }
 
     public void setVelocity(double pVel) {
-        mBallHolder.set(ControlMode.PercentOutput, pVel);
+        if((pVel < 0 && mBallHolder.getSelectedSensorPosition() < BallIntakeConstants.HIGHEST_POINT)|| 
+        (pVel>0 && mBallHolder.getSelectedSensorPosition() > BallIntakeConstants.LOWEST_POINT)){
+            mBallHolder.set(ControlMode.PercentOutput, pVel);
+        }
+        else{
+            mBallHolder.set(0);
+        }
+    }
+
+    public boolean ballIntakeNotInSafeRange(){
+        return mBallHolder.getSelectedSensorPosition() < BallIntakeConstants.LOWEST_POINT 
+        || mBallHolder.getSelectedSensorPosition() > BallIntakeConstants.HIGHEST_POINT;
     }
 
 }

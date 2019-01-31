@@ -64,22 +64,19 @@ public class HatchIntake {
     }
 
     public void setLinearOpposite() {
-            mLinearPiston.setOpposite();
+        mLinearPiston.setOpposite();
     }
 
     public void enactMovement() {
         // rotary piston
         if (mJoystick.getRawButtonReleased(JoystickConstants.HatchIntakeButtons.EXPAND_CONTRACT)) {
-            setRotaryOpposite();
+            mRotaryPiston.setOpposite();
         }
 
         // linear piston
         if (mJoystick.getRawButtonReleased(JoystickConstants.HatchIntakeButtons.IN_OUT)) {
-            setLinearOpposite();
+            mLinearPiston.setOpposite();
         }
     }
 }
 
-// Potentially add methods to check if hit the limit switches, if so, disable
-// movement in one direction
-// Have preset positions

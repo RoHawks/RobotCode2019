@@ -41,7 +41,7 @@ public class Ports {
 
 		// BALL INTAKE
 		public static final int	
-			BALL_HOLDER = 100; //changethis
+			BALL_HOLDER = 8;
 
 	}
 	

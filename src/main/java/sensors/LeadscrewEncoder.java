@@ -36,8 +36,8 @@ public class LeadscrewEncoder {
      * @param pInch length in inches
      * @return equivalent length in ticks
      */
-    public static double leadscrewInchToTick(double pInch) {
-        return LeadscrewConstants.PITCH * 4096 * pInch;
+    public static int leadscrewInchToTick(double pInch) {
+        return (int) (LeadscrewConstants.PITCH * 4096 * pInch);
     }
 
 
@@ -69,4 +69,7 @@ public class LeadscrewEncoder {
         return leadscrewTickToInch(getTicksFromEnd());
     }
 
+    public int getError(double pTarget){
+        return leadscrewInchToTick(pTarget) - getTicksFromEnd();
+    }
 }

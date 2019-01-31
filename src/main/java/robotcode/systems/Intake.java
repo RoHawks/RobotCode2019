@@ -49,16 +49,21 @@ public class Intake {
     // *********//
     private boolean mDoneIntakingHatch = true;
     private boolean mDoneScoringHatch = true;
+    
     public void enactMovement() {
         if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.INTAKE_HATCH)) {
             mIntakeState = IntakeState.HATCH_INTAKE;
-        } else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.INTAKE_BALL)) {
+        } 
+        else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.INTAKE_BALL)) {
             mIntakeState = IntakeState.BALL_INTAKE;
-        } else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.SCORE_HATCH)) {
+        } 
+        else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.SCORE_HATCH)) {
             mIntakeState = IntakeState.HATCH_SCORE;
-        } else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.SCORE_BALL)) {
+        } 
+        else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.SCORE_BALL)) {
             mIntakeState = IntakeState.BALL_SCORE;
-        } else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.MANUAL)) {
+        }
+         else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.MANUAL)) {
             mIntakeState = IntakeState.MANUAL;
         }
 

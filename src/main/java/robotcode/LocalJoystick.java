@@ -61,6 +61,14 @@ public class LocalJoystick extends Joystick{
         }
     }
 
+    public double getZ(int pProfile){
+        if (pProfile != mCurrentProfile) {
+            return 0;
+        } else {
+            return super.getZ();
+        }
+    }
+
     public void updateProfile() {
         if (super.getRawButtonReleased(1)){
             mCurrentProfile = (mCurrentProfile + 1) % mProfiles;

@@ -20,7 +20,8 @@ public class BallIntakeConstants {
         REVERSED = false;
 
     public static final int 
-        HOLDER_OFFSET = 0; // CHANGETHIS
+        LOWEST_POINT = -1644,
+        HIGHEST_POINT = -2865;
 
 
     // **************//

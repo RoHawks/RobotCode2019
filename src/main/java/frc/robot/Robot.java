@@ -98,8 +98,6 @@ public class Robot extends SampleRobot {
 	RobotState mCurrentState = RobotState.DEFAULT;
 
 
-
-
 	
 	// *************//
 	// GENERAL CODE //
@@ -125,11 +123,24 @@ public class Robot extends SampleRobot {
 				mHatchIntake.contract();
 			}
 
-			mLeadscrew.leadscrewInitialZero();
-			mLeadscrew.setPosition(LeadscrewConstants.LENGTH/2);
+			if(RunConstants.RUNNING_LEADSCREW){
+				mLeadscrew.leadscrewInitialZero();
+				//Timer.delay(0.5);
+				mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
+				// while (dummy()){
+				// 	System.out.println("IN THE LOOP");
+				// }
+			}
 
 			mInGame = true;
 		}
+	}
+
+	public boolean dummy(){
+		int error = mLeadscrewEncoder.getError(mLeadscrewTalon.getClosedLoopTarget());
+		SmartDashboard.putNumber("in dummy", System.currentTimeMillis());
+		SmartDashboard.putNumber("dummy closed loop error", error);
+		return error > LeadscrewConstants.PID.LEADSCREW_TOLERANCE;
 	}
 
 	public void robotInit() {
@@ -240,12 +251,26 @@ public class Robot extends SampleRobot {
 			
 			if (RunConstants.RUNNING_BALL) {
 				SmartDashboard.putNumber("Ball Holder Raw Ticks", mBallHolder.getSelectedSensorPosition());
-				SmartDashboard.putNumber("Ball Holder Cooked Ticks", mBallHolder.getSelectedSensorPosition() + BallIntakeConstants.HOLDER_OFFSET);
 				mBallIntake.enactMovement();
 			}
 
 			if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW){
 				mIntake.enactMovement();
+				SmartDashboard.putNumber("is enacting movement", System.currentTimeMillis());
+				SmartDashboard.putBoolean("Forward Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());
+				SmartDashboard.putBoolean("Reverse Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
+				SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
+				SmartDashboard.putNumber("leadscrew cooked ticks", mLeadscrewEncoder.getTicksFromEnd());
+				SmartDashboard.putNumber("Leadscrew inches", mLeadscrewEncoder.getDistanceInInchesFromEnd());
+				SmartDashboard.putNumber("Limelight angle",	NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0));
+				SmartDashboard.putNumber("Limelight error", CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0))));
+				SmartDashboard.putNumber("Leadscrew motor goal ticks", mLeadscrewTalon.getClosedLoopTarget());
+				SmartDashboard.putNumber("Leadscrew motor goal inches", LeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getClosedLoopTarget()));
+				SmartDashboard.putNumber("Leadscrew motor output", mLeadscrewTalon.getMotorOutputPercent());
+				SmartDashboard.putNumber("Leadscrew error", mLeadscrewTalon.getClosedLoopError());
+				if (mJoystick.getRawButtonReleased(16)){
+					mHatchIntake.setRotaryOpposite();
+				}
 			}
 
 			if (RunConstants.RUNNING_EVERYTHING) {
@@ -271,12 +296,12 @@ public class Robot extends SampleRobot {
 
 	private void doWork() {
 		switch (mCurrentState) {
-		case DEFAULT:
-			doSomeAction();
-			break;
-		default:
-			throw new RuntimeException("Unknown state");
-		}
+			case DEFAULT:
+				doSomeAction();
+				break;
+			default:
+				throw new RuntimeException("Unknown state");
+			}
 
 		SmartDashboard.putString("Current State", mCurrentState.name());
 	}
@@ -294,7 +319,8 @@ public class Robot extends SampleRobot {
 					// rotate autonomous routines to select which one to start with:
 					if (mAutonomousRoutine == AutonomousRoutineType.DEFAULT) {
 						mAutonomousRoutine = AutonomousRoutineType.DO_NOTHING;
-					} else if (mAutonomousRoutine == AutonomousRoutineType.DO_NOTHING) {
+					} 
+					else if (mAutonomousRoutine == AutonomousRoutineType.DO_NOTHING) {
 						mAutonomousRoutine = AutonomousRoutineType.DEFAULT;
 					}
 				}
