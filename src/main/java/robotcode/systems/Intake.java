@@ -36,11 +36,11 @@ public class Intake {
         mLimelight = pLimelight;
         mJoystick = pJoystick;
         
-        mIntakeState = IntakeState.MANUAL;
+        mIntakeState = IntakeState.IDLE;
     }
 
     private enum IntakeState {
-        HATCH_INTAKE, BALL_INTAKE, HATCH_SCORE, BALL_SCORE, MANUAL
+        HATCH_INTAKE, BALL_INTAKE, HATCH_SCORE, BALL_SCORE, MANUAL, IDLE
     }
 
 

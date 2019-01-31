@@ -69,7 +69,12 @@ public class LeadscrewEncoder {
         return leadscrewTickToInch(getTicksFromEnd());
     }
 
+    /**
+     * 
+     * @param pTarget target IN TICKS
+     * @return distance IN TICKS between current position and target
+     */
     public int getError(double pTarget){
-        return leadscrewInchToTick(pTarget) - getTicksFromEnd();
+        return (int) (pTarget - getTicksFromEnd());
     }
 }

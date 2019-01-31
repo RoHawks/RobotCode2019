@@ -127,9 +127,9 @@ public class Robot extends SampleRobot {
 				mLeadscrew.leadscrewInitialZero();
 				//Timer.delay(0.5);
 				mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
-				// while (dummy()){
+				while (dummy()){
 				// 	System.out.println("IN THE LOOP");
-				// }
+				}
 			}
 
 			mInGame = true;
