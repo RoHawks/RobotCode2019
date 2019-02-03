@@ -69,16 +69,16 @@ public class ResourceFunctions {
 	 * @return number between the min and max
 	 */
 	public static double putNumInAbsoluteRange(double val, double min, double max) {
-		// return Math.max(Math.min(val, max), min); ?? nifty
-		if (val > max) {
-			return max;
-		}
-		else if (val < min) {
-			return min;
-		}
-		else {
-			return val;
-		}
+		return Math.max(Math.min(val, max), min);
+		// if (val > max) {
+		// 	return max;
+		// }
+		// else if (val < min) {
+		// 	return min;
+		// }
+		// else {
+		// 	return val;
+		// }
 
 	}
 

@@ -17,12 +17,19 @@ public class HatchIntakeConstants {
             OPEN = Value.kReverse,
             CLOSE = Value.kForward;
 
+        public static final long
+            EXPAND_TIME = 500,
+            CONTRACT_TIME = 500;
     }
 
     public static class LinearPiston {
         public static final Value
             OPEN = Value.kForward, 
             CLOSE = Value.kReverse;
+
+        public static final long
+            IN_TIME = 500,
+            OUT_TIME = 500;
     }
 
 }
