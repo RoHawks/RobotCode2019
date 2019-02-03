@@ -12,6 +12,7 @@ import autonomous.commands.AutonomousCommand;
 import autonomous.routines.DefaultRoutine;
 import autonomous.routines.DoNothingRoutine;
 import constants.DriveConstants;
+import constants.JoystickConstants;
 import constants.LeadscrewConstants;
 import constants.Ports;
 import constants.RunConstants;
@@ -35,7 +36,7 @@ import robotcode.driving.*;
 import robotcode.pneumatics.*;
 import robotcode.LocalJoystick;
 import robotcode.camera.*;
-import robotcode.systems.BallIntake;
+import robotcode.systems.BallIntakeMotor;
 import robotcode.systems.HatchIntake;
 import robotcode.systems.Intake;
 import robotcode.systems.Leadscrew;
@@ -61,7 +62,7 @@ public class Robot extends SampleRobot {
 	private WPI_TalonSRX[] mDrive = new WPI_TalonSRX[4];
 	private TalonAbsoluteEncoder[] mEncoder = new TalonAbsoluteEncoder[4];
 
-	// gyro`
+	// gyro
 	private AHRS mNavX;
 	private RobotAngle mRobotAngle;
 
@@ -71,7 +72,7 @@ public class Robot extends SampleRobot {
 	private DoubleSolenoidReal mHatchLinearPiston;
 
 	// ball intake
-	private BallIntake mBallIntake;
+	private BallIntakeMotor mBallIntake;
 	private WPI_TalonSRX mBallHolder;
 
 	// leadscrew
@@ -95,7 +96,7 @@ public class Robot extends SampleRobot {
 	// game setup
 	private boolean mInGame = false;
 	private long mGameStartMillis;
-	RobotState mCurrentState = RobotState.DEFAULT;
+	RobotState mCurrentState = RobotState.INITIAL_HOLDING_HATCH;
 
 
 	
@@ -136,8 +137,8 @@ public class Robot extends SampleRobot {
 		}
 	}
 
-	public boolean dummy(){
-		int error = mLeadscrewEncoder.getError(mLeadscrewTalon.getClosedLoopTarget());
+	public boolean dummy() {
+		int error = mLeadscrewEncoder.getError((int) mLeadscrewTalon.getClosedLoopTarget());
 		SmartDashboard.putNumber("in dummy", System.currentTimeMillis());
 		SmartDashboard.putNumber("dummy closed loop error", error);
 		return error > LeadscrewConstants.PID.LEADSCREW_TOLERANCE;
@@ -177,6 +178,10 @@ public class Robot extends SampleRobot {
 
 		if (RunConstants.RUNNING_LEADSCREW && RunConstants.RUNNING_HATCH) {
 			intakeInit();
+		}
+
+		if(RunConstants.RUNNING_CLIMBER){
+			climberInit();
 		}
 
 		mCompressor = new Compressor(Ports.COMPRESSOR);
@@ -226,55 +231,36 @@ public class Robot extends SampleRobot {
 		startGame();
 
 		while (isOperatorControl() && isEnabled()) {
-			if (RunConstants.RUNNING_DRIVE) {
+			if (RunConstants.RUNNING_DRIVE) { 
 				swerveDrive();
 			}
 
-			if (RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_LEADSCREW) {
+			// hatch intake without leadscrew
+			if (RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_EVERYTHING) { 
 				mHatchIntake.enactMovement();
 			}
 
-			if (RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_HATCH) { // test this then test intake.intake() lol
-				mLeadscrew.enactMovement();
-				SmartDashboard.putBoolean("Forward Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());
-				SmartDashboard.putBoolean("Reverse Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
-				SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
-				SmartDashboard.putNumber("leadscrew cooked ticks", mLeadscrewEncoder.getTicksFromEnd());
-				SmartDashboard.putNumber("Leadscrew inches", mLeadscrewEncoder.getDistanceInInchesFromEnd());
-				SmartDashboard.putNumber("Limelight angle",	NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0));
-				SmartDashboard.putNumber("Limelight error", CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0))));
-				SmartDashboard.putNumber("Leadscrew motor goal ticks", mLeadscrewTalon.getClosedLoopTarget());
-				SmartDashboard.putNumber("Leadscrew motor goal inches", LeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getClosedLoopTarget()));
-				SmartDashboard.putNumber("Leadscrew motor output", mLeadscrewTalon.getMotorOutputPercent());
-				SmartDashboard.putNumber("Leadscrew error", mLeadscrewTalon.getClosedLoopError());
-			}
-			
-			if (RunConstants.RUNNING_BALL) {
-				SmartDashboard.putNumber("Ball Holder Raw Ticks", mBallHolder.getSelectedSensorPosition());
+			// ball
+			if (RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING) {
 				mBallIntake.enactMovement();
 			}
 
-			if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW){
+			// leadscrew without hatch intake or ball
+			if (RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING) { 
+				mLeadscrew.enactMovement();
+			}
+			
+			// all intake things but not states -- for testing
+			if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW && RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING){
 				mIntake.enactMovement();
-				SmartDashboard.putNumber("is enacting movement", System.currentTimeMillis());
-				SmartDashboard.putBoolean("Forward Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());
-				SmartDashboard.putBoolean("Reverse Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
-				SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
-				SmartDashboard.putNumber("leadscrew cooked ticks", mLeadscrewEncoder.getTicksFromEnd());
-				SmartDashboard.putNumber("Leadscrew inches", mLeadscrewEncoder.getDistanceInInchesFromEnd());
-				SmartDashboard.putNumber("Limelight angle",	NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0));
-				SmartDashboard.putNumber("Limelight error", CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0))));
-				SmartDashboard.putNumber("Leadscrew motor goal ticks", mLeadscrewTalon.getClosedLoopTarget());
-				SmartDashboard.putNumber("Leadscrew motor goal inches", LeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getClosedLoopTarget()));
-				SmartDashboard.putNumber("Leadscrew motor output", mLeadscrewTalon.getMotorOutputPercent());
-				SmartDashboard.putNumber("Leadscrew error", mLeadscrewTalon.getClosedLoopError());
 				if (mJoystick.getRawButtonReleased(16)){
 					mHatchIntake.setRotaryOpposite();
 				}
 			}
 
 			if (RunConstants.RUNNING_EVERYTHING) {
-				doWork();
+				SmartDashboard.putNumber("z value", mJoystick.getZ());
+				doWork(); 
 			}
 
 			// put info on SmartDashboard
@@ -288,16 +274,58 @@ public class Robot extends SampleRobot {
 			mJoystick.updateProfile();
 			SmartDashboard.putNumber("JOYSTICK PROFILE NUMBER", mJoystick.getProfile());
 			SmartDashboard.putString("JOYSTICK PROFILE", (mJoystick.getProfile() == 0) ? "HATCH/LEADSCREW" : "BALL");
-			SmartDashboard.putBoolean("BUTTON 21 XD", mJoystick.getRawButton(21));
-
 			Timer.delay(0.005); // wait for a motor update time
 		}
 	}
 
+	
+	// SmartDashboard.putNumber("is enacting movement", System.currentTimeMillis());
+	// SmartDashboard.putBoolean("Forward Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());
+	// SmartDashboard.putBoolean("Reverse Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
+	// SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
+	// SmartDashboard.putNumber("leadscrew cooked ticks", mLeadscrewEncoder.getTicksFromEnd());
+	// SmartDashboard.putNumber("Leadscrew inches", mLeadscrewEncoder.getDistanceInInchesFromEnd());
+	// SmartDashboard.putNumber("Limelight angle",	NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0));
+	// SmartDashboard.putNumber("Limelight error", CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0))));
+	// SmartDashboard.putNumber("Leadscrew motor goal ticks", mLeadscrewTalon.getClosedLoopTarget());
+	// SmartDashboard.putNumber("Leadscrew motor goal inches", LeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getClosedLoopTarget()));
+	// SmartDashboard.putNumber("Leadscrew motor output", mLeadscrewTalon.getMotorOutputPercent());
+	// SmartDashboard.putNumber("Leadscrew error", mLeadscrewTalon.getClosedLoopError());
+
 	private void doWork() {
 		switch (mCurrentState) {
+			case INITIAL_HOLDING_HATCH:
+				initialHoldingHatch();
+				break;
+			case HATCH_SCORE:
+				hatchScore();
+				break;
+			case WAITING_TO_LOAD:
+				waitingToLoad();
+				break;
+			case LOADING_HATCH:
+				loadingHatch();
+				break;
+			case HATCH_PRESCORE:
+				hatchPrescore();
+				break;
+			case BALL_PRESCORE:
+				ballPrescore();
+				break;
+			case BALL_FRONT_SCORE:
+				ballFrontScore();
+				break;
+			case BALL_BACK_SCORE:
+				ballBackScore();
+				break;
+			case DEFENSE:
+				defense();
+				break;
+			case CLIMB:
+				climb();
+				break;
 			case DEFAULT:
-				doSomeAction();
+				defaultState();
 				break;
 			default:
 				throw new RuntimeException("Unknown state");
@@ -306,9 +334,112 @@ public class Robot extends SampleRobot {
 		SmartDashboard.putString("Current State", mCurrentState.name());
 	}
 
-	private void doSomeAction() {
+	/**
+	 * initial robot state
+	 * goes to HATCH_SCORE when we want to score or
+	 * WAITING_TO_LOAD if we drop it
+	 */
+	private void initialHoldingHatch() {
+		//mClimber.up();
+
+		// when the robot wants to score...
+		if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE) && mJoystick.getZ() < 0) {
+			mCurrentState = RobotState.HATCH_SCORE;
+		}
+
+		// if we accidentally drop the panel...
+		else if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD)){
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+		}
+
+		//ball methods
+	}
+
+	/**
+	 * score the hatch. when it's done go to WAITING_TO_LOAD state
+	 */
+	private void hatchScore() {
+		// if robot or driver says scoring is done...
+		if (mIntake.scorePanel() || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED)) {
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+		}
+		// dc look this over i thought smth ws wrong then forgot wwhat i thought
+	}
+
+	/**
+	 * keep the intake in an idle kinda mode
+	 * when you get the ball, go to BALL_PRESCORE
+	 * when you wanna get the panel, go to LOADING_HATCH
+	 */
+	private void waitingToLoad() {
+		// has_loaded button is pressed and thingy is flipped to ball side
+		if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED) && mJoystick.getZ() > 0) {
+			mCurrentState = RobotState.BALL_PRESCORE;
+		}
+
+		// dc implement limit switch here
+		// load button is pressed and thingy is flipped to hatch side 
+		if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD) && mJoystick.getZ() < 0) {
+			mCurrentState = RobotState.LOADING_HATCH;
+		}
+		
+		//dc in the case scoring fails might wanna be able to score again?
+	}
+
+	/**
+	 * intake the hatch
+	 * when either the robot or driver says it's done, go to HATCH_PRESCORE
+	 */
+	private void loadingHatch() {
+		// implement face wheels 90
+		// either robot or person says the thing has been intaken
+		if (mIntake.intakePanel() || (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED) && mJoystick.getZ() < 0)){
+			mCurrentState = RobotState.HATCH_PRESCORE;
+		}
+	}
+
+	/**
+	 * 
+	 */
+	private void hatchPrescore() {
+		// when the robot wants to score...
+		if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE) && mJoystick.getZ() < 0) {
+			mCurrentState = RobotState.HATCH_SCORE;
+		}
+
+		// if we accidentally drop the panel...
+		else if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD)){
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+		}
+	}
+
+	/**
+	 * 
+	 */
+	private void ballPrescore() {
 		// Do some action... move to a different state?
 	}
+
+	private void ballFrontScore() {
+		// Do some action... move to a different state?
+	}
+
+	private void ballBackScore() {
+		// Do some action... move to a different state?
+	}
+
+	private void defense() {
+		// Do some action... move to a different state?
+	}
+
+	private void climb() {
+		// Do some action... move to a different state?
+	}
+
+	private void defaultState() {
+
+	}
+
 
 	public void disabled() {
 
@@ -335,7 +466,7 @@ public class Robot extends SampleRobot {
 	// ***************//
 	// INITIALIZATION //
 	// ***************//
-	public void driveInit() {
+	private void driveInit() {
 		int turnPort, turnOffset, drivePort, iZone, rotTol;
 		double P_PID, I_PID, D_PID;
 		boolean turnEncoderReversed, turnReversed, driveReversed;
@@ -401,7 +532,7 @@ public class Robot extends SampleRobot {
 		mDriveTrain = new DriveTrain(mWheel, mController, mRobotAngle);
 	}
 
-	public void hatchIntakeInit() {
+	private void hatchIntakeInit() {
 		mHatchRotaryPiston = new DoubleSolenoidReal(Ports.ActualRobot.HATCH_ROTARY_SOLENOID_IN,
 				Ports.ActualRobot.HATCH_ROTARY_SOLENOID_OUT);
 		mHatchLinearPiston = new DoubleSolenoidReal(Ports.ActualRobot.HATCH_LINEAR_SOLENOID_IN,
@@ -410,7 +541,7 @@ public class Robot extends SampleRobot {
 		mHatchIntake = new HatchIntake(mHatchRotaryPiston, mHatchLinearPiston, mJoystick);
 	}
 
-	public void ballInit() {
+	private void ballInit() {
 		mBallHolder = new WPI_TalonSRX(Ports.ActualRobot.BALL_HOLDER);
 		
 		mBallHolder.setInverted(BallIntakeConstants.REVERSED);
@@ -424,10 +555,10 @@ public class Robot extends SampleRobot {
 		mBallHolder.config_IntegralZone(0, BallIntakeConstants.PID.HOLDER_IZONE, 10);
 		mBallHolder.configAllowableClosedloopError(0, BallIntakeConstants.PID.HOLDER_TOLERANCE, 10);
 
-		mBallIntake = new BallIntake(mBallHolder, mJoystick);
+		mBallIntake = new BallIntakeMotor(mBallHolder, mJoystick);
 	}
 
-	public void leadscrewInit() {
+	private void leadscrewInit() {
 		mLeadscrewTalon = new WPI_TalonSRX(Ports.ActualRobot.LEADSCREW);
 
 		mLeadscrewTalon.setInverted(LeadscrewConstants.REVERSED);
@@ -450,8 +581,12 @@ public class Robot extends SampleRobot {
 		
 	}
 
-	public void intakeInit() {
+	private void intakeInit() {
 		mIntake = new Intake(mHatchIntake, mLeadscrew, mHatchCamera, mJoystick);
+	}
+
+	private void climberInit(){
+		
 	}
 
 

@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.Joystick;
  */
 public class LocalJoystick extends Joystick{
 
-    private int mProfiles = 2;
+    private int mProfiles = 3;
     private int mCurrentProfile = 0;
 
     public LocalJoystick(int port){
@@ -23,7 +23,7 @@ public class LocalJoystick extends Joystick{
 
     public boolean getRawButtonReleased(int pButton) {
         int realButton = pButton - mCurrentProfile * 10;
-        if(realButton < 0 || realButton > 11){
+        if(realButton <= 1 || realButton > 11){
             return false;
         }
         return super.getRawButtonReleased(realButton);
@@ -31,7 +31,7 @@ public class LocalJoystick extends Joystick{
 
     public boolean getRawButtonPressed(int pButton){
         int realButton = pButton - mCurrentProfile * 10;
-        if(realButton < 0 || realButton > 11){
+        if(realButton <= 1 || realButton > 11){
             return false;
         }
         return super.getRawButtonPressed(realButton);
@@ -39,7 +39,7 @@ public class LocalJoystick extends Joystick{
 
     public boolean getRawButton(int pButton){
         int realButton = pButton - mCurrentProfile * 10;
-        if(realButton < 0 || realButton > 11){
+        if(realButton <= 1 || realButton > 11){
             return false;
         }
         return super.getRawButton(realButton);

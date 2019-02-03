@@ -5,14 +5,19 @@ import edu.wpi.first.wpilibj.Solenoid;
 
 public class SingleSolenoidReal {
 	private Solenoid mSingleSolenoid;
+	private Value mCurrent;
 
 	public SingleSolenoidReal(int pPort) {
 		mSingleSolenoid = new Solenoid(pPort);
+		mCurrent = this.get();
 	}
 
 	public void set(Value pDirection) {
-		// forward maps to true, backward maps to false
-		mSingleSolenoid.set(pDirection == Value.kForward);
+		if(pDirection != mCurrent){
+			// forward maps to true, backward maps to false
+			mSingleSolenoid.set(pDirection == Value.kForward);
+			mCurrent = pDirection;
+		}
 	}
 
 	public Value get() {
@@ -20,7 +25,7 @@ public class SingleSolenoidReal {
 	}
 
 	public void setOpposite() {
-		this.set(this.get().equals(Value.kForward) ? Value.kReverse : Value.kForward);
+		this.set((this.get() == Value.kForward) ? Value.kReverse : Value.kForward);
 	}
 
 }

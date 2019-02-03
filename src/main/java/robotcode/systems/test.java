@@ -5,24 +5,20 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package constants;
+package robotcode.systems;
 
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.command.Subsystem;
 
-public class HatchIntakeConstants {
+/**
+ * Add your docs here.
+ */
+public class test extends Subsystem {
+  // Put methods for controlling this subsystem
+  // here. Call these from Commands.
 
-    public static class RotaryPiston {
-
-        public static final Value 
-            OPEN = Value.kReverse,
-            CLOSE = Value.kForward;
-
-    }
-
-    public static class LinearPiston {
-        public static final Value
-            OPEN = Value.kForward, 
-            CLOSE = Value.kReverse;
-    }
-
+  @Override
+  public void initDefaultCommand() {
+    // Set the default command for a subsystem here.
+    // setDefaultCommand(new MySpecialCommand());
+  }
 }

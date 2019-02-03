@@ -27,8 +27,8 @@ public class LeadscrewEncoder {
      * @param pTick length in ticks
      * @return the equivalent length in inches
      */
-    public static double leadscrewTickToInch(double pTick) {
-        return 1 / (LeadscrewConstants.PITCH * 4096) * pTick;
+    public static double leadscrewTickToInch(int pTick) {
+        return pTick / (LeadscrewConstants.PITCH * 4096);
     }
 
     /**
@@ -74,7 +74,7 @@ public class LeadscrewEncoder {
      * @param pTarget target IN TICKS
      * @return distance IN TICKS between current position and target
      */
-    public int getError(double pTarget){
+    public int getError(int pTarget){
         return (int) (pTarget - getTicksFromEnd());
     }
 }

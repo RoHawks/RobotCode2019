@@ -24,8 +24,8 @@ public class Ports {
 
 		// DRIVETRAIN
 		public static final int[] 
-				TURN = new int[] { 1, 2, 3, 0 },
-				DRIVE = new int[] { 10, 9, 7, 6 };// Right back, right front, left front, left back
+			TURN = new int[] { 1, 2, 3, 0 },
+			DRIVE = new int[] { 10, 9, 7, 6 };// Right back, right front, left front, left back
 		
 
 		// HATCH INTAKE
@@ -42,6 +42,15 @@ public class Ports {
 		// BALL INTAKE
 		public static final int	
 			BALL_HOLDER = 8;
+
+		// CLIMBER
+		public static final int
+			CLIMB_FRONT = 0,
+			CLIMB_BACK = 0,
+			CLIMB_DRIVE = 0,
+
+			SHIFTER_SOLENOID_IN = 0,
+			SHIFTER_SOLENOID_OUT = 0;
 
 	}
 	

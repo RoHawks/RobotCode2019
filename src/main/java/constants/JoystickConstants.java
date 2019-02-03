@@ -5,7 +5,8 @@ public class JoystickConstants {
     public static final int
         HATCH_PROFILE = 0,
         LEADSCREW_PROFILE = 0,
-        BALL_PROFILE = 1;
+        BALL_PROFILE = 1,
+        FULL_PROFILE = 2;
     
     public static class HatchIntakeButtons {
         public static final int 
@@ -29,12 +30,22 @@ public class JoystickConstants {
     }
 
 
-    public static class 
-    BallGateButtons {
+    public static class BallGateButtons {
         public static final int
             SCORE_ROCKET = 14, //4
             SCORE_CARGOSHIP = 15, //5
             HOLD = 13, //3
             MANUAL = 12; //2
+    }
+
+    public static class FinalRobotButtons {
+        public static final int
+            SCORE = 22,
+            LOAD = 23,
+            LEADSCREW_OVERRIDE = 24,
+            SCORE_BACKWARDS = 25,
+            HAS_LOADED = 26,
+            HAS_SCORED = 27;
+
     }
 }

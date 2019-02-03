@@ -13,6 +13,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import constants.JoystickConstants;
 import constants.LeadscrewConstants;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import resource.ResourceFunctions;
 import robotcode.LocalJoystick;
 import robotcode.camera.Limelight;
 import sensors.LeadscrewEncoder;
@@ -123,7 +124,8 @@ public class Leadscrew {
      * @param pInchMeasurement how far from the right edge the intake should move
      */
     public void setPosition(double pInchMeasurement) {
-        double goal = LeadscrewEncoder.leadscrewInchToTick(pInchMeasurement);
+
+        double goal = LeadscrewEncoder.leadscrewInchToTick(ResourceFunctions.putNumInAbsoluteRange(pInchMeasurement, 0, LeadscrewConstants.LENGTH));
 
         // if (getInSoftLimit()) { /*** SLOW IT DOWN IF CLOSE TO END ***/
         //     mLeadscrew.config_kP(0, LeadscrewConstants.PID.LEADSCREW_P / 2, 10);
@@ -169,6 +171,10 @@ public class Leadscrew {
         }
         mLeadscrew.set(ControlMode.PercentOutput, 0);
         zero();
+    }
+
+    public boolean isInRange(){
+        return Math.abs(mEncoder.getError((int) mLeadscrew.getClosedLoopTarget())) <= LeadscrewConstants.PID.LEADSCREW_TOLERANCE;
     }
 
 

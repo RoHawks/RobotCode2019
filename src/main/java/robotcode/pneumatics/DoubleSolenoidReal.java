@@ -5,13 +5,18 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 public class DoubleSolenoidReal {
 	private DoubleSolenoid mDoubleSolenoid;
+	private Value mCurrent;
 
 	public DoubleSolenoidReal(int pInPort, int pOutPort) {
 		mDoubleSolenoid = new DoubleSolenoid(pInPort, pOutPort);
+		mCurrent = this.get();
 	}
 
 	public void set(Value pDirection) {
-		mDoubleSolenoid.set(pDirection);
+		if(pDirection != mCurrent){
+			mDoubleSolenoid.set(pDirection);
+			mCurrent = pDirection;
+		}
 	}
 
 	public Value get() {
@@ -19,7 +24,7 @@ public class DoubleSolenoidReal {
 	}
 
 	public void setOpposite() {
-		this.set(this.get().equals(Value.kForward) ? Value.kReverse : Value.kForward);
+		this.set((this.get() == Value.kForward) ? Value.kReverse : Value.kForward);
 	}
 
 }
