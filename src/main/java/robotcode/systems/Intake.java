@@ -20,6 +20,7 @@ public class Intake {
     // VARIABLES //
     // **********//
     private HatchIntake mHatchIntake;
+    private BallIntake mBallIntake;
     private Leadscrew mLeadscrew;
     private Limelight mLimelight;
     private LocalJoystick mJoystick;
@@ -135,6 +136,7 @@ public class Intake {
         }
         else if (!mHasAlignedHatchIntake) {
             mHatchIntake.contract();
+            // TZ this might be redundant, rotary piston should already be contracted whenever you get to this state
         }
         else if (mHasAlignedHatchIntake && (loadingSequenceElapsedMilliseconds < IntakeConstants.LoadHatchTimes.STEP_TWO)) {
             SmartDashboard.putNumber("INTAKING STEP", 2);
@@ -144,6 +146,7 @@ public class Intake {
             SmartDashboard.putNumber("INTAKING STEP", 3);
             mHatchIntake.in();
             mHasAlignedHatchIntake = false;
+            mStartIntakeTimeHatch = 0;
             return true;
         }
 
@@ -176,7 +179,7 @@ public class Intake {
         // step 2: 500 milliseconds after step 1, outtake with rotary piston
         // step 3: 1000 milliseconds after step 1, bring linear piston back
 
-        if (!mHasAlignedHatchScore && Math.abs(position - goal) < 0.15) {
+        if (!mHasAlignedHatchScore && Math.abs(position - goal) < LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
             SmartDashboard.putNumber("SCORING STEP", 1);
             mStartScoreTimeHatch = System.currentTimeMillis();
             mHatchIntake.out();
@@ -189,11 +192,16 @@ public class Intake {
         else if (mHasAlignedHatchScore && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_THREE)) {
             SmartDashboard.putNumber("SCORING STEP", 3);
             mHatchIntake.in();
+            mStartScoreTimeHatch = 0;
             mHasAlignedHatchScore = false;
             return true;
         }
         return false;
     }
+
+
+    private boolean mHasAlignedBallIntake = false;
+    private long mStartIntakeTimeBall = 0;
 
     /**
      * does nothing yet
@@ -201,8 +209,39 @@ public class Intake {
      * @return whether the ball has been intaken yet
      */
     public boolean intakeBall() {
-        return true;
+
+        mLeadscrew.centerWithCamera();
+
+        // take these variables to find the error (not sure if motor.getClosedLoopError
+        // works, gives weird error)
+        double position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+        double goal = (LeadscrewConstants.MIDDLE) - mLimelight.xAngleToDistance();
+
+        SmartDashboard.putNumber("BALL INTAKE STEP", 0);
+        SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
+
+        long scoringSequenceElapsedMilliseconds = System.currentTimeMillis() - mStartIntakeTimeBall;
+
+        if (!mHasAlignedBallIntake && Math.abs(position - goal) < LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
+            SmartDashboard.putNumber("BALL INTAKE STEP", 1);
+            mStartIntakeTimeBall = System.currentTimeMillis();
+            mBallIntake.letGo();
+            mHasAlignedBallIntake = true;
+        }
+        else if (mHasAlignedBallIntake && scoringSequenceElapsedMilliseconds < IntakeConstants.LoadBallTimes.STEP_TWO && mBallIntake.isHoldingBall()){
+            SmartDashboard.putNumber("BALL INTAKE STEP", 2);
+            mBallIntake.lock();
+            mStartIntakeTimeBall = 0;
+            mHasAlignedBallIntake = false;
+            return true; 
+        }
+
+        return false;
     }
+
+
+    private boolean mHasAlignedBallScoreHigh = false;
+    private long mStartScoreTimeBallHigh = 0;
 
     /**
      * does nothing yet
@@ -210,8 +249,44 @@ public class Intake {
      * @return whether the ball has been scored yet
      */
     public boolean scoreBallHigh() {
-        return true;
+
+        mLeadscrew.centerWithCamera();
+
+        // take these variables to find the error (not sure if motor.getClosedLoopError
+        // works, gives weird error)
+        double position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+        double goal = (LeadscrewConstants.MIDDLE) - mLimelight.xAngleToDistance();
+
+        SmartDashboard.putNumber("BALL SCORE HIGH STEP", 0);
+        SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
+
+        long scoringSequenceElapsedMilliseconds = System.currentTimeMillis() - mStartScoreTimeBallHigh;
+
+        if (!mHasAlignedBallScoreHigh && Math.abs(position - goal) < LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
+            SmartDashboard.putNumber("BALL SCORE HIGH STEP", 1);
+            mStartScoreTimeBallHigh = System.currentTimeMillis();
+            mBallIntake.letGo();
+            mHasAlignedBallScoreHigh = true;
+        }
+        else if (mHasAlignedBallScoreHigh && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallHighTimes.STEP_TWO){
+            SmartDashboard.putNumber("BALL SCORE HIGH STEP", 2);
+            mBallIntake.forward();
+        }
+        else if (mHasAlignedBallScoreHigh && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallHighTimes.STEP_THREE){
+            SmartDashboard.putNumber("BALL SCORE HIGH STEP", 3);
+            mBallIntake.backward();
+            mBallIntake.lock();
+            mStartScoreTimeBallHigh = 0;
+            mHasAlignedBallScoreHigh = false;
+            return true;
+        }
+
+        return false;
     }
+
+
+    private boolean mHasAlignedBallScoreLow = false;
+    private long mStartScoreTimeBallLow = 0;
 
     /**
      * does nothing yet
@@ -219,7 +294,32 @@ public class Intake {
      * @return whether the ball has been scored yet
      */
     public boolean scoreBallLow() {
-        return true;
+        mLeadscrew.centerWithCamera();
+
+        // take these variables to find the error (not sure if motor.getClosedLoopError
+        // works, gives weird error)
+        double position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+        double goal = (LeadscrewConstants.MIDDLE) - mLimelight.xAngleToDistance();
+
+        SmartDashboard.putNumber("BALL SCORE LOW STEP", 0);
+        SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreLow);
+
+        long scoringSequenceElapsedMilliseconds = System.currentTimeMillis() - mStartScoreTimeBallLow;
+
+        if (!mHasAlignedBallScoreLow && Math.abs(position - goal) < LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
+            SmartDashboard.putNumber("BALL SCORE LOW STEP", 1);
+            mStartScoreTimeBallLow = System.currentTimeMillis();
+            mBallIntake.release();
+            mHasAlignedBallScoreLow = true;
+        }
+        else if (mHasAlignedBallScoreLow && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallLowTimes.STEP_TWO){
+            SmartDashboard.putNumber("BALL SCORE LOW STEP", 2);
+            mBallIntake.retain();
+            mStartScoreTimeBallLow = 0;
+            mHasAlignedBallScoreLow = false;
+            return true;
+        }
+        return false;
     }
 
     public boolean holdingHatch() {
@@ -236,7 +336,13 @@ public class Intake {
         mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
         mHatchIntake.in();
         mHatchIntake.contract();
-        return true;
+        mBallIntake.backward();
+        mBallIntake.lock();
+        mBallIntake.retain();
+        if(mLeadscrew.isInRange()){
+            return true;
+        }
+        return false;
     }
 
 }

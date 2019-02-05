@@ -39,9 +39,15 @@ public class Ports {
 		public static final int
 			LEADSCREW = 11;
 
-		// BALL INTAKE
+		// BALL MOTOR INTAKE TZ get rid
 		public static final int	
 			BALL_HOLDER = 8;
+
+		// BALL PISTON INTAKE
+		public static final int
+			BALL_ROTARY = 0,
+			BALL_LOCK = 0,
+			BALL_RETAIN = 0;
 
 		// CLIMBER
 		public static final int

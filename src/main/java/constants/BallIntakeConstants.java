@@ -7,6 +7,8 @@
 
 package constants;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+
 /**
  * Add your docs here.
  */
@@ -48,5 +50,35 @@ public class BallIntakeConstants {
             HOLDER_HOLD = 0, 
             HOLDER_SCORE_ROCKET_POSITION = 0, 
             HOLDER_SCORE_CARGOSHIP_POSITION = 0;
+    }
+
+    public static class RotaryPiston {
+        public static final Value 
+            OPEN = Value.kForward,
+            CLOSE = Value.kReverse;
+
+        public static final long
+            OPEN_TIME = 500,
+            CLOSE_TIME = 500;
+    }
+
+    public static class LinearLockPiston {
+        public static final Value 
+            OPEN = Value.kForward,
+            CLOSE = Value.kReverse;
+
+        public static final long
+            OPEN_TIME = 500,
+            CLOSE_TIME = 500;
+    }
+
+    public static class LinearRetainPiston {
+        public static final Value 
+            OPEN = Value.kForward,
+            CLOSE = Value.kReverse;
+
+        public static final long
+            OPEN_TIME = 500,
+            CLOSE_TIME = 500;
     }
 }

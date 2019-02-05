@@ -3,7 +3,7 @@ package robotcode.pneumatics;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.Solenoid;
 
-public class SingleSolenoidReal {
+public class SingleSolenoidReal implements SolenoidInterface {
 	private Solenoid mSingleSolenoid;
 	private Value mCurrent;
 

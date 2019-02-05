@@ -33,6 +33,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import resource.ResourceFunctions;
 import robotcode.driving.*;
+import robotcode.driving.DriveTrain.LinearVelocity;
+import robotcode.driving.DriveTrain.RotationalVelocity;
 import robotcode.pneumatics.*;
 import robotcode.LocalJoystick;
 import robotcode.camera.*;
@@ -97,7 +99,6 @@ public class Robot extends SampleRobot {
 	private boolean mInGame = false;
 	private long mGameStartMillis;
 	RobotState mCurrentState = RobotState.INITIAL_HOLDING_HATCH;
-
 
 	
 	// *************//
@@ -356,7 +357,7 @@ public class Robot extends SampleRobot {
 	}
 
 	/**
-	 * score the hatch. when it's done go to WAITING_TO_LOAD state
+	 * Score the hatch. when it's done go to WAITING_TO_LOAD state
 	 */
 	private void hatchScore() {
 		// if robot or driver says scoring is done...
@@ -391,7 +392,7 @@ public class Robot extends SampleRobot {
 	 * when either the robot or driver says it's done, go to HATCH_PRESCORE
 	 */
 	private void loadingHatch() {
-		// implement face wheels 90
+		mDriveTrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
 		// either robot or person says the thing has been intaken
 		if (mIntake.intakePanel() || (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED) && mJoystick.getZ() < 0)){
 			mCurrentState = RobotState.HATCH_PRESCORE;
@@ -421,11 +422,17 @@ public class Robot extends SampleRobot {
 	}
 
 	private void ballFrontScore() {
-		// Do some action... move to a different state?
+		// if robot or driver says scoring is done...
+		if (mIntake.scoreBallHigh() || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED)) {
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+		}
 	}
 
 	private void ballBackScore() {
-		// Do some action... move to a different state?
+		// if robot or driver says scoring is done...
+		if (mIntake.scoreBallLow() || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED)) {
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+		}
 	}
 
 	private void defense() {
@@ -586,7 +593,7 @@ public class Robot extends SampleRobot {
 	}
 
 	private void climberInit(){
-		
+
 	}
 
 

@@ -21,4 +21,20 @@ public class IntakeConstants {
             STEP_THREE = HatchIntakeConstants.RotaryPiston.EXPAND_TIME + STEP_TWO;
     }
 
+    public static class ScoreBallHighTimes {
+        public static final long
+            STEP_TWO = BallIntakeConstants.LinearLockPiston.CLOSE_TIME,
+            STEP_THREE = BallIntakeConstants.RotaryPiston.OPEN_TIME + STEP_TWO;
+    }
+
+    public static class ScoreBallLowTimes {
+        public static final long
+            STEP_TWO = BallIntakeConstants.LinearRetainPiston.CLOSE_TIME;
+    }
+
+    public static class LoadBallTimes {
+        public static final long
+            STEP_TWO = BallIntakeConstants.LinearLockPiston.CLOSE_TIME;
+    }
+
 }

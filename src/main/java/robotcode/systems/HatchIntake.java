@@ -8,7 +8,7 @@
 package robotcode.systems;
 
 import robotcode.LocalJoystick;
-import robotcode.pneumatics.DoubleSolenoidReal;
+import robotcode.pneumatics.SolenoidInterface;
 import constants.HatchIntakeConstants;
 import constants.JoystickConstants;
 
@@ -22,14 +22,14 @@ public class HatchIntake {
     private LocalJoystick mJoystick;
 
     // pistons
-    private DoubleSolenoidReal 
+    private SolenoidInterface 
         mRotaryPiston,
         mLinearPiston;
 
     // ***********//
     // INITIALIZE //
     // ***********//
-    public HatchIntake(DoubleSolenoidReal pRotaryPiston, DoubleSolenoidReal pLinearPiston, LocalJoystick pJoystick) {
+    public HatchIntake(SolenoidInterface pRotaryPiston, SolenoidInterface pLinearPiston, LocalJoystick pJoystick) {
         mRotaryPiston = pRotaryPiston;
         mLinearPiston = pLinearPiston;
 
