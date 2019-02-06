@@ -52,9 +52,9 @@ public class Wheel {
 		mDrive.set(ControlMode.PercentOutput, speed);
 	}
 
-	public void setAngle(double pAngle) 
-	{
+	public void setAngle(double pAngle) {
 		TalonPID(pAngle);
+		//TalonMotionMagic(pAngle);
 	}
 
 	private void TalonPID(double pTarget) 
@@ -70,6 +70,20 @@ public class Wheel {
 			error = ResourceFunctions.continuousAngleDif(pTarget, realCurrent);
 		}
 		mTurn.set(ControlMode.Position, ResourceFunctions.angleToTick(current + error));
+	}
+
+	private void TalonMotionMagic(double pTarget){ //Have to set velocity, acceleration, and PIDF constants
+		double current = ResourceFunctions.tickToAngle(mTurn.getSelectedSensorPosition(0));
+		double realCurrent = mEncoder.getAngleDegrees();
+
+		double error = ResourceFunctions.continuousAngleDif(pTarget, ResourceFunctions.putAngleInRange(realCurrent));
+
+		if (Math.abs(error) > 90) {
+			mEncoder.setAdd180(!mEncoder.getAdd180());
+			mDrive.setInverted(!mDrive.getInverted());
+			error = ResourceFunctions.continuousAngleDif(pTarget, realCurrent);
+		}
+		mTurn.set(ControlMode.MotionMagic, ResourceFunctions.angleToTick(current + error));
 	}
 
 	public void setTurnSpeed(double pSpeed) 

@@ -42,6 +42,16 @@ public class Intake {
         HATCH_INTAKE, BALL_INTAKE, HATCH_SCORE, BALL_SCORE, MANUAL, IDLE
     }
 
+    // private Intake mInstance = null;
+
+    // public Intake getInstance(){
+    //     if (mInstance == null){
+    //         mInstance = new Intake();
+    //     }
+    //     else return
+    // }
+
+
     // *********//
     // DO STUFF //
     // *********//
