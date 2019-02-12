@@ -13,16 +13,14 @@ package constants;
 public class LeadscrewConstants {
     public static final double 
         PITCH = 12.0, 
-        LENGTH = 14.875, 
-        SOFT_LIMIT = 1, 
-        LEADSCREW_CAMERA_TOLERANCE = 0.1; // inches
+        LENGTH = 7, //14.875, 
+        MIDDLE = LENGTH / 2,
+        SOFT_LIMIT = 0.75, 
+        LEADSCREW_CAMERA_TOLERANCE = 0.2; // inches
 
     public static final boolean 
         ENCODER_REVERSED = true, 
-        REVERSED = false;
-
-    public static final double 
-        MIDDLE = LENGTH / 2;
+        REVERSED = true;
 
     public static class PID {
 

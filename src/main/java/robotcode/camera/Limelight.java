@@ -13,7 +13,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class Limelight {
 
-    private double mFOV = 59.6; // degrees
+    private static final double FOV = 59.6; // degrees
 
     public Limelight() {
 
@@ -42,6 +42,9 @@ public class Limelight {
         return (CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(getDoubleFromNetworkTable("ty"))));
     }
 
+    public boolean hasTarget(){
+        return getDoubleFromNetworkTable("tv") == 1;
+    }
 
     // ************ //
     // LED SETTINGS //

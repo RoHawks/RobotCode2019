@@ -6,7 +6,8 @@ public class JoystickConstants {
         HATCH_PROFILE = 0,
         LEADSCREW_PROFILE = 0,
         BALL_PROFILE = 1,
-        FULL_PROFILE = 2;
+        FULL_PROFILE = 2,
+        CLIMB_PROFILE = 3;
     
     public static class HatchIntakeButtons {
         public static final int 
@@ -36,6 +37,14 @@ public class JoystickConstants {
             SCORE_CARGOSHIP = 15, //5
             HOLD = 13, //3
             MANUAL = 12; //2
+    }
+
+    public static class ClimbButtons{
+        public static final int
+            SHIFT = 32,
+            FRONT = 35,
+            BACK = 34,
+            DRIVE = 33;
     }
 
     public static class FinalRobotButtons {

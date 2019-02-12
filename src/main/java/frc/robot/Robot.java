@@ -38,7 +38,9 @@ import robotcode.driving.DriveTrain.RotationalVelocity;
 import robotcode.pneumatics.*;
 import robotcode.LocalJoystick;
 import robotcode.camera.*;
+import robotcode.systems.BallIntake;
 import robotcode.systems.BallIntakeMotor;
+import robotcode.systems.Climber;
 import robotcode.systems.HatchIntake;
 import robotcode.systems.Intake;
 import robotcode.systems.Leadscrew;
@@ -70,12 +72,12 @@ public class Robot extends SampleRobot {
 
 	// hatch intake
 	private HatchIntake mHatchIntake;
-	private DoubleSolenoidReal mHatchRotaryPiston;
-	private DoubleSolenoidReal mHatchLinearPiston;
+	private SolenoidInterface mHatchRotaryPiston;
+	private SolenoidInterface mHatchLinearPiston;
 
 	// ball intake
-	private BallIntakeMotor mBallIntake;
-	private WPI_TalonSRX mBallHolder;
+	private BallIntake mBallIntake;
+	private SolenoidInterface mBallRotary, mBallLock, mBallRetain;
 
 	// leadscrew
 	private WPI_TalonSRX mLeadscrewTalon;
@@ -87,7 +89,12 @@ public class Robot extends SampleRobot {
 
 	// intake
 	private Intake mIntake;
-
+	
+	// climber
+    private WPI_TalonSRX mFrontClimbTalon, mBackClimbTalon, mDriveClimbTalon;
+	private SolenoidInterface mClimbShifter;
+	private Climber mClimber;
+	
 	// PDP and compressor
 	private PowerDistributionPanel mPDP;
 	private Compressor mCompressor;
@@ -123,11 +130,12 @@ public class Robot extends SampleRobot {
 
 			if (RunConstants.RUNNING_HATCH){
 				mHatchIntake.contract();
+				mHatchIntake.in();
 			}
 
 			if(RunConstants.RUNNING_LEADSCREW){
 				mLeadscrew.leadscrewInitialZero();
-				//Timer.delay(0.5);
+				Timer.delay(0.05);
 				mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
 				while (dummy()){
 				// 	System.out.println("IN THE LOOP");
@@ -232,23 +240,37 @@ public class Robot extends SampleRobot {
 		startGame();
 
 		while (isOperatorControl() && isEnabled()) {
-			if (RunConstants.RUNNING_DRIVE) { 
+			if (RunConstants.RUNNING_DRIVE) {
 				swerveDrive();
+				for (int i = 0; i < 4; i++) {
+					SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].getMotorOutputPercent());
+				}
 			}
 
 			// hatch intake without leadscrew
-			if (RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_EVERYTHING) { 
+			if (RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_EVERYTHING) {
 				mHatchIntake.enactMovement();
 			}
 
 			// ball
 			if (RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING) {
-				mBallIntake.enactMovement();
+				//mBallIntake.enactMovement();
 			}
 
 			// leadscrew without hatch intake or ball
-			if (RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING) { 
+			if (RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING) {
 				mLeadscrew.enactMovement();
+				SmartDashboard.putNumber("is enacting movement", System.currentTimeMillis());
+				SmartDashboard.putBoolean("Forward Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());
+				SmartDashboard.putBoolean("Reverse Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
+				SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
+				SmartDashboard.putNumber("leadscrew cooked ticks", mLeadscrewEncoder.getTicksFromEnd());
+				SmartDashboard.putNumber("Leadscrew inches", mLeadscrewEncoder.getDistanceInInchesFromEnd());
+				SmartDashboard.putNumber("Limelight angle",	NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0));
+				SmartDashboard.putNumber("Limelight error", CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0))));
+				SmartDashboard.putNumber("Leadscrew motor goal ticks", mLeadscrewTalon.getClosedLoopTarget());
+				SmartDashboard.putNumber("Leadscrew motor output", mLeadscrewTalon.getMotorOutputPercent());
+				SmartDashboard.putNumber("Leadscrew error", mLeadscrewTalon.getClosedLoopError());
 			}
 			
 			// all intake things but not states -- for testing
@@ -259,6 +281,14 @@ public class Robot extends SampleRobot {
 				}
 			}
 
+			if (RunConstants.RUNNING_CLIMBER){
+				mClimber.test();
+				SmartDashboard.putString("CLIMB Shifter", mClimbShifter.get().toString());
+				SmartDashboard.putNumber("CLIMB Y Axis", mJoystick.getY());
+				SmartDashboard.putNumber("CLIMB Z Axis", mJoystick.getZ());
+			}
+
+
 			if (RunConstants.RUNNING_EVERYTHING) {
 				SmartDashboard.putNumber("z value", mJoystick.getZ());
 				doWork(); 
@@ -266,15 +296,13 @@ public class Robot extends SampleRobot {
 
 			// put info on SmartDashboard
 			SmartDashboard.putString("Current State", mCurrentState.toString());
-			if (RunConstants.RUNNING_DRIVE) {
-				for (int i = 0; i < 4; i++) {
-					SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].getMotorOutputPercent());
-				}
+			
+			if(RunConstants.SECONDARY_JOYSTICK){
+				mJoystick.updateProfile();
+				SmartDashboard.putNumber("JOYSTICK PROFILE NUMBER", mJoystick.getProfile());
+				SmartDashboard.putString("JOYSTICK PROFILE", (mJoystick.getProfile() == 0) ? "HATCH/LEADSCREW" : "BALL");
 			}
-
-			mJoystick.updateProfile();
-			SmartDashboard.putNumber("JOYSTICK PROFILE NUMBER", mJoystick.getProfile());
-			SmartDashboard.putString("JOYSTICK PROFILE", (mJoystick.getProfile() == 0) ? "HATCH/LEADSCREW" : "BALL");
+			
 			Timer.delay(0.005); // wait for a motor update time
 		}
 	}
@@ -392,7 +420,7 @@ public class Robot extends SampleRobot {
 	 * when either the robot or driver says it's done, go to HATCH_PRESCORE
 	 */
 	private void loadingHatch() {
-		mDriveTrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
+		//mDriveTrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
 		// either robot or person says the thing has been intaken
 		if (mIntake.intakePanel() || (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED) && mJoystick.getZ() < 0)){
 			mCurrentState = RobotState.HATCH_PRESCORE;
@@ -540,29 +568,18 @@ public class Robot extends SampleRobot {
 	}
 
 	private void hatchIntakeInit() {
-		mHatchRotaryPiston = new DoubleSolenoidReal(Ports.ActualRobot.HATCH_ROTARY_SOLENOID_IN,
-				Ports.ActualRobot.HATCH_ROTARY_SOLENOID_OUT);
-		mHatchLinearPiston = new DoubleSolenoidReal(Ports.ActualRobot.HATCH_LINEAR_SOLENOID_IN,
-				Ports.ActualRobot.HATCH_LINEAR_SOLENOID_OUT);
+		mHatchRotaryPiston = new SingleSolenoidReal(Ports.ActualRobot.HATCH_ROTARY_SOLENOID_IN);
+		mHatchLinearPiston = new SingleSolenoidReal(Ports.ActualRobot.HATCH_LINEAR_SOLENOID_IN);
 
 		mHatchIntake = new HatchIntake(mHatchRotaryPiston, mHatchLinearPiston, mJoystick);
 	}
 
 	private void ballInit() {
-		mBallHolder = new WPI_TalonSRX(Ports.ActualRobot.BALL_HOLDER);
-		
-		mBallHolder.setInverted(BallIntakeConstants.REVERSED);
-		mBallHolder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 10);
-		mBallHolder.setSensorPhase(BallIntakeConstants.ENCODER_REVERSED);
-		mBallHolder.setNeutralMode(NeutralMode.Brake);
+		mBallRotary = new SingleSolenoidReal(Ports.ActualRobot.BALL_ROTARY);
+		mBallLock = new SingleSolenoidReal(Ports.ActualRobot.BALL_LOCK);
+		mBallRetain = new SingleSolenoidReal(Ports.ActualRobot.BALL_RETAIN);
 
-		mBallHolder.config_kP(0, BallIntakeConstants.PID.HOLDER_P,10);
-		mBallHolder.config_kI(0, BallIntakeConstants.PID.HOLDER_I, 10);
-		mBallHolder.config_kD(0, BallIntakeConstants.PID.HOLDER_D, 10);
-		mBallHolder.config_IntegralZone(0, BallIntakeConstants.PID.HOLDER_IZONE, 10);
-		mBallHolder.configAllowableClosedloopError(0, BallIntakeConstants.PID.HOLDER_TOLERANCE, 10);
-
-		mBallIntake = new BallIntakeMotor(mBallHolder, mJoystick);
+		mBallIntake = new BallIntake(mBallRotary, mBallLock, mBallRetain);
 	}
 
 	private void leadscrewInit() {
@@ -593,7 +610,11 @@ public class Robot extends SampleRobot {
 	}
 
 	private void climberInit(){
-
+		mFrontClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_FRONT);
+		mBackClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_BACK);
+		mDriveClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_DRIVE);
+		mClimbShifter = new SingleSolenoidReal(Ports.ActualRobot.SHIFTER_SOLENOID_IN);
+		mClimber = new Climber(mFrontClimbTalon, mBackClimbTalon, mDriveClimbTalon, mClimbShifter, mJoystick);
 	}
 
 

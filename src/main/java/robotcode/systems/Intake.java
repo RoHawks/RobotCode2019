@@ -10,6 +10,7 @@ package robotcode.systems;
 import constants.IntakeConstants;
 import constants.JoystickConstants;
 import constants.LeadscrewConstants;
+import constants.RunConstants;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import robotcode.LocalJoystick;
 import robotcode.camera.Limelight;
@@ -346,9 +347,11 @@ public class Intake {
         mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
         mHatchIntake.in();
         mHatchIntake.contract();
-        mBallIntake.backward();
-        mBallIntake.lock();
-        mBallIntake.retain();
+        if (RunConstants.RUNNING_BALL) {
+            mBallIntake.backward();
+            mBallIntake.lock();
+            mBallIntake.retain();
+        }
         if(mLeadscrew.isInRange()){
             return true;
         }

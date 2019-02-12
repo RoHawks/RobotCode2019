@@ -20,11 +20,10 @@ public class BallIntake {
 
     private DigitalInput mBreakbeam;
 
-    public BallIntake (SolenoidInterface pRotary, SolenoidInterface pLock, SolenoidInterface pRetain, DigitalInput pBreakbeam){
+    public BallIntake (SolenoidInterface pRotary, SolenoidInterface pLock, SolenoidInterface pRetain){
         mRotary = pRotary;
         mLock = pLock;
         mRetain = pRetain;
-        mBreakbeam = pBreakbeam;
     }
 
     private enum BallIntakeState{

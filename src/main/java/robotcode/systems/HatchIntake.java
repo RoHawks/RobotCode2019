@@ -11,6 +11,7 @@ import robotcode.LocalJoystick;
 import robotcode.pneumatics.SolenoidInterface;
 import constants.HatchIntakeConstants;
 import constants.JoystickConstants;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 public class HatchIntake {
 

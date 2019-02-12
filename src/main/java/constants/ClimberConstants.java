@@ -7,14 +7,17 @@
 
 package constants;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 public class ClimberConstants {
 
     public static final boolean
         DRIVE_REVERSED = false,
         FRONT_REVERSED = false,
-        BACK_REVERSED = false;
+        BACK_REVERSED = true;
 
     public static final double ClimberSpeed = 0.8;
+
+    public static final Value ENABLED = Value.kReverse;
 
 }

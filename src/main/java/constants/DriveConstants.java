@@ -16,8 +16,8 @@ public class DriveConstants {
 			MAX_EMERGENCY_VOLTAGE = 0.5;
 
 	public static final double 
-			MAX_ANGULAR_VELOCITY = 0.75,
-			MAX_LINEAR_VELOCITY = 0.75;
+			MAX_ANGULAR_VELOCITY = 0.6,
+			MAX_LINEAR_VELOCITY = 0.6;
 
 	
 	//*****************//
@@ -37,23 +37,23 @@ public class DriveConstants {
 	//**************************//
 	public static class ActualRobot {
 		public static final boolean[]
-			TURN_INVERTED = new boolean[] { true, true, true, true },
-			DRIVE_INVERTED = new boolean[] { true, false, true, true },
-			ENCODER_REVERSED = new boolean[] { true, true, true, true };
+			TURN_INVERTED = new boolean[] { false, false, true, true },
+			DRIVE_INVERTED = new boolean[] { false, false, false, false },
+			ENCODER_REVERSED = new boolean[] { false, false, true, true };
 	
 		public static final double[] 
-			X_OFF = new double[] { -29.25/2.0, 29.25/2.0 , 29.25/2.0 , -29.25/2.0 }, //27.5 along y, 29.25 along x
-			Y_OFF = new double[] { 27.5/2.0, 27.5/2.0 , -27.5/2.0 , -27.5/2.0 },
+			X_OFF = new double[] { -21.5/2.0, 21.5/2.0 , 21.5/2.0 , -21.5/2.0 }, 
+			Y_OFF = new double[] { 21.938/2.0, 21.938/2.0 , -21.938/2.0 , -29.138/2.0 },
 			
 			ROTATION_P = new double[] { 1.0, 1.0, 1.0, 1.0 },
 			ROTATION_I = new double[] { 0.001, 0.001, 0.001, 0.001 },
 			ROTATION_D = new double[] { 0, 0, 0, 0 };
 
 		public static final int[] 
-			OFFSETS = new int[] { 1588, 1186, 3163, 163},
+			OFFSETS = new int[] { 2262, 21 , 791, 271 },
 			
 			ROTATION_IZONE = new int[] { 500, 500, 500, 500 },
-			ROTATION_TOLERANCE = new int[] { 3, 3, 3, 3 };
+			ROTATION_TOLERANCE = new int[] { 5, 5, 5, 5 };
 			
 		public static final double
 			GYRO_P = 0.00085,
@@ -79,7 +79,7 @@ public class DriveConstants {
 			ENCODER_REVERSED = new boolean[] {true, true, true, false};
 		
 		public static final double[] 
-			X_OFF = new double[] { -19.0 / 2.0, -19.0 / 2.0, 19.0 / 2.0, 19.0 / 2.0 },
+			X_OFF = new double[] { -19.0 / 2.0, -19.0 / 2.0, 19.0 / 2.0, 19.0 / 2.0 }, //27.5 along y, 29.25 along x
 			Y_OFF = new double[] { -22.0 / 2.0, 22.0 / 2.0, 22.0 / 2.0, -22.0 / 2.0 },
 			
 			ROTATION_P = new double[] { 0.7, 0.7, 0.7, 0.7 },

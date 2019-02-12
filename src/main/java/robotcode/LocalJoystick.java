@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.Joystick;
  */
 public class LocalJoystick extends Joystick{
 
-    private int mProfiles = 3;
+    private int mProfiles = 4;
     private int mCurrentProfile = 0;
 
     public LocalJoystick(int port){

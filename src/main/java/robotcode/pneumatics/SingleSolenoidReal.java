@@ -12,6 +12,11 @@ public class SingleSolenoidReal implements SolenoidInterface {
 		mCurrent = this.get();
 	}
 
+	public SingleSolenoidReal(int pPort, int pModuleNumber){
+		mSingleSolenoid = new Solenoid(pModuleNumber, pPort);
+		mCurrent = this.get();
+	}
+
 	public void set(Value pDirection) {
 		if(pDirection != mCurrent){
 			// forward maps to true, backward maps to false

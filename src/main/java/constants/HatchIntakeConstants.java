@@ -24,8 +24,8 @@ public class HatchIntakeConstants {
 
     public static class LinearPiston {
         public static final Value
-            OPEN = Value.kForward, 
-            CLOSE = Value.kReverse;
+            OPEN = Value.kReverse, 
+            CLOSE = Value.kForward;
 
         public static final long
             IN_TIME = 500,
