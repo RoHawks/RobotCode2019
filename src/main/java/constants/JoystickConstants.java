@@ -54,7 +54,17 @@ public class JoystickConstants {
             LEADSCREW_OVERRIDE = 24,
             SCORE_BACKWARDS = 25,
             HAS_LOADED = 17,//26,
-            HAS_SCORED = 6;//27;
+            HAS_SCORED = 6,//27;
+            LOADING_STATION = 11,
+            CARGO_SHIP_FRONT = 7,
+            LEFT_ROCKET_SIDE = 5,
+            RIGHT_ROCKET_SIDE = 9,
+            LEFT_ROCKET_TOP = 13,
+            LEFT_ROCKET_BOTTOM = 12,
+            RIGHT_ROCKET_TOP = 8,
+            RIGHT_ROCKET_BOTTOM = 10,
+            CARGO_SHIP_LEFT = 9,
+            CARGO_SHIP_RIGHT = 5;
 
     }
 }

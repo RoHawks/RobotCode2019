@@ -396,6 +396,9 @@ public class Robot extends SampleRobot {
 		// dc look this over i thought smth ws wrong then forgot wwhat i thought
 	}
 
+	private long mStartWaitingToLoad = 0;
+	private boolean mHasWaitedToLoad = false;
+
 	/**
 	 * keep the intake in an idle kinda mode
 	 * when you get the ball, go to BALL_PRESCORE
@@ -403,18 +406,34 @@ public class Robot extends SampleRobot {
 	 */
 	private void waitingToLoad() {
 		// has_loaded button is pressed and thingy is flipped to ball side
-		if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED)/* && mJoystick.getZ() > 0*/) {
-			mCurrentState = RobotState.BALL_PRESCORE;
+
+		if (!mHasWaitedToLoad){
+			mStartWaitingToLoad = System.currentTimeMillis();
+			mHasWaitedToLoad = true;
 		}
 
-		// dc implement limit switch here
-		// load button is pressed and thingy is flipped to hatch side 
-		if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD)/* && mJoystick.getZ() < 0*/) {
-			mCurrentState = RobotState.LOADING_HATCH;
+		long waitingElapsedMilliseconds = System.currentTimeMillis() - mStartWaitingToLoad;
+
+		if (waitingElapsedMilliseconds > 500) {
+			if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED)/* && mJoystick.getZ() > 0*/) {
+				mCurrentState = RobotState.BALL_PRESCORE;
+				mStartWaitingToLoad = 0;
+				mHasWaitedToLoad = false;
+			}
+	
+			// dc implement limit switch here
+			// load button is pressed and thingy is flipped to hatch side 
+			else if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD)/* && mJoystick.getZ() < 0*/) {
+				mCurrentState = RobotState.LOADING_HATCH;
+				mStartWaitingToLoad = 0;
+				mHasWaitedToLoad = false;
+			}
 		}
+
 		
 		//dc in the case scoring fails might wanna be able to score again?
 	}
+
 
 	/**
 	 * intake the hatch
@@ -428,19 +447,37 @@ public class Robot extends SampleRobot {
 		}
 	}
 
+
+	private long mTimeStartHatchPrescore = 0;
+	private boolean mHasStartedHatchPrescore = false;
 	/**
 	 * 
 	 */
 	private void hatchPrescore() {
-		// when the robot wants to score...
-		if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE) /*&& mJoystick.getZ() < 0*/) {
-			mCurrentState = RobotState.HATCH_SCORE;
+
+		if (!mHasStartedHatchPrescore){
+			mTimeStartHatchPrescore = System.currentTimeMillis();
+			mHasStartedHatchPrescore = true;
 		}
 
-		// if we accidentally drop the panel...
-		else if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD)){
-			mCurrentState = RobotState.WAITING_TO_LOAD;
+		long hatchPrescoreElapsedMilliseconds = mTimeStartHatchPrescore - System.currentTimeMillis();
+
+		if(hatchPrescoreElapsedMilliseconds > 500){
+			// when the robot wants to score...
+			if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE) /*&& mJoystick.getZ() < 0*/) {
+				mCurrentState = RobotState.HATCH_SCORE;
+				mTimeStartHatchPrescore = 0;
+				mHasStartedHatchPrescore = false;
+			}
+
+			// if we accidentally drop the panel... TODO check transition
+			else if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD)){
+				mCurrentState = RobotState.WAITING_TO_LOAD;
+				mTimeStartHatchPrescore = 0;
+				mHasStartedHatchPrescore = false;
+			}
 		}
+
 	}
 
 	/**
@@ -587,7 +624,7 @@ public class Robot extends SampleRobot {
 		mLeadscrewTalon = new WPI_TalonSRX(Ports.ActualRobot.LEADSCREW);
 
 		mLeadscrewTalon.setInverted(LeadscrewConstants.REVERSED);
-		mLeadscrewTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 10);
+		mLeadscrewTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
 		mLeadscrewTalon.setSensorPhase(LeadscrewConstants.ENCODER_REVERSED);
 		mLeadscrewTalon.setNeutralMode(NeutralMode.Brake);
 

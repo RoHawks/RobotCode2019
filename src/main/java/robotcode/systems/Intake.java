@@ -126,7 +126,7 @@ public class Intake {
         // take these variables to find the error (not sure if motor.getClosedLoopError
         // works, gives weird error)
         double position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-        double goal = (LeadscrewConstants.MIDDLE) - mLimelight.xAngleToDistance();
+        double goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
 
         SmartDashboard.putNumber("INTAKING STEP", 0);
         SmartDashboard.putBoolean("has aligned", mHasAlignedHatchIntake);
