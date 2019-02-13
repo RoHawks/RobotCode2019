@@ -135,7 +135,6 @@ public class Robot extends SampleRobot {
 
 			if(RunConstants.RUNNING_LEADSCREW) {
 				mLeadscrew.leadscrewInitialZero();
-				Timer.delay(0.05);
 				mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
 				while (dummy()){
 				// 	System.out.println("IN THE LOOP");
@@ -147,10 +146,13 @@ public class Robot extends SampleRobot {
 	}
 
 	public boolean dummy() {
-		int error = mLeadscrewEncoder.getError((int) mLeadscrewTalon.getClosedLoopTarget());
-		SmartDashboard.putNumber("LEADSCREW TICKS", mLeadscrew.getTalon().getSelectedSensorPosition());
-		SmartDashboard.putNumber("in dummy", System.currentTimeMillis());
-		SmartDashboard.putNumber("dummy closed loop error", error);
+		int error = mLeadscrewEncoder.getError((int) mLeadscrewTalon.getClosedLoopTarget());		
+		SmartDashboard.putNumber("DUMMY: leadscrew inside", System.currentTimeMillis());
+		SmartDashboard.putNumber("DUMMY: leadscrew ticks", mLeadscrewTalon.getSelectedSensorPosition());
+		SmartDashboard.putNumber("DUMMY: leadscrew inches", mLeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getSelectedSensorPosition()));
+		SmartDashboard.putNumber("DUMMY: leadscrew motor goal ticks", mLeadscrewTalon.getClosedLoopTarget());
+		SmartDashboard.putNumber("DUMMY: leadscrew motor output", mLeadscrewTalon.getMotorOutputPercent());
+		SmartDashboard.putNumber("DUMMY: error", error);
 		return error > LeadscrewConstants.PID.LEADSCREW_TOLERANCE;
 	}
 
@@ -159,13 +161,10 @@ public class Robot extends SampleRobot {
 		mController = new XboxController(Ports.XBOX);
 		mNavX = new AHRS(Ports.NAVX);
 		mPDP = new PowerDistributionPanel();
+		mJoystick = new LocalJoystick(Ports.JOYSTICK);
 
 		if (RunConstants.RUNNING_DRIVE) {
 			driveInit();
-		}
-
-		if (RunConstants.SECONDARY_JOYSTICK) {
-			mJoystick = new LocalJoystick(Ports.JOYSTICK);
 		}
 
 		if (RunConstants.RUNNING_HATCH) {
@@ -261,17 +260,15 @@ public class Robot extends SampleRobot {
 			// leadscrew without hatch intake or ball
 			if (RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING) {
 				mLeadscrew.enactMovement();
-				SmartDashboard.putNumber("is enacting movement", System.currentTimeMillis());
-				SmartDashboard.putBoolean("Forward Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());
-				SmartDashboard.putBoolean("Reverse Limit Switch Closed", mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
-				SmartDashboard.putNumber("Leadscrew raw ticks", mLeadscrewEncoder.getRawTicks());
-				SmartDashboard.putNumber("leadscrew cooked ticks", mLeadscrewEncoder.getTicksFromEnd());
-				SmartDashboard.putNumber("Leadscrew inches", mLeadscrewEncoder.getDistanceInInchesFromEnd());
-				SmartDashboard.putNumber("Limelight angle",	NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0));
-				SmartDashboard.putNumber("Limelight error", CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0))));
-				SmartDashboard.putNumber("Leadscrew motor goal ticks", mLeadscrewTalon.getClosedLoopTarget());
-				SmartDashboard.putNumber("Leadscrew motor output", mLeadscrewTalon.getMotorOutputPercent());
-				SmartDashboard.putNumber("Leadscrew error", mLeadscrewTalon.getClosedLoopError());
+				SmartDashboard.putNumber("OPERATOR CONTROL: leadscrew inside", System.currentTimeMillis());
+				SmartDashboard.putBoolean("OPERATOR CONTROL: leadscrew fwd limit switch", mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());
+				SmartDashboard.putBoolean("OPERATOR CONTROL: leadscrew rev limit switch", mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
+				SmartDashboard.putNumber("OPERATOR CONTROL: leadscrew ticks", mLeadscrewTalon.getSelectedSensorPosition());
+				SmartDashboard.putNumber("OPERATOR CONTROL: leadscrew inches", mLeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getSelectedSensorPosition()));
+				SmartDashboard.putNumber("OPERATOR CONTROL: leadscrew motor goal ticks", mLeadscrewTalon.getClosedLoopTarget());
+				SmartDashboard.putNumber("OPERATOR CONTROL: leadscrew motor output", mLeadscrewTalon.getMotorOutputPercent());
+				// SmartDashboard.putNumber("Limelight angle",	NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0));
+				// SmartDashboard.putNumber("Limelight error", CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0))));
 			}
 			
 			// all intake things but not states -- for testing
@@ -298,7 +295,7 @@ public class Robot extends SampleRobot {
 			// put info on SmartDashboard
 			SmartDashboard.putString("Current State", mCurrentState.toString());
 			
-			if(RunConstants.SECONDARY_JOYSTICK){
+			if(!RunConstants.SECONDARY_JOYSTICK){ // only do this if we're using the logitech attack 3
 				mJoystick.updateProfile();
 				SmartDashboard.putNumber("JOYSTICK PROFILE NUMBER", mJoystick.getProfile());
 				SmartDashboard.putString("JOYSTICK PROFILE", (mJoystick.getProfile() == 0) ? "HATCH/LEADSCREW" : "BALL");
@@ -517,16 +514,13 @@ public class Robot extends SampleRobot {
 	public void disabled() {
 
 		while (this.isDisabled()) {
-			if (RunConstants.SECONDARY_JOYSTICK) {
-
-				if (mJoystick.getTriggerPressed()) {
-					// rotate autonomous routines to select which one to start with:
-					if (mAutonomousRoutine == AutonomousRoutineType.DEFAULT) {
-						mAutonomousRoutine = AutonomousRoutineType.DO_NOTHING;
-					} 
-					else if (mAutonomousRoutine == AutonomousRoutineType.DO_NOTHING) {
-						mAutonomousRoutine = AutonomousRoutineType.DEFAULT;
-					}
+			if (mJoystick.getTriggerPressed()) {
+				// rotate autonomous routines to select which one to start with:
+				if (mAutonomousRoutine == AutonomousRoutineType.DEFAULT) {
+					mAutonomousRoutine = AutonomousRoutineType.DO_NOTHING;
+				} 
+				else if (mAutonomousRoutine == AutonomousRoutineType.DO_NOTHING) {
+					mAutonomousRoutine = AutonomousRoutineType.DEFAULT;
 				}
 			}
 		}
@@ -627,6 +621,22 @@ public class Robot extends SampleRobot {
 		mLeadscrewTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
 		mLeadscrewTalon.setSensorPhase(LeadscrewConstants.ENCODER_REVERSED);
 		mLeadscrewTalon.setNeutralMode(NeutralMode.Brake);
+//		mLeadscrewTalon.configClearPositionOnLimitR(true, 10);			UNCOMMENT THIS AFTER TESTING
+//
+//		READ READ READ READ READ			READ READ READ READ READ		        READ READ 			READ READ READ READ READ
+//		READ READ   READ READ READ			READ READ READ READ READ		       READ   READ			READ READ READ READ READ
+//		READ READ     READ READ READ		READ READ READ READ READ		      READ     READ			READ READ      READ READ READ
+//		READ READ	    READ READ READ		READ READ						      READ     READ			READ READ      READ READ READ
+//		READ READ     READ READ READ		READ READ						     READ       READ		READ READ           READ READ 
+//		READ READ   READ READ READ			READ READ						    READ         READ		READ READ           READ READ 
+//		READ READ READ READ READ 			READ READ READ READ				    READ         READ		READ READ           READ READ
+//		READ READ  READ READ READ			READ READ READ READ				   READ READ READ READ		READ READ           READ READ  
+//		READ READ   READ READ READ			READ READ						   READ READ READ READ		READ READ           READ READ
+//	 	READ READ    READ READ READ			READ READ						  READ             READ		READ READ      READ READ READ   
+//		READ READ     READ READ READ		READ READ READ READ READ		  READ             READ		READ READ 	   READ READ READ
+//		READ READ      READ READ READ		READ READ READ READ READ		 READ               READ	READ READ READ READ READ
+//		READ READ		READ READ READ		READ READ READ READ READ		 READ               READ	READ READ READ READ READ
+//
 
 		mLeadscrewTalon.config_kP(0, LeadscrewConstants.PID.LEADSCREW_P, 10);
 		mLeadscrewTalon.config_kI(0, LeadscrewConstants.PID.LEADSCREW_I, 10);
@@ -765,7 +775,7 @@ public class Robot extends SampleRobot {
 		addLogValueDouble(logString, mController.getY(Hand.kRight));
 
 		if (RunConstants.SECONDARY_JOYSTICK) {
-			for (int i = 1; i < 12; i++) {
+			for (int i = 1; i < 19; i++) {
 				addLogValueBoolean(logString, mJoystick.getRawButton(i));
 			}
 		}
