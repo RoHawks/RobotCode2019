@@ -14,8 +14,8 @@ public class HatchIntakeConstants {
     public static class RotaryPiston {
 
         public static final Value 
-            OPEN = Value.kReverse,
-            CLOSE = Value.kForward;
+            OPEN = Value.kForward,
+            CLOSE = Value.kReverse;
 
         public static final long
             EXPAND_TIME = 500,
@@ -24,8 +24,8 @@ public class HatchIntakeConstants {
 
     public static class LinearPiston {
         public static final Value
-            OPEN = Value.kReverse, 
-            CLOSE = Value.kForward;
+            OPEN = Value.kForward, 
+            CLOSE = Value.kReverse;
 
         public static final long
             IN_TIME = 500,

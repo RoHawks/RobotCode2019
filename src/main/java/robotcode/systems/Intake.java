@@ -179,7 +179,7 @@ public class Intake {
         // take these variables to find the error (not sure if motor.getClosedLoopError
         // works, gives weird error)
         double position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-        double goal = (LeadscrewConstants.MIDDLE) - mLimelight.xAngleToDistance();
+        double goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
 
         SmartDashboard.putNumber("SCORING STEP", 0);
         SmartDashboard.putBoolean("scoring has aligned", mHasAlignedHatchScore);
@@ -190,7 +190,7 @@ public class Intake {
         // step 2: 500 milliseconds after step 1, outtake with rotary piston
         // step 3: 1000 milliseconds after step 1, bring linear piston back
 
-        if (!mHasAlignedHatchScore && Math.abs(position - goal) < LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
+        if (!mHasAlignedHatchScore && mLeadscrew.isInRange()) { //Math.abs(position - goal) < LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE
             SmartDashboard.putNumber("SCORING STEP", 1);
             mStartScoreTimeHatch = System.currentTimeMillis();
             mHatchIntake.out();

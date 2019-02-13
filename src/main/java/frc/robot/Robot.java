@@ -129,11 +129,11 @@ public class Robot extends SampleRobot {
 			}
 
 			if (RunConstants.RUNNING_HATCH){
-				mHatchIntake.contract();
+				mHatchIntake.expand();
 				mHatchIntake.in();
 			}
 
-			if(RunConstants.RUNNING_LEADSCREW){
+			if(RunConstants.RUNNING_LEADSCREW) {
 				mLeadscrew.leadscrewInitialZero();
 				Timer.delay(0.05);
 				mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
@@ -148,6 +148,7 @@ public class Robot extends SampleRobot {
 
 	public boolean dummy() {
 		int error = mLeadscrewEncoder.getError((int) mLeadscrewTalon.getClosedLoopTarget());
+		SmartDashboard.putNumber("LEADSCREW TICKS", mLeadscrew.getTalon().getSelectedSensorPosition());
 		SmartDashboard.putNumber("in dummy", System.currentTimeMillis());
 		SmartDashboard.putNumber("dummy closed loop error", error);
 		return error > LeadscrewConstants.PID.LEADSCREW_TOLERANCE;
@@ -372,7 +373,7 @@ public class Robot extends SampleRobot {
 		//mClimber.up();
 
 		// when the robot wants to score...
-		if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE) && mJoystick.getZ() < 0) {
+		if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE)) {
 			mCurrentState = RobotState.HATCH_SCORE;
 		}
 
@@ -402,13 +403,13 @@ public class Robot extends SampleRobot {
 	 */
 	private void waitingToLoad() {
 		// has_loaded button is pressed and thingy is flipped to ball side
-		if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED) && mJoystick.getZ() > 0) {
+		if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED)/* && mJoystick.getZ() > 0*/) {
 			mCurrentState = RobotState.BALL_PRESCORE;
 		}
 
 		// dc implement limit switch here
 		// load button is pressed and thingy is flipped to hatch side 
-		if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD) && mJoystick.getZ() < 0) {
+		if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD)/* && mJoystick.getZ() < 0*/) {
 			mCurrentState = RobotState.LOADING_HATCH;
 		}
 		
@@ -422,7 +423,7 @@ public class Robot extends SampleRobot {
 	private void loadingHatch() {
 		//mDriveTrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
 		// either robot or person says the thing has been intaken
-		if (mIntake.intakePanel() || (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED) && mJoystick.getZ() < 0)){
+		if (mIntake.intakePanel() || (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED) /*&& mJoystick.getZ() < 0)*/)){
 			mCurrentState = RobotState.HATCH_PRESCORE;
 		}
 	}
@@ -432,7 +433,7 @@ public class Robot extends SampleRobot {
 	 */
 	private void hatchPrescore() {
 		// when the robot wants to score...
-		if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE) && mJoystick.getZ() < 0) {
+		if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE) /*&& mJoystick.getZ() < 0*/) {
 			mCurrentState = RobotState.HATCH_SCORE;
 		}
 

@@ -30,7 +30,7 @@ public class LeadscrewConstants {
             LEADSCREW_D = 0.0001;
 
         public static final int 
-            LEADSCREW_TOLERANCE = 500, 
-            LEADSCREW_IZONE = 1000;
+            LEADSCREW_TOLERANCE = 3000, 
+            LEADSCREW_IZONE = 30000;
     }
 }

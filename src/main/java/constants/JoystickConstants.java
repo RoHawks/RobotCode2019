@@ -49,12 +49,12 @@ public class JoystickConstants {
 
     public static class FinalRobotButtons {
         public static final int
-            SCORE = 22,
-            LOAD = 23,
+            SCORE = 16,//22,
+            LOAD = 18,//23,
             LEADSCREW_OVERRIDE = 24,
             SCORE_BACKWARDS = 25,
-            HAS_LOADED = 26,
-            HAS_SCORED = 27;
+            HAS_LOADED = 17,//26,
+            HAS_SCORED = 6;//27;
 
     }
 }

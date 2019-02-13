@@ -22,51 +22,66 @@ public class LocalJoystick extends Joystick{
     }
 
     public boolean getRawButtonReleased(int pButton) {
-        int realButton = pButton - mCurrentProfile * 10;
-        if(realButton <= 1 || realButton > 11){
+        // int realButton = pButton - mCurrentProfile * 10;
+        // if(realButton <= 1 || realButton > 11){
+        //     return false;
+        // }
+        // return super.getRawButtonReleased(realButton);
+        if(pButton < 1 || pButton > 19){
             return false;
         }
-        return super.getRawButtonReleased(realButton);
+        return super.getRawButtonReleased(pButton);
     }
 
     public boolean getRawButtonPressed(int pButton){
-        int realButton = pButton - mCurrentProfile * 10;
-        if(realButton <= 1 || realButton > 11){
+        // int realButton = pButton - mCurrentProfile * 10;
+        // if(realButton <= 1 || realButton > 11){
+        //     return false;
+        // }
+        // return super.getRawButtonPressed(realButton);
+        if(pButton < 1 || pButton > 19){
             return false;
         }
-        return super.getRawButtonPressed(realButton);
+        return super.getRawButtonPressed(pButton);
     }
 
     public boolean getRawButton(int pButton){
-        int realButton = pButton - mCurrentProfile * 10;
-        if(realButton <= 1 || realButton > 11){
+        // int realButton = pButton - mCurrentProfile * 10;
+        // if(realButton <= 1 || realButton > 11){
+        //     return false;
+        // }
+        // return super.getRawButton(realButton);
+        if(pButton < 1 || pButton > 19){
             return false;
         }
-        return super.getRawButton(realButton);
+        return super.getRawButton(pButton);
     }
 
     public double getX(int pProfile) {
-        if (pProfile != mCurrentProfile) {
-            return 0;
-        } else {
-            return super.getX();
-        }
+        // if (pProfile != mCurrentProfile) {
+        //     return 0;
+        // } else {
+        //     return super.getX();
+        // }
+        return super.getX();
     }
 
     public double getY(int pProfile) {
-        if (pProfile != mCurrentProfile) {
-            return 0;
-        } else {
-            return super.getY();
-        }
+        // if (pProfile != mCurrentProfile) {
+        //     return 0;
+        // } else {
+        //     return super.getY();
+        // }
+        return super.getY();
     }
 
     public double getZ(int pProfile){
-        if (pProfile != mCurrentProfile) {
-            return 0;
-        } else {
-            return super.getZ();
-        }
+        // if (pProfile != mCurrentProfile) {
+        //     return 0;
+        // } else {
+        //     return super.getZ();
+        // }
+        return super.getZ();
     }
 
     public void updateProfile() {

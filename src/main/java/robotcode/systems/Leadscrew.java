@@ -61,11 +61,13 @@ public class Leadscrew {
      */
     public void enactMovement() {
 
+        SmartDashboard.putString("LEADSCREW STATE", mLeadscrewState.toString());
+
         // change states
         if (mJoystick.getRawButton(JoystickConstants.LeadscrewButtons.MANUAL)) {
             mLeadscrewState = LeadscrewState.MANUAL;
         } 
-        else if (mJoystick.getRawButtonReleased(JoystickConstants.LeadscrewButtons.CAMERA_ALIGN)) {
+        else if (mJoystick.getRawButton(JoystickConstants.LeadscrewButtons.CAMERA_ALIGN)) {
             mLeadscrewState = LeadscrewState.CAMERA_ALIGN;
         } 
         else if (mJoystick.getRawButton(3)){
@@ -76,14 +78,14 @@ public class Leadscrew {
         // }
 
         // zero sensor
-        if (mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
-            zero();
-        }
+        // if (mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
+        //     zero();
+        // }
 
         // do stuff
         switch (mLeadscrewState) {
             case MANUAL:
-                setSpeedJoystick();
+                mLeadscrew.set(ControlMode.PercentOutput, (Math.abs(mJoystick.getX()) > 0.25) ? mJoystick.getX() : 0);
                 break;
             case CAMERA_ALIGN:
                 centerWithCamera();
@@ -161,7 +163,7 @@ public class Leadscrew {
         if(mHatchCamera.hasTarget()) {
             SmartDashboard.putBoolean("TAPE TARGET ACQUIRED", true);
             double error = mHatchCamera.xAngleToDistance();
-            double goal = (LeadscrewConstants.LENGTH / 2) + error;
+            double goal = LeadscrewConstants.MIDDLE + error;
             SmartDashboard.putNumber("Distance from Camera", goal - mEncoder.getDistanceInInchesFromEnd());
             if (Math.abs(goal - mEncoder.getDistanceInInchesFromEnd()) > LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
                 setPosition(goal);
@@ -187,16 +189,17 @@ public class Leadscrew {
         while (!mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
             mLeadscrew.set(ControlMode.PercentOutput, getInSoftLimit() ? -0.15 : -0.3);
             SmartDashboard.putNumber("is zeroing", System.currentTimeMillis());
-            SmartDashboard.putNumber("Talon zeroing error value", mLeadscrew.getClosedLoopError());
-            SmartDashboard.putNumber("Talon zeroing target value", mLeadscrew.getClosedLoopTarget());
-
+            //SmartDashboard.putNumber("Talon zeroing error value", mLeadscrew.getClosedLoopError());
+            //SmartDashboard.putNumber("Talon zeroing target value", mLeadscrew.getClosedLoopTarget());
         }
         mLeadscrew.set(ControlMode.PercentOutput, 0);
         zero();
     }
 
     public boolean isInRange(){
-        return Math.abs(mEncoder.getError((int) mLeadscrew.getClosedLoopTarget())) <= LeadscrewConstants.PID.LEADSCREW_TOLERANCE;
+        boolean inRange = Math.abs(mEncoder.getError((int) mLeadscrew.getClosedLoopTarget())) <= LeadscrewConstants.PID.LEADSCREW_TOLERANCE;
+        SmartDashboard.putBoolean("Leadscrew is in range", inRange);
+        return inRange;
     }
 
 
