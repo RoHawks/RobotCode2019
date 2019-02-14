@@ -37,15 +37,24 @@ public class Climber {
         }
 
         if(mJoystick.getRawButton(JoystickConstants.ClimbButtons.FRONT) && Math.abs(mJoystick.getY()) > 0.25){
-            mFrontTalon.set(ControlMode.PercentOutput, mJoystick.getY(JoystickConstants.CLIMB_PROFILE));
+            mFrontTalon.set(ControlMode.PercentOutput, -mJoystick.getY(JoystickConstants.CLIMB_PROFILE));
+        }
+        else {
+            mFrontTalon.set(0);
         }
 
         if(mJoystick.getRawButton(JoystickConstants.ClimbButtons.BACK) && Math.abs(mJoystick.getY()) > 0.25){
-            mBackTalon.set(ControlMode.PercentOutput, mJoystick.getY(JoystickConstants.CLIMB_PROFILE));
+            mBackTalon.set(ControlMode.PercentOutput, -mJoystick.getY(JoystickConstants.CLIMB_PROFILE));
+        }
+        else{
+            mBackTalon.set(0);
         }
 
-        if(mJoystick.getRawButton(JoystickConstants.ClimbButtons.DRIVE) && Math.abs(mJoystick.getZ()) > 0.25){
-            mDriveTalon.set(ControlMode.PercentOutput, mJoystick.getZ(JoystickConstants.CLIMB_PROFILE));
+        if(mJoystick.getRawButton(JoystickConstants.ClimbButtons.DRIVE) && Math.abs(mJoystick.getZ()) > 0.5){
+            mDriveTalon.set(ControlMode.PercentOutput, -Math.signum(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) * (Math.abs(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) - 0.5));
+        }
+        else{
+            mDriveTalon.set(0);
         }
     }
 

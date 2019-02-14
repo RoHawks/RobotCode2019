@@ -1,12 +1,14 @@
 package robotcode.driving;
 
 import constants.DriveConstants;
+import constants.JoystickConstants;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import resource.ResourceFunctions;
 import resource.Vector;
+import robotcode.LocalJoystick;
 import robotcode.pid.GenericPIDOutput;
 import sensors.RobotAngle;
 
@@ -20,6 +22,7 @@ public class DriveTrain {
 	private RobotAngle mRobotAngle;
 	private XboxController mController;
 	private double mJoystickAngle;
+	private LocalJoystick mJoystick;
 
 	// End products
 	private Vector mDesiredRobotVel;
@@ -39,10 +42,11 @@ public class DriveTrain {
 	private LinearVelocity mPrevLinearVel;
 	private RotationalVelocity mRotationalVel;
 
-	public DriveTrain(Wheel[] pWheels, XboxController pController, RobotAngle pRobotAngle) {
+	public DriveTrain(Wheel[] pWheels, XboxController pController, RobotAngle pRobotAngle, LocalJoystick pJoystick) {
 		mWheels = pWheels;
 		mController = pController;
 		mSwerveDrive = new SwerveDrive(mWheels);
+		mJoystick = pJoystick;
 
 		mRobotAngle = pRobotAngle;
 
@@ -70,7 +74,8 @@ public class DriveTrain {
 		NONE,
 		NORMAL,
 		NUDGE,
-		POV
+		POV,
+		SECONDARY
 	}
 
 	private void enactMovement() {
@@ -84,6 +89,8 @@ public class DriveTrain {
 
 		double joystickAngle = pRobotDirectionAngle;
 		double robotDirectionAngle = joystickAngle;
+
+		double secondaryJoystickAngle = 0;
 
 		mLinearVel = pLinearVel;
 		mRotationalVel = pRotationalVel;
@@ -101,6 +108,35 @@ public class DriveTrain {
 		}
 
 		SmartDashboard.putBoolean("Field Relative", mIsFieldRelative);
+
+		if(mRotationalVel == RotationalVelocity.SECONDARY){
+			if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_BOTTOM)){
+				secondaryJoystickAngle = 331.3;
+			}
+			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_SIDE) || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_RIGHT)){
+				secondaryJoystickAngle = 270;
+			}
+			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_TOP)){
+				secondaryJoystickAngle = 208.7;
+			}
+			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_BOTTOM)){
+				secondaryJoystickAngle = 28.7;
+			}
+			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_SIDE) || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_LEFT)){
+				secondaryJoystickAngle = 90;
+			}
+			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_TOP)){
+				secondaryJoystickAngle = 151.3;
+			}
+			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LOADING_STATION)){
+				secondaryJoystickAngle = 180;
+			}
+			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_FRONT)){
+				secondaryJoystickAngle = 0;
+			}
+		}
+
+		
 
 		Vector linearVel = new Vector();
 		switch (mLinearVel) {
@@ -135,6 +171,10 @@ public class DriveTrain {
 				break;
 			case POV:
 				mDesiredAngularVel = getAngularPIDVel(pGyroAngle); // TZ
+				SmartDashboard.putNumber("Gyro PID error", mGyroPID.getError());
+				break;
+			case SECONDARY:
+				mDesiredAngularVel = getAngularPIDVel(secondaryJoystickAngle);
 				SmartDashboard.putNumber("Gyro PID error", mGyroPID.getError());
 				break;
 			default:
@@ -379,7 +419,19 @@ public class DriveTrain {
 	 * @return bumper --> nudge; no move --> none; else --> normal
 	 */
 	private RotationalVelocity getRotationalVelocityState() {
-		if (mController.getPOV() >= 0) {
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_RIGHT)
+		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_FRONT) 
+		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_LEFT)
+		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_BOTTOM)
+		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_SIDE)
+		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_TOP)
+		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LOADING_STATION)
+		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_BOTTOM)
+		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_SIDE)
+		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_TOP)){
+			return RotationalVelocity.SECONDARY;
+		 }
+		else if (mController.getPOV() >= 0) {
 			return RotationalVelocity.POV;
 		} 
 		else if (mController.getBumper(Hand.kRight) || mController.getBumper(Hand.kLeft)) {
@@ -395,6 +447,33 @@ public class DriveTrain {
 		return (mController.getAButton() || mController.getBButton() || mController.getXButton()
 				|| mController.getYButton());
 	}
+
+	// private boolean getGyroGoalAngle() {
+	// 	if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_BOTTOM)){
+	// 		secondaryJoystickAngle = 331.3;
+	// 	}
+	// 	else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_SIDE) || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_RIGHT)){
+	// 		secondaryJoystickAngle = 270;
+	// 	}
+	// 	else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_TOP)){
+	// 		secondaryJoystickAngle = 208.7;
+	// 	}
+	// 	else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_BOTTOM)){
+	// 		secondaryJoystickAngle = 28.7;
+	// 	}
+	// 	else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_SIDE) || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_LEFT)){
+	// 		secondaryJoystickAngle = 90;
+	// 	}
+	// 	else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_TOP)){
+	// 		secondaryJoystickAngle = 151.3;
+	// 	}
+	// 	else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LOADING_STATION)){
+	// 		secondaryJoystickAngle = 180;
+	// 	}
+	// 	else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_FRONT)){
+	// 		secondaryJoystickAngle = 0;
+	// 	}
+	// }
 
 	/**
 	 * Calculate angular velocity to turn to a certain angle

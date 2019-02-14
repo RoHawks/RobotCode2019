@@ -19,6 +19,7 @@ import constants.RunConstants;
 import constants.RobotState;
 import constants.BallIntakeConstants;
 import constants.CameraConstants;
+import constants.ClimberConstants;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.CameraServer;
@@ -241,7 +242,9 @@ public class Robot extends SampleRobot {
 
 		while (isOperatorControl() && isEnabled()) {
 			if (RunConstants.RUNNING_DRIVE) {
+				
 				swerveDrive();
+				
 				for (int i = 0; i < 4; i++) {
 					SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].getMotorOutputPercent());
 				}
@@ -457,7 +460,7 @@ public class Robot extends SampleRobot {
 			mHasStartedHatchPrescore = true;
 		}
 
-		long hatchPrescoreElapsedMilliseconds = mTimeStartHatchPrescore - System.currentTimeMillis();
+		long hatchPrescoreElapsedMilliseconds = System.currentTimeMillis() - mTimeStartHatchPrescore;
 
 		if(hatchPrescoreElapsedMilliseconds > 500){
 			// when the robot wants to score...
@@ -582,7 +585,7 @@ public class Robot extends SampleRobot {
 			// initialize drive motors and set values:
 			mDrive[i] = new WPI_TalonSRX(drivePort);
 			mDrive[i].setInverted(driveReversed);
-			mDrive[i].setNeutralMode(NeutralMode.Brake);
+			mDrive[i].setNeutralMode(NeutralMode.Brake); //TOOD check
 			mDrive[i].configPeakOutputForward(1, 10);
 			mDrive[i].configPeakOutputReverse(-1, 10);
 			mDrive[i].configPeakCurrentDuration(1000, 10);
@@ -596,7 +599,7 @@ public class Robot extends SampleRobot {
 		}
 
 		mRobotAngle = new RobotAngle(mNavX, false, 0);
-		mDriveTrain = new DriveTrain(mWheel, mController, mRobotAngle);
+		mDriveTrain = new DriveTrain(mWheel, mController, mRobotAngle, mJoystick);
 	}
 
 	private void hatchIntakeInit() {
@@ -621,22 +624,7 @@ public class Robot extends SampleRobot {
 		mLeadscrewTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
 		mLeadscrewTalon.setSensorPhase(LeadscrewConstants.ENCODER_REVERSED);
 		mLeadscrewTalon.setNeutralMode(NeutralMode.Brake);
-//		mLeadscrewTalon.configClearPositionOnLimitR(true, 10);			UNCOMMENT THIS AFTER TESTING
-//
-//		READ READ READ READ READ			READ READ READ READ READ		        READ READ 			READ READ READ READ READ
-//		READ READ   READ READ READ			READ READ READ READ READ		       READ   READ			READ READ READ READ READ
-//		READ READ     READ READ READ		READ READ READ READ READ		      READ     READ			READ READ      READ READ READ
-//		READ READ	    READ READ READ		READ READ						      READ     READ			READ READ      READ READ READ
-//		READ READ     READ READ READ		READ READ						     READ       READ		READ READ           READ READ 
-//		READ READ   READ READ READ			READ READ						    READ         READ		READ READ           READ READ 
-//		READ READ READ READ READ 			READ READ READ READ				    READ         READ		READ READ           READ READ
-//		READ READ  READ READ READ			READ READ READ READ				   READ READ READ READ		READ READ           READ READ  
-//		READ READ   READ READ READ			READ READ						   READ READ READ READ		READ READ           READ READ
-//	 	READ READ    READ READ READ			READ READ						  READ             READ		READ READ      READ READ READ   
-//		READ READ     READ READ READ		READ READ READ READ READ		  READ             READ		READ READ 	   READ READ READ
-//		READ READ      READ READ READ		READ READ READ READ READ		 READ               READ	READ READ READ READ READ
-//		READ READ		READ READ READ		READ READ READ READ READ		 READ               READ	READ READ READ READ READ
-//
+		//mLeadscrewTalon.configClearPositionOnLimitR(true, 10);
 
 		mLeadscrewTalon.config_kP(0, LeadscrewConstants.PID.LEADSCREW_P, 10);
 		mLeadscrewTalon.config_kI(0, LeadscrewConstants.PID.LEADSCREW_I, 10);
@@ -659,8 +647,11 @@ public class Robot extends SampleRobot {
 
 	private void climberInit(){
 		mFrontClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_FRONT);
+		mFrontClimbTalon.setInverted(ClimberConstants.FRONT_REVERSED);
 		mBackClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_BACK);
+		mBackClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
 		mDriveClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_DRIVE);
+		mDriveClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
 		mClimbShifter = new SingleSolenoidReal(Ports.ActualRobot.SHIFTER_SOLENOID_IN);
 		mClimber = new Climber(mFrontClimbTalon, mBackClimbTalon, mDriveClimbTalon, mClimbShifter, mJoystick);
 	}

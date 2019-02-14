@@ -17,7 +17,7 @@ public class RobotAngle extends RotationInputter implements PIDSource {
 	}
 
 	public double getRawAngleDegrees() {
-		return mNavX.getAngle();
+		return mNavX.getAngle() % 360;
 	}
 
 	public double getAngularVelocity() {

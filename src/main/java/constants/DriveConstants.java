@@ -56,14 +56,14 @@ public class DriveConstants {
 			ROTATION_TOLERANCE = new int[] { 5, 5, 5, 5 };
 			
 		public static final double
-			GYRO_P = 0.00085,
-			GYRO_I = 0.0003,
+			GYRO_P = 0.007,
+			GYRO_I = 0.00007,
 			GYRO_D = 0,
 			GYRO_TOLERANCE = 5,
 			GYRO_MAX_SPEED = 1,
 			
-			DRIFT_COMP_P = 0.08,
-			DRIFT_COMP_I = 0.0008,
+			DRIFT_COMP_P = 0.06,
+			DRIFT_COMP_I = 0.0006,
 			DRIFT_COMP_D = 0,
 			DRIFT_COMP_MAX = 0.3;
 	}
