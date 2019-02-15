@@ -2,6 +2,8 @@ package robotcode.driving;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.ControlType;
 
 import constants.DriveConstants;
 import resource.ResourceFunctions;
@@ -11,10 +13,10 @@ import sensors.TalonAbsoluteEncoder;
 public class Wheel {
 
 	private WPI_TalonSRX mTurn;
-	private WPI_TalonSRX mDrive;
+	private CANSparkMax mDrive;
 	private TalonAbsoluteEncoder mEncoder;
 
-	public Wheel(WPI_TalonSRX pTurn, WPI_TalonSRX pDrive, TalonAbsoluteEncoder pEncoder) 
+	public Wheel(WPI_TalonSRX pTurn, CANSparkMax pDrive, TalonAbsoluteEncoder pEncoder) 
 	{
 		mTurn = pTurn;
 		mDrive = pDrive;
@@ -49,7 +51,7 @@ public class Wheel {
 	public void setLinearVelocity(double pSpeed) 
 	{
 		double speed = Math.signum(pSpeed) * Math.min(Math.abs(pSpeed), DriveConstants.MAX_LINEAR_VELOCITY);
-		mDrive.set(ControlMode.PercentOutput, speed);
+		mDrive.set(speed);
 	}
 
 	public void setAngle(double pAngle) {

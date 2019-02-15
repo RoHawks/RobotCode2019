@@ -9,6 +9,9 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import autonomous.AutonomousRoutineType;
 import autonomous.commands.AutonomousCommand;
@@ -67,8 +70,8 @@ public class Robot extends SampleRobot {
 	// drive train
 	private DriveTrain mDriveTrain;
 	private Wheel[] mWheel = new Wheel[4];
+	private CANSparkMax[] mDrive = new CANSparkMax[4];
 	private WPI_TalonSRX[] mTurn = new WPI_TalonSRX[4];
-	private WPI_TalonSRX[] mDrive = new WPI_TalonSRX[4];
 	private TalonAbsoluteEncoder[] mEncoder = new TalonAbsoluteEncoder[4];
 
 	// gyro
@@ -258,7 +261,7 @@ public class Robot extends SampleRobot {
 			if (RunConstants.RUNNING_DRIVE) {	
 				swerveDrive();
 				for (int i = 0; i < 4; i++) {
-					SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].getMotorOutputPercent());
+					SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].get());
 				}
 			}
 
@@ -599,17 +602,13 @@ public class Robot extends SampleRobot {
 			mTurn[i].configAllowableClosedloopError(0, rotTol, 10);
 			mTurn[i].configPeakOutputForward(1, 10);
 			mTurn[i].configPeakOutputReverse(-1, 10);
-
+			
 			// initialize drive motors and set values:
-			mDrive[i] = new WPI_TalonSRX(drivePort);
+			mDrive[i] = new CANSparkMax(drivePort, MotorType.kBrushless);
 			mDrive[i].setInverted(driveReversed);
-			mDrive[i].setNeutralMode(NeutralMode.Brake); //TOOD check
-			mDrive[i].configPeakOutputForward(1, 10);
-			mDrive[i].configPeakOutputReverse(-1, 10);
-			mDrive[i].configPeakCurrentDuration(1000, 10);
-			mDrive[i].configPeakCurrentLimit(150, 10);
-			mDrive[i].configContinuousCurrentLimit(80, 10);
-			mDrive[i].enableCurrentLimit(true);
+			mDrive[i].setIdleMode(IdleMode.kBrake); //TOOD check
+			mDrive[i].setCANTimeout(10);
+			mDrive[i].setOpenLoopRampRate(0.2);
 
 			// initialize turn motors' encoders, as well as wheels:
 			mEncoder[i] = new TalonAbsoluteEncoder(mTurn[i], ResourceFunctions.tickToAngle(turnOffset));
@@ -822,7 +821,7 @@ public class Robot extends SampleRobot {
 				addLogValueDouble(logString, mDrive[i].getOutputCurrent());
 
 				addLogValueDouble(logString, mTurn[i].getMotorOutputVoltage());
-				addLogValueDouble(logString, mDrive[i].getMotorOutputVoltage());
+				addLogValueDouble(logString, mDrive[i].getBusVoltage());
 
 				addLogValueDouble(logString, mEncoder[i].getAngleDegrees());
 			}
