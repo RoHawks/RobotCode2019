@@ -25,7 +25,7 @@ public class Ports {
 		// DRIVETRAIN
 		public static final int[] 
 			TURN = new int[] { 11, 1, 2, 10 },
-			DRIVE = new int[] { 3, 0, 1, 2 }; // Right back, right front, left front, left back
+			DRIVE = new int[] { 3, 0, 1, 2 };//{ 12, 0, 3, 9 }; // Right back, right front, left front, left back
 		
 		// HATCH INTAKE
 		public static final int
