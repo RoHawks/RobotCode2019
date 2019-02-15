@@ -65,13 +65,13 @@ public class Leadscrew {
 
 
         // change states
-        if (mJoystick.getRawButton(JoystickConstants.LeadscrewButtons.MANUAL)) {
+        if (mJoystick.getRawButtonPressed(6)) {
             mLeadscrewState = LeadscrewState.MANUAL;
         } 
-        else if (mJoystick.getRawButton(JoystickConstants.LeadscrewButtons.CAMERA_ALIGN)) {
+        else if (mJoystick.getRawButtonPressed(2)) {
             mLeadscrewState = LeadscrewState.CAMERA_ALIGN;
         } 
-        else if (mJoystick.getRawButton(3)){
+        else if (mJoystick.getRawButtonPressed(3)){
             mLeadscrewState = LeadscrewState.CENTER;
         }
         // else {
@@ -79,7 +79,7 @@ public class Leadscrew {
         // }
 
         // zero sensor
-        if (mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
+        if (!mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
             zero();
         }
 
@@ -187,13 +187,15 @@ public class Leadscrew {
      * when the robot starts up, drive the leadscrew to the end that zeroes it and set to zero
      */
     public void leadscrewInitialZero() {
-        while (!mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
-            mLeadscrew.set(ControlMode.PercentOutput, getInSoftLimit() ? -0.15 : -0.3);
+        while (mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
+            mLeadscrew.set(ControlMode.PercentOutput, -0.2);
             SmartDashboard.putNumber("is zeroing", System.currentTimeMillis());
             //SmartDashboard.putNumber("Talon zeroing error value", mLeadscrew.getClosedLoopError());
             //SmartDashboard.putNumber("Talon zeroing target value", mLeadscrew.getClosedLoopTarget());
         }
         mLeadscrew.set(ControlMode.PercentOutput, 0);
+        // mLeadscrewTalon.configForwardSoftLimitEnable(true, 10);
+		// mLeadscrewTalon.configReverseSoftLimitEnable(true, 10);
         zero();
     }
 

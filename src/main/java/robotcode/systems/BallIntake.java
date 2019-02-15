@@ -35,11 +35,11 @@ public class BallIntake {
     // **************//
 
     public void forward(){
-        mRotary.set(BallIntakeConstants.RotaryPiston.OPEN);
+        mRotary.set(BallIntakeConstants.RotaryPiston.FORWARD);
     }
 
     public void backward(){
-        mRotary.set(BallIntakeConstants.RotaryPiston.CLOSE);
+        mRotary.set(BallIntakeConstants.RotaryPiston.BACKWARD);
     }
 
     public void setRotaryOpposite(){
@@ -51,11 +51,11 @@ public class BallIntake {
     // ************//
 
     public void lock(){
-        mLock.set(BallIntakeConstants.LinearLockPiston.OPEN);
+        mLock.set(BallIntakeConstants.LinearLockPiston.LOCK);
     }
 
     public void letGo(){
-        mLock.set(BallIntakeConstants.LinearLockPiston.CLOSE);
+        mLock.set(BallIntakeConstants.LinearLockPiston.LET_GO);
     }
 
     public void setLockOpposite(){
@@ -67,11 +67,11 @@ public class BallIntake {
     // **************//
 
     public void retain(){
-        mRetain.set(BallIntakeConstants.LinearLockPiston.OPEN);
+        mRetain.set(BallIntakeConstants.LinearRetainPiston.RETAIN);
     }
 
     public void release(){
-        mRetain.set(BallIntakeConstants.LinearLockPiston.CLOSE);
+        mRetain.set(BallIntakeConstants.LinearRetainPiston.RELEASE);
     }
 
     public void setRetainOpposite(){

@@ -50,6 +50,11 @@ public class Ports {
 
 			SHIFTER_SOLENOID_IN = 3;
 
+		// FRONT LIMIT SWITCHES
+		public static final int 
+			FRONT_LIMIT_LEFT = 8,
+			FRONT_LIMIT_RIGHT = 9;
+
 	}
 	
 	//***************************//

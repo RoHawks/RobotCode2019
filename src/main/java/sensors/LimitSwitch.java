@@ -5,14 +5,25 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package constants;
+package sensors;
+
+import edu.wpi.first.wpilibj.DigitalGlitchFilter;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 /**
  * Add your docs here.
  */
-public class CameraConstants {
+public class LimitSwitch extends DigitalInput implements IDigitalInput{
 
-    public static final double HEIGHT = 15.16; //16.25, 13.9375;//13.75;
-    public static final int PIPELINE = 1;
+    private DigitalGlitchFilter mFilter;
 
+    public LimitSwitch(int pPort){
+        super(pPort);
+        mFilter = new DigitalGlitchFilter();
+    }
+
+    public boolean get() {
+
+        return super.get();
+    }
 }

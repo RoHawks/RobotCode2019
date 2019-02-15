@@ -56,10 +56,16 @@ public class JoystickConstants {
 
     public static class BallGateButtons {
         public static final int
-            MANUAL = 2 + (BALL_PROFILE * 10),
-            HOLD = 3 + (BALL_PROFILE * 10),
-            SCORE_ROCKET = 4 + (BALL_PROFILE * 10),
-            SCORE_CARGOSHIP = 5 + (BALL_PROFILE * 10);
+            RETAIN = 2 + (BALL_PROFILE * 10),
+            UNRETAIN = 3 + (BALL_PROFILE * 10),
+            LOCK = 4 + (BALL_PROFILE * 10),
+            UNLOCK = 5 + (BALL_PROFILE * 10),
+            SCORE = 6 + (BALL_PROFILE * 10),
+            UNSCORE = 7 + (BALL_PROFILE * 10);
+            // MANUAL = 2 + (BALL_PROFILE * 10),
+            // HOLD = 3 + (BALL_PROFILE * 10),
+            // SCORE_ROCKET = 4 + (BALL_PROFILE * 10),
+            // SCORE_CARGOSHIP = 5 + (BALL_PROFILE * 10);
     }
 
     public static class ClimbButtons{
@@ -73,12 +79,12 @@ public class JoystickConstants {
 
     public static class FinalRobotButtons {
         public static final int
-            SCORE = 16,//22,
-            LOAD = 18,//23,
-            LEADSCREW_OVERRIDE = 24,
-            SCORE_BACKWARDS = 25,
-            HAS_LOADED = 17,//26,
-            HAS_SCORED = 6,//27;
+            SCORE_PANEL_CARGO = 16,
+            LOAD_PANEL = 18,
+            LEADSCREW_OVERRIDE = 1,
+            SCORE_PANEL_ROCKET = 15,
+            HAS_LOADED_PANEL = 17,
+            HAS_SCORED_PANEL = 6,
             LOADING_STATION = 11,
             CARGO_SHIP_FRONT = 7,
             LEFT_ROCKET_SIDE = 5,
@@ -88,7 +94,16 @@ public class JoystickConstants {
             RIGHT_ROCKET_TOP = 8,
             RIGHT_ROCKET_BOTTOM = 10,
             CARGO_SHIP_LEFT = 9,
-            CARGO_SHIP_RIGHT = 5;
+            CARGO_SHIP_RIGHT = 5,
+            SCORE_BALL_ROCKET = 23,
+            SCORE_BALL_CARGO = 22,
+            LOAD_BALL = 25,
+            HAS_LOADED_BALL = 24,
+            HAS_SCORED_BALL = 21,
+            BALL_PANEL_SWITCH = 19, //when ball, off, when panel, on
+            A = 4,
+            B = 3,
+            C = 2; 
 
     }
 }

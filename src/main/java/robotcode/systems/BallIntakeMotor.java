@@ -36,18 +36,18 @@ public class BallIntakeMotor {
     }
 
     public void enactMovement() {
-        if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.HOLD)) {
-            mBallIntakeState = BallIntakeState.HOLD;
-        } 
-        else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.SCORE_CARGOSHIP)) {
-            mBallIntakeState = BallIntakeState.CARGOSHIP;
-        } 
-        else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.SCORE_ROCKET)) {
-            mBallIntakeState = BallIntakeState.ROCKET;
-        } 
-        else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.MANUAL)) {
-            mBallIntakeState = BallIntakeState.MANUAL;
-        }
+        // if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.HOLD)) {
+        //     mBallIntakeState = BallIntakeState.HOLD;
+        // } 
+        // else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.SCORE_CARGOSHIP)) {
+        //     mBallIntakeState = BallIntakeState.CARGOSHIP;
+        // } 
+        // else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.SCORE_ROCKET)) {
+        //     mBallIntakeState = BallIntakeState.ROCKET;
+        // } 
+        // else if (mJoystick.getRawButtonReleased(JoystickConstants.BallGateButtons.MANUAL)) {
+        //     mBallIntakeState = BallIntakeState.MANUAL;
+        // }
 
         switch(mBallIntakeState){
             case HOLD:

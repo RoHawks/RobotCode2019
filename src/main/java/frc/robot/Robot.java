@@ -3,7 +3,10 @@ package frc.robot;
 import java.util.ArrayList;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
+import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 
@@ -21,9 +24,9 @@ import constants.BallIntakeConstants;
 import constants.CameraConstants;
 import constants.ClimberConstants;
 import edu.wpi.cscore.UsbCamera;
-import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.Joystick;
@@ -45,6 +48,7 @@ import robotcode.systems.Climber;
 import robotcode.systems.HatchIntake;
 import robotcode.systems.Intake;
 import robotcode.systems.Leadscrew;
+import sensors.BumperSensor;
 import sensors.LeadscrewEncoder;
 import sensors.RobotAngle;
 import sensors.TalonAbsoluteEncoder;
@@ -96,6 +100,10 @@ public class Robot extends SampleRobot {
 	private SolenoidInterface mClimbShifter;
 	private Climber mClimber;
 	
+	// digital inputs
+	private DigitalInput mFrontLimitLeft, mFrontLimitRight;
+	private BumperSensor mBumperSensor;
+
 	// PDP and compressor
 	private PowerDistributionPanel mPDP;
 	private Compressor mCompressor;
@@ -104,7 +112,7 @@ public class Robot extends SampleRobot {
 	private AutonomousRoutineType mAutonomousRoutine = AutonomousRoutineType.DEFAULT;
 
 	// game setup
-	private boolean mInGame = false;
+	private boolean mInGame = false, mCameraInitialized = false;
 	private long mGameStartMillis;
 	RobotState mCurrentState = RobotState.INITIAL_HOLDING_HATCH;
 
@@ -163,6 +171,12 @@ public class Robot extends SampleRobot {
 		mNavX = new AHRS(Ports.NAVX);
 		mPDP = new PowerDistributionPanel();
 		mJoystick = new LocalJoystick(Ports.JOYSTICK);
+		mCompressor = new Compressor(Ports.COMPRESSOR);
+
+		mFrontLimitLeft = new DigitalInput(Ports.ActualRobot.FRONT_LIMIT_LEFT);
+		mFrontLimitRight = new DigitalInput(Ports.ActualRobot.FRONT_LIMIT_RIGHT);
+		
+		mBumperSensor = new BumperSensor (mFrontLimitLeft, mFrontLimitRight);
 
 		if (RunConstants.RUNNING_DRIVE) {
 			driveInit();
@@ -181,9 +195,10 @@ public class Robot extends SampleRobot {
 		}
 
 		if (RunConstants.RUNNING_CAMERA) {
-			UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-			camera.setResolution(240, 180);
-			camera.setFPS(30);
+			cameraInit();
+			// UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+			// camera.setResolution(240, 180);
+			// camera.setFPS(30);
 		}
 
 		if (RunConstants.RUNNING_LEADSCREW && RunConstants.RUNNING_HATCH) {
@@ -194,7 +209,6 @@ public class Robot extends SampleRobot {
 			climberInit();
 		}
 
-		mCompressor = new Compressor(Ports.COMPRESSOR);
 	}
 
 	public void autonomous() {
@@ -241,10 +255,8 @@ public class Robot extends SampleRobot {
 		startGame();
 
 		while (isOperatorControl() && isEnabled()) {
-			if (RunConstants.RUNNING_DRIVE) {
-				
+			if (RunConstants.RUNNING_DRIVE) {	
 				swerveDrive();
-				
 				for (int i = 0; i < 4; i++) {
 					SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].getMotorOutputPercent());
 				}
@@ -304,6 +316,7 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putString("JOYSTICK PROFILE", (mJoystick.getProfile() == 0) ? "HATCH/LEADSCREW" : "BALL");
 			}
 			
+			SmartDashboard.putString("bumper state", mBumperSensor.getState().toString());
 			Timer.delay(0.005); // wait for a motor update time
 		}
 	}
@@ -373,12 +386,12 @@ public class Robot extends SampleRobot {
 		//mClimber.up();
 
 		// when the robot wants to score...
-		if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE)) {
+		if ((mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO))) {
 			mCurrentState = RobotState.HATCH_SCORE;
 		}
 
 		// if we accidentally drop the panel...
-		else if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD)){
+		else if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)){
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 
@@ -390,7 +403,7 @@ public class Robot extends SampleRobot {
 	 */
 	private void hatchScore() {
 		// if robot or driver says scoring is done...
-		if (mIntake.scorePanel() || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED)) {
+		if (mIntake.scorePanel() || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL)) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 		// dc look this over i thought smth ws wrong then forgot wwhat i thought
@@ -415,7 +428,7 @@ public class Robot extends SampleRobot {
 		long waitingElapsedMilliseconds = System.currentTimeMillis() - mStartWaitingToLoad;
 
 		if (waitingElapsedMilliseconds > 500) {
-			if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED)/* && mJoystick.getZ() > 0*/) {
+			if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL)/* && mJoystick.getZ() > 0*/) {
 				mCurrentState = RobotState.BALL_PRESCORE;
 				mStartWaitingToLoad = 0;
 				mHasWaitedToLoad = false;
@@ -423,7 +436,7 @@ public class Robot extends SampleRobot {
 	
 			// dc implement limit switch here
 			// load button is pressed and thingy is flipped to hatch side 
-			else if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD)/* && mJoystick.getZ() < 0*/) {
+			else if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)/* && mJoystick.getZ() < 0*/) {
 				mCurrentState = RobotState.LOADING_HATCH;
 				mStartWaitingToLoad = 0;
 				mHasWaitedToLoad = false;
@@ -442,7 +455,7 @@ public class Robot extends SampleRobot {
 	private void loadingHatch() {
 		//mDriveTrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
 		// either robot or person says the thing has been intaken
-		if (mIntake.intakePanel() || (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED) /*&& mJoystick.getZ() < 0)*/)){
+		if (mIntake.intakePanel() || (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL) /*&& mJoystick.getZ() < 0)*/)){
 			mCurrentState = RobotState.HATCH_PRESCORE;
 		}
 	}
@@ -464,14 +477,14 @@ public class Robot extends SampleRobot {
 
 		if(hatchPrescoreElapsedMilliseconds > 500){
 			// when the robot wants to score...
-			if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE) /*&& mJoystick.getZ() < 0*/) {
+			if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO) /*&& mJoystick.getZ() < 0*/) {
 				mCurrentState = RobotState.HATCH_SCORE;
 				mTimeStartHatchPrescore = 0;
 				mHasStartedHatchPrescore = false;
 			}
 
 			// if we accidentally drop the panel... TODO check transition
-			else if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD)){
+			else if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)){
 				mCurrentState = RobotState.WAITING_TO_LOAD;
 				mTimeStartHatchPrescore = 0;
 				mHasStartedHatchPrescore = false;
@@ -484,19 +497,24 @@ public class Robot extends SampleRobot {
 	 * 
 	 */
 	private void ballPrescore() {
-		// Do some action... move to a different state?
+		if(mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)){
+
+		}
+		else if(mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)){
+			
+		}
 	}
 
 	private void ballFrontScore() {
 		// if robot or driver says scoring is done...
-		if (mIntake.scoreBallHigh() || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED)) {
+		if (mIntake.scoreBallHigh() || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
 
 	private void ballBackScore() {
 		// if robot or driver says scoring is done...
-		if (mIntake.scoreBallLow() || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED)) {
+		if (mIntake.scoreBallLow() || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
@@ -617,6 +635,19 @@ public class Robot extends SampleRobot {
 		mBallIntake = new BallIntake(mBallRotary, mBallLock, mBallRetain);
 	}
 
+	private void cameraInit() {
+
+		if(!mCameraInitialized){
+			mHatchCamera = new Limelight();
+			mHatchCamera.setVisionProcessor();
+			mHatchCamera.setPipeline(CameraConstants.PIPELINE);
+			mHatchCamera.setLedFromPipeline();
+			mHatchCamera.setStreamSecondary();
+			mCameraInitialized = true;
+		}
+		
+	}
+
 	private void leadscrewInit() {
 		mLeadscrewTalon = new WPI_TalonSRX(Ports.ActualRobot.LEADSCREW);
 
@@ -624,7 +655,18 @@ public class Robot extends SampleRobot {
 		mLeadscrewTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
 		mLeadscrewTalon.setSensorPhase(LeadscrewConstants.ENCODER_REVERSED);
 		mLeadscrewTalon.setNeutralMode(NeutralMode.Brake);
-		//mLeadscrewTalon.configClearPositionOnLimitR(true, 10);
+		mLeadscrewTalon.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed, 10);
+		mLeadscrewTalon.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed, 10);
+		mLeadscrewTalon.configClearPositionOnLimitR(false, 10);
+		mLeadscrewTalon.configClearPositionOnLimitF(false, 10);
+		//mLeadscrewTalon.configAllSettings(new TalonSRXConfiguration());
+
+		// mLeadscrewTalon.configForwardSoftLimitEnable(false, 10);
+		// mLeadscrewTalon.configForwardSoftLimitThreshold(LeadscrewConstants.FORWARD_SOFT_LIMIT, 10);
+		// mLeadscrewTalon.configReverseSoftLimitEnable(false, 10);
+		// mLeadscrewTalon.configReverseSoftLimitThreshold(LeadscrewConstants.REVERSE_SOFT_LIMIT, 10);
+
+
 
 		mLeadscrewTalon.config_kP(0, LeadscrewConstants.PID.LEADSCREW_P, 10);
 		mLeadscrewTalon.config_kI(0, LeadscrewConstants.PID.LEADSCREW_I, 10);
@@ -634,8 +676,11 @@ public class Robot extends SampleRobot {
 
 		mLeadscrewEncoder = new LeadscrewEncoder(mLeadscrewTalon);
 		
-		mHatchCamera = new Limelight();
-		mHatchCamera.setPipeline(1);
+		if(RunConstants.RUNNING_CAMERA){
+			cameraInit();
+		}
+
+
 
 		mLeadscrew = new Leadscrew(mLeadscrewTalon, mLeadscrewEncoder, mHatchCamera, mJoystick);
 		

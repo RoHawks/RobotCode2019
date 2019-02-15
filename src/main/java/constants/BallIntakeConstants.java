@@ -54,8 +54,8 @@ public class BallIntakeConstants {
 
     public static class RotaryPiston {
         public static final Value 
-            OPEN = Value.kForward,
-            CLOSE = Value.kReverse;
+            FORWARD = Value.kForward,
+            BACKWARD = Value.kReverse;
 
         public static final long
             OPEN_TIME = 500,
@@ -64,8 +64,8 @@ public class BallIntakeConstants {
 
     public static class LinearLockPiston {
         public static final Value 
-            OPEN = Value.kForward,
-            CLOSE = Value.kReverse;
+            LOCK = Value.kForward,
+            LET_GO = Value.kReverse;
 
         public static final long
             OPEN_TIME = 500,
@@ -74,8 +74,8 @@ public class BallIntakeConstants {
 
     public static class LinearRetainPiston {
         public static final Value 
-            OPEN = Value.kForward,
-            CLOSE = Value.kReverse;
+            RETAIN = Value.kForward,
+            RELEASE = Value.kReverse;
 
         public static final long
             OPEN_TIME = 500,

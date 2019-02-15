@@ -19,10 +19,10 @@ public class Limelight {
 
     }
 
+
     // ******** //
     // RESOURCE //
     // ******** //
-
     public double getDoubleFromNetworkTable(String key) {
         return NetworkTableInstance.getDefault().getTable("limelight").getEntry(key).getDouble(0);
     }
@@ -31,20 +31,38 @@ public class Limelight {
         return NetworkTableInstance.getDefault().getTable("limelight").getEntry(key);
     }
 
-    // ********* //
-    // DISTANCES //
-    // ********* //
+
+    // **** //
+    // DATA //
+    // **** //
     public double xAngleToDistance() {
-        return (CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(getDoubleFromNetworkTable("tx"))));
+        return (CameraConstants.HEIGHT * Math.tan(Math.toRadians(getDoubleFromNetworkTable("tx"))));
     }
 
     public double yAngleToDistance() {
-        return (CameraConstants.LimelightConstants.HEIGHT * Math.tan(Math.toRadians(getDoubleFromNetworkTable("ty"))));
+        return (CameraConstants.HEIGHT * Math.tan(Math.toRadians(getDoubleFromNetworkTable("ty"))));
     }
 
-    public boolean hasTarget(){
+    public boolean hasTarget() {
         return getDoubleFromNetworkTable("tv") == 1;
     }
+
+    public double getTargetAreaPercent() {
+        return getDoubleFromNetworkTable("ta");
+    }
+
+    public double getTargetSkew() { //-90 to 0 degrees
+        return getDoubleFromNetworkTable("ts");
+    }
+
+    public double getTargetWidth() { //in pixels
+        return getDoubleFromNetworkTable("thor");
+    }
+
+    public double getTargetLength() {
+        return getDoubleFromNetworkTable("tvert");
+    }
+
 
     // ************ //
     // LED SETTINGS //
@@ -66,7 +84,6 @@ public class Limelight {
     }
 
 
-
     // *********** //
     // CAMERA MODE //
     // *********** //
@@ -79,7 +96,6 @@ public class Limelight {
     }
 
 
-
     // ******** //
     // PIPELINE //
     // ******** //
@@ -87,6 +103,13 @@ public class Limelight {
         getEntryFromNetworkTable("pipeline").setNumber(pPipeline);
     }
 
+    public double getPipeline(){
+        return getDoubleFromNetworkTable("getpipe");
+    }
+
+    public double getPipelineLatency() {
+        return getDoubleFromNetworkTable("tl");
+    }
 
 
     // ****** //
@@ -102,8 +125,9 @@ public class Limelight {
     
     public void setStreamSecondary(){
         getEntryFromNetworkTable("stream").setNumber(2);
+        NetworkTableEntry e = getEntryFromNetworkTable("stream");
+        System.out.print(e.getDouble(-1));
     }
-
 
 
     // ******** //
@@ -116,6 +140,5 @@ public class Limelight {
     public void startSnapshot(){
         getEntryFromNetworkTable("snapshot").setNumber(1);
     }
-
 
 }

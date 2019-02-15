@@ -22,6 +22,10 @@ public class LeadscrewConstants {
         ENCODER_REVERSED = true, 
         REVERSED = true;
 
+    public static final int
+        FORWARD_SOFT_LIMIT = 400000,
+        REVERSE_SOFT_LIMIT = 1000;
+
     public static class PID {
 
         public static final double 
