@@ -2,6 +2,8 @@ package constants;
 
 public class JoystickConstants {
 
+    public static final int BUTTONS = 32;
+
     public static final int
         NUM_PROFILES = 9,
         FULL_PROFILE_1 = 0,
@@ -13,8 +15,11 @@ public class JoystickConstants {
         LEADSCREW_BALL_PROFILE = 6,
         CLIMB_PROFILE = 7,
         NONE = 8;
+
+    public static final long
+        MILLISECONDS_RESET = 500;
         
-        // NUM_PROFILES = 4,
+        // NUM_PROFILES = 4,s
         // HATCH_PROFILE = 0,
         // LEADSCREW_PROFILE = 0,
         // BALL_PROFILE = 1,

@@ -45,16 +45,6 @@ public class LocalJoystick extends Joystick {
 
 
     /**
-     * Whether the buttno was released 
-     * @param pButton
-     * @return
-     */
-    public boolean getRawButtonReleaseTimed(int pButton){
-        return false;
-    }
-
-
-    /**
      * Whether the button was pressed since the last check. Button indexes begin at 1.
      * @param pButton The button index, beginning at 1.
      * @return Whether the button was pressed since the last check.
