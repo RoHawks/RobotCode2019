@@ -400,7 +400,7 @@ public class Intake {
         
         if (RunConstants.RUNNING_BALL) {
             mBallIntake.backward();
-            mBallIntake.letGo();
+            //mBallIntake.letGo();
             mBallIntake.retain();
         }
         

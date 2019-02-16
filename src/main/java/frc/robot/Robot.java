@@ -508,6 +508,14 @@ public class Robot extends SampleRobot {
 		long waitingElapsedMilliseconds = System.currentTimeMillis() - mStartWaitingToLoad;
 
 		if (waitingElapsedMilliseconds > 500) {
+
+			if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.BALL_PANEL_SWITCH)){
+				mBallIntake.lock();
+			}
+			else {
+				mBallIntake.letGo();
+			}
+
 			if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)) {
 				mCurrentState = RobotState.LOADING_HATCH;
 				mStartWaitingToLoad = 0;
