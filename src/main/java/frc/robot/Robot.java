@@ -334,10 +334,12 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putString("JOYSTICK PROFILE",
 						(mJoystick.getProfile() == 0) ? "HATCH/LEADSCREW" : "BALL");
 			}
+			
+			mJoystick.periodicUpdate();
 
 			SmartDashboard.putString("bumper state", mBumperSensor.getState().toString());
 			Timer.delay(0.005); // wait for a motor update time
-			}
+		}
 	}
 
 	// SmartDashboard.putNumber("is enacting movement", System.currentTimeMillis());
@@ -638,10 +640,12 @@ public class Robot extends SampleRobot {
 
 	private void ballFrontScore() {
 		// if robot or driver says scoring is done...
-
-		if (mIntake.scoreBallHigh()
+		if (mBumperSensor.getState() == BumperState.BOTH
+		|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)) {
+			if (mIntake.scoreBallHigh()
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)) {
-			mCurrentState = RobotState.WAITING_TO_LOAD;
+				mCurrentState = RobotState.WAITING_TO_LOAD;
+			}
 		}
 	}
 

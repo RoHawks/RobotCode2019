@@ -29,9 +29,9 @@ public class LeadscrewConstants {
     public static class PID {
 
         public static final double 
-            LEADSCREW_P = 0.1, 
-            LEADSCREW_I = 0.0007, // 0.0003
-            LEADSCREW_D = 0.0001;
+            LEADSCREW_P = 0.139, 
+            LEADSCREW_I = 0.000973, // 0.0003
+            LEADSCREW_D = 0.000139;
 
         public static final int 
             LEADSCREW_TOLERANCE = 3000, 
