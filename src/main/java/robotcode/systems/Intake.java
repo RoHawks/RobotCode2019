@@ -226,7 +226,7 @@ public class Intake {
         // take these variables to find the error (not sure if motor.getClosedLoopError
         // works, gives weird error)
         double position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-        double goal = (LeadscrewConstants.MIDDLE) - mLimelight.xAngleToDistance();
+        double goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
 
         SmartDashboard.putNumber("BALL INTAKE STEP", 0);
         SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
@@ -266,7 +266,7 @@ public class Intake {
         // take these variables to find the error (not sure if motor.getClosedLoopError
         // works, gives weird error)
         double position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-        double goal = (LeadscrewConstants.MIDDLE) - mLimelight.xAngleToDistance();
+        double goal = LeadscrewConstants.MIDDLE + mLimelight.xAngleToDistance();
 
         SmartDashboard.putNumber("BALL SCORE HIGH STEP", 0);
         SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
@@ -310,7 +310,7 @@ public class Intake {
         // take these variables to find the error (not sure if motor.getClosedLoopError
         // works, gives weird error)
         double position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-        double goal = (LeadscrewConstants.MIDDLE) - mLimelight.xAngleToDistance();
+        double goal = LeadscrewConstants.MIDDLE + mLimelight.xAngleToDistance();
 
         SmartDashboard.putNumber("BALL SCORE LOW STEP", 0);
         SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreLow);
@@ -343,15 +343,27 @@ public class Intake {
         return false;
     }
 
+    public boolean holdingBall(){
+        mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
+        mBallIntake.backward();
+        mBallIntake.lock();
+        mBallIntake.retain();
+        if(mLeadscrew.isInRange()){
+            return true;
+        }
+        return false;
+    }
+
     public boolean idle(){
         mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
+
         mHatchIntake.in();
         mHatchIntake.contract();
-        if (RunConstants.RUNNING_BALL) {
-            mBallIntake.backward();
-            mBallIntake.lock();
-            mBallIntake.retain();
-        }
+        
+        mBallIntake.backward();
+        mBallIntake.lock();
+        mBallIntake.retain();
+        
         if(mLeadscrew.isInRange()){
             return true;
         }

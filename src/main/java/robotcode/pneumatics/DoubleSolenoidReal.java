@@ -9,12 +9,12 @@ public class DoubleSolenoidReal implements SolenoidInterface {
 
 	public DoubleSolenoidReal(int pInPort, int pOutPort) {
 		mDoubleSolenoid = new DoubleSolenoid(pInPort, pOutPort);
-		mCurrent = this.get();
+		mCurrent = this.getActual();
 	}
 
 	public DoubleSolenoidReal(int pInPort, int pOutPort, int pModuleNumber){
 		mDoubleSolenoid = new DoubleSolenoid(pModuleNumber, pInPort, pOutPort);
-		mCurrent = this.get();
+		mCurrent = this.getActual();
 	}
 
 	public void set(Value pDirection) {
@@ -24,7 +24,11 @@ public class DoubleSolenoidReal implements SolenoidInterface {
 		}
 	}
 
-	public Value get() {
+	public Value get(){
+		return mCurrent;
+	}
+
+	public Value getActual() {
 		return mDoubleSolenoid.get();
 	}
 
