@@ -191,12 +191,12 @@ public class Robot extends SampleRobot {
 			hatchIntakeInit();
 		}
 
-		if (RunConstants.RUNNING_LEADSCREW) {
-			leadscrewInit();
-		}
-
 		if (RunConstants.RUNNING_BALL) {
 			ballInit();
+		}
+
+		if (RunConstants.RUNNING_LEADSCREW) {
+			leadscrewInit();
 		}
 
 		if (RunConstants.RUNNING_CAMERA) {
@@ -206,7 +206,7 @@ public class Robot extends SampleRobot {
 			// camera.setFPS(30);
 		}
 
-		if (RunConstants.RUNNING_LEADSCREW && RunConstants.RUNNING_HATCH) {
+		if (RunConstants.RUNNING_LEADSCREW && RunConstants.RUNNING_HATCH && RunConstants.RUNNING_BALL) {
 			intakeInit();
 		}
 
@@ -267,12 +267,12 @@ public class Robot extends SampleRobot {
 			}
 
 			// hatch intake without leadscrew
-			if (RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_EVERYTHING) {
+			if (RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_EVERYTHING && !RunConstants.RUNNING_BALL) {
 				mHatchIntake.enactMovement();
 			}
 
 			// ball
-			if (RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING) {
+			else if (RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING && !RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_LEADSCREW) {
 				
 				mIntake.intakeBall();
 				mIntake.scoreBallHigh();
@@ -280,12 +280,10 @@ public class Robot extends SampleRobot {
 				mIntake.holdingBall();
 				mIntake.idle();
 
-
-
 			}
 
 			// leadscrew without hatch intake or ball
-			if (RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_BALL
+			else if (RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_BALL
 					&& !RunConstants.RUNNING_EVERYTHING) {
 				mLeadscrew.enactMovement();
 				SmartDashboard.putNumber("OPERATOR CONTROL: leadscrew inside", System.currentTimeMillis());
@@ -309,11 +307,11 @@ public class Robot extends SampleRobot {
 			}
 
 			// all intake things but not states -- for testing
-			if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW && RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING) {
+			else if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW && RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING) {
 				mIntake.enactMovement();
 			}
 
-			if (RunConstants.RUNNING_CLIMBER) {
+			else if (RunConstants.RUNNING_CLIMBER && !RunConstants.RUNNING_EVERYTHING) {
 				mClimber.test();
 				SmartDashboard.putString("CLIMB Shifter", mClimbShifter.get().toString());
 				SmartDashboard.putNumber("CLIMB Y Axis", mJoystick.getY());
@@ -334,9 +332,7 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putString("JOYSTICK PROFILE",
 						(mJoystick.getProfile() == 0) ? "HATCH/LEADSCREW" : "BALL");
 			}
-			
-			mJoystick.periodicUpdate();
-
+		
 			SmartDashboard.putString("bumper state", mBumperSensor.getState().toString());
 			Timer.delay(0.005); // wait for a motor update time
 		}
@@ -432,7 +428,7 @@ public class Robot extends SampleRobot {
 		}
 
 		else if (mIntake.holdingHatch()
-				&& mJoystick.getRawButtonPressed(JoystickConstants.FinalRobotButtons.SCORE_PANEL_ROCKET)) {
+				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_ROCKET)) {
 			mCurrentState = RobotState.HATCH_SCORE_ROCKET;
 		}
 
@@ -463,18 +459,23 @@ public class Robot extends SampleRobot {
 		}
 	}
 
+
+	private boolean mHatchScoreBumperSensed = false;
 	/**
 	 * Score the hatch. when it's done go to WAITING_TO_LOAD state
 	 */
 	private void hatchScoreCargo() {
 		if (mBumperSensor.getState() == BumperSensor.BumperState.BOTH
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)) {
-			// if robot or driver says scoring is done...
-			if (mIntake.scorePanel()
-					|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL)) {
-				mCurrentState = RobotState.WAITING_TO_LOAD;
-			}
+			mHatchScoreBumperSensed = true;
 		}
+			// if robot or driver says scoring is done...
+		if (mHatchScoreBumperSensed && (mIntake.scorePanel()
+					|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL))) {
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+			mHatchScoreBumperSensed = false;
+		}
+
 	}
 
 	private void hatchScoreRocket() {
@@ -510,7 +511,7 @@ public class Robot extends SampleRobot {
 			}
 
 			else if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL)) {
-				mCurrentState = RobotState.BALL_PRESCORE;
+				mCurrentState = RobotState.LOADING_BALL;
 				mStartWaitingToLoad = 0;
 				mHasWaitedToLoad = false;
 			}
@@ -519,16 +520,24 @@ public class Robot extends SampleRobot {
 
 	}
 
+
+	private boolean mLoadingBallBumperSensed = false;
+
 	private void loadingBall() {
 		if (mBumperSensor.getState() == BumperState.BOTH
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL)) {
-			if (mIntake.intakeBall()
-					|| mJoystick.getRawButtonPressed(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL)) {
-				mCurrentState = RobotState.BALL_PRESCORE;
-			}
+			mLoadingBallBumperSensed = true;
+		}
+
+		if (mLoadingBallBumperSensed && (mIntake.intakeBall()
+				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL))) {
+			mCurrentState = RobotState.BALL_PRESCORE;
+			mLoadingBallBumperSensed = false;
 		}
 	}
 
+
+	private boolean mLoadingHatchBumperSensed = false;
 	/**
 	 * intake the hatch when either the robot or driver says it's done, go to
 	 * HATCH_PRESCORE
@@ -539,12 +548,13 @@ public class Robot extends SampleRobot {
 
 		if (mBumperSensor.getState() == BumperState.BOTH
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)) {
-
+			mLoadingHatchBumperSensed = true;
+		}
 			// either robot or person says the thing has been intaken
-			if (mIntake.intakePanel()
-					|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL))) {
-				mCurrentState = RobotState.HATCH_PRESCORE;
-			}
+		if (mLoadingHatchBumperSensed && (mIntake.intakePanel()
+					|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL))) {
+			mCurrentState = RobotState.HATCH_PRESCORE;
+			mLoadingHatchBumperSensed = false;
 		}
 	}
 
@@ -602,14 +612,14 @@ public class Robot extends SampleRobot {
 	 */
 	private void ballPrescore() {
 
-		if (!mHasStartedBallPrescore) {
-			mTimeStartBallPrescore = System.currentTimeMillis();
-			mHasStartedBallPrescore = true;
-		}
+		// if (!mHasStartedBallPrescore) {
+		// 	mTimeStartBallPrescore = System.currentTimeMillis();
+		// 	mHasStartedBallPrescore = true;
+		// }
 
-		long ballPrescoreElapsedMilliseconds = System.currentTimeMillis() - mTimeStartBallPrescore;
+		// long ballPrescoreElapsedMilliseconds = System.currentTimeMillis() - mTimeStartBallPrescore;
 
-		if (ballPrescoreElapsedMilliseconds > 500) {
+		// if (ballPrescoreElapsedMilliseconds > 500) {
 			if (mIntake.holdingBall()
 					&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)) {
 
@@ -619,7 +629,7 @@ public class Robot extends SampleRobot {
 
 			} 
 			
-			else if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)
+			else if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_ROCKET)
 					&& mIntake.holdingBall()) {
 
 				mCurrentState = RobotState.BALL_BACK_SCORE;
@@ -635,19 +645,26 @@ public class Robot extends SampleRobot {
 				mTimeStartHatchPrescore = 0;
 				mHasStartedHatchPrescore = false;
 			}
-		}
+		//}
 	}
 
+
+	private boolean mBallFrontScoreBumperSensed = false;
 	private void ballFrontScore() {
 		// if robot or driver says scoring is done...
 		if (mBumperSensor.getState() == BumperState.BOTH
 		|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)) {
-			if (mIntake.scoreBallHigh()
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)) {
-				mCurrentState = RobotState.WAITING_TO_LOAD;
-			}
+
+			mBallFrontScoreBumperSensed = true;
+		}
+			
+		if (mBallFrontScoreBumperSensed && (mIntake.scoreBallHigh()
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL))) {
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+			mBallFrontScoreBumperSensed = false;
 		}
 	}
+	
 
 	private void ballBackScore() {
 		// if robot or driver says scoring is done...
@@ -825,7 +842,7 @@ public class Robot extends SampleRobot {
 	}
 
 	private void intakeInit() {
-		mIntake = new Intake(mHatchIntake, mLeadscrew, mHatchCamera, mJoystick);
+		mIntake = new Intake(mHatchIntake, mBallIntake, mLeadscrew, mHatchCamera, mJoystick);
 	}
 
 	private void climberInit() {
@@ -948,7 +965,7 @@ public class Robot extends SampleRobot {
 
 		if (RunConstants.SECONDARY_JOYSTICK) {
 			for (int i = 1; i < 19; i++) {
-				addLogValueBoolean(logString, mJoystick.getRawButton(i));
+				addLogValueBoolean(logString, mJoystick.getRawButtonReleased(i));
 			}
 		}
 

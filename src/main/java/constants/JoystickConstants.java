@@ -17,7 +17,7 @@ public class JoystickConstants {
         NONE = 8;
 
     public static final long
-        MILLISECONDS_RESET = 500;
+        MILLISECONDS_RESET = 1000;
         
         // NUM_PROFILES = 4,
         // HATCH_PROFILE = 0,
@@ -100,8 +100,8 @@ public class JoystickConstants {
             RIGHT_ROCKET_BOTTOM = 10,
             CARGO_SHIP_LEFT = 9,
             CARGO_SHIP_RIGHT = 5,
-            SCORE_BALL_ROCKET = 23,
-            SCORE_BALL_CARGO = 22,
+            SCORE_BALL_ROCKET = 22,
+            SCORE_BALL_CARGO = 23,
             LOAD_BALL = 25,
             HAS_LOADED_BALL = 24,
             HAS_SCORED_BALL = 21,

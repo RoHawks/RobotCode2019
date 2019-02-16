@@ -72,21 +72,21 @@ public class LocalJoystick extends Joystick {
             if (realButton <= 1 || realButton > 11) {
                 return false;
             }
-            boolean toReturn = mButtonsReleased[realButton + 1];
-            mButtonsReleased[realButton + 1] = false;
-            mTimesReleased[realButton + 1] = 0;
-            return toReturn;
-            //return super.getRawButtonReleased(realButton);
+            // boolean toReturn = mButtonsReleased[realButton + 1];
+            // mButtonsReleased[realButton + 1] = false;
+            // mTimesReleased[realButton + 1] = 0;
+            // return toReturn;
+            return super.getRawButtonReleased(realButton);
         } 
         else {                                                // if we're using the box
             if (pButton < 1 || pButton > JoystickConstants.BUTTONS) {                  // do this simple stuff
                 return false;
             }
-            boolean toReturn = mButtonsReleased[pButton + 1];
-            mButtonsReleased[pButton + 1] = false;
-            mTimesReleased[pButton + 1] = 0;
-            return toReturn;
-            //return super.getRawButtonReleased(pButton);
+            // boolean toReturn = mButtonsReleased[pButton + 1];
+            // mButtonsReleased[pButton + 1] = false;
+            // mTimesReleased[pButton + 1] = 0;
+            // return toReturn;
+            return super.getRawButtonReleased(pButton);
         }
     }
 
@@ -102,21 +102,21 @@ public class LocalJoystick extends Joystick {
             if (realButton <= 1 || realButton > 11) {
                 return false;
             }
-            boolean toReturn = mButtonsPressed[realButton + 1];
-            mButtonsPressed[realButton + 1] = false;
-            mTimesPressed[realButton + 1] = 0;
-            return toReturn;
-            //return super.getRawButtonPressed(realButton);
+            // boolean toReturn = mButtonsPressed[realButton + 1];
+            // mButtonsPressed[realButton + 1] = false;
+            // mTimesPressed[realButton + 1] = 0;
+            // return toReturn;
+            return super.getRawButtonPressed(realButton);
         } 
         else {                                                // if we're using the box
             if (pButton < 1 || pButton > JoystickConstants.BUTTONS) {                  // do this simple stuff
                 return false;
             }
-            boolean toReturn = mButtonsPressed[pButton + 1];
-            mButtonsPressed[pButton + 1] = false;
-            mTimesPressed[pButton + 1] = 0;
-            return toReturn;
-            //return super.getRawButtonPressed(pButton);
+            // boolean toReturn = mButtonsPressed[pButton + 1];
+            // mButtonsPressed[pButton + 1] = false;
+            // mTimesPressed[pButton + 1] = 0;
+            // return toReturn;
+            return super.getRawButtonPressed(pButton);
         }
     }
 
@@ -177,6 +177,14 @@ public class LocalJoystick extends Joystick {
                 mCurrentProfile = (mCurrentProfile + 1) % mProfiles;
             }
         }
+    }
+
+    public boolean[] getButtonsReleasedArray() {
+        return mButtonsReleased;
+    }
+
+    public boolean[] getButtonsPressedArray() {
+        return mButtonsPressed;
     }
 
     public int getProfile() {

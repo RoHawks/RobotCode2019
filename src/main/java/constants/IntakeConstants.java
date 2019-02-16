@@ -29,7 +29,7 @@ public class IntakeConstants {
 
     public static class ScoreBallLowTimes {
         public static final long
-            STEP_TWO = BallIntakeConstants.LinearRetainPiston.CLOSE_TIME;
+            STEP_TWO = BallIntakeConstants.LinearRetainPiston.CLOSE_TIME + 3000;
     }
 
     public static class LoadBallTimes {

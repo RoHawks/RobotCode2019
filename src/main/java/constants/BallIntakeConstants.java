@@ -58,8 +58,8 @@ public class BallIntakeConstants {
             BACKWARD = Value.kReverse;
 
         public static final long
-            OPEN_TIME = 500,
-            CLOSE_TIME = 500;
+            OPEN_TIME = 1500,
+            CLOSE_TIME = 1500;
     }
 
     public static class LinearLockPiston {
@@ -78,7 +78,7 @@ public class BallIntakeConstants {
             RELEASE = Value.kReverse;
 
         public static final long
-            OPEN_TIME = 500,
-            CLOSE_TIME = 500;
+            OPEN_TIME = 1000,
+            CLOSE_TIME = 1000;
     }
 }

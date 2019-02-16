@@ -13,8 +13,8 @@ package constants;
 public class LeadscrewConstants {
     public static final double 
         PITCH = 12.0, 
-        LENGTH = 7, //14.875, 
-        MIDDLE = LENGTH / 2,
+        LENGTH = 9.75, //14.875, 
+        MIDDLE = 5.25,
         SOFT_LIMIT = 0.75, 
         LEADSCREW_CAMERA_TOLERANCE = 0.2; // inches
 

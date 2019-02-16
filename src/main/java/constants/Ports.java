@@ -25,12 +25,12 @@ public class Ports {
 		// DRIVETRAIN
 		public static final int[] 
 			TURN = new int[] { 11, 1, 2, 10 },
-			DRIVE = new int[] { 3, 0, 1, 2 };//{ 12, 0, 3, 9 }; // Right back, right front, left front, left back
+			DRIVE = new int[] { 3, 4, 1, 2 };//{ 12, 0, 3, 9 }; // Right back, right front, left front, left back
 		
 		// HATCH INTAKE
 		public static final int
 			HATCH_ROTARY_SOLENOID_IN = 5,
-			HATCH_LINEAR_SOLENOID_IN = 4;
+			HATCH_LINEAR_SOLENOID_IN = 1;
 
 		// LEADSCREW
 		public static final int
@@ -38,9 +38,9 @@ public class Ports {
 
 		// BALL PISTON INTAKE
 		public static final int
-			BALL_ROTARY = 0,
+			BALL_ROTARY = 2,
 			BALL_LOCK = 0,
-			BALL_RETAIN = 0;
+			BALL_RETAIN = 4;
 
 		// CLIMBER
 		public static final int
@@ -92,8 +92,8 @@ public class Ports {
 		// CLIMBER
 		public static final int
 			CLIMB_FRONT = 0,
-			CLIMB_BACK = 0,
-			CLIMB_DRIVE = 0,
+			CLIMB_BACK = 1,
+			CLIMB_DRIVE = 2,
 
 			SHIFTER_SOLENOID_IN = 0,
 			SHIFTER_SOLENOID_OUT = 0;

@@ -32,11 +32,13 @@ public class Intake {
     // INITIALIZE //
     // ***********//
 
-    public Intake(HatchIntake pHatchIntake, Leadscrew pLeadscrew, Limelight pLimelight, LocalJoystick pJoystick) {
+    public Intake(HatchIntake pHatchIntake, BallIntake pBallIntake, Leadscrew pLeadscrew, Limelight pLimelight, LocalJoystick pJoystick) {
         mHatchIntake = pHatchIntake;
+        mBallIntake = pBallIntake;
         mLeadscrew = pLeadscrew;
         mLimelight = pLimelight;
         mJoystick = pJoystick;
+        
     }
 
     private enum IntakeState {
@@ -56,11 +58,11 @@ public class Intake {
     // *********//
     // DO STUFF //
     // *********//
-    private boolean mDoneIntakingHatch = true;
-    private boolean mDoneScoringHatch = true;
-    private boolean mDoneIntakingBall = true;
-    private boolean mDoneScoringBallHigh = true;
-    private boolean mDoneScoringBallLow = true;
+    private boolean mDoneIntakingHatch = false;
+    private boolean mDoneScoringHatch = false;
+    private boolean mDoneIntakingBall = false;
+    private boolean mDoneScoringBallHigh = false;
+    private boolean mDoneScoringBallLow = false;
 
     public void enactMovement() {
         if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.INTAKE_HATCH)) {
@@ -84,43 +86,48 @@ public class Intake {
 
         switch (mIntakeState) {
             case HATCH_INTAKE:
-                if (!mDoneIntakingHatch || mJoystick.getRawButtonReleased(JoystickConstants.IntakeButtons.INTAKE_HATCH)) {
+                if (!mDoneIntakingHatch) {
                     mDoneIntakingHatch = intakePanel();
                 }
-                if (mDoneIntakingHatch) {
+                else {
                     mIntakeState = IntakeState.MANUAL;
+                    mDoneIntakingHatch = false;
                 }
                 break;
             case BALL_INTAKE:
-                if (!mDoneIntakingBall || mJoystick.getRawButtonReleased(JoystickConstants.IntakeButtons.INTAKE_BALL)) {
+                if (!mDoneIntakingBall) {
                     mDoneIntakingBall = intakeBall();
                 }
-                if (mDoneIntakingBall) {
+                else {
                     mIntakeState = IntakeState.MANUAL;
+                    mDoneIntakingBall = false;
                 }
                 break;
             case HATCH_SCORE:
-                if (!mDoneScoringHatch || mJoystick.getRawButtonReleased(JoystickConstants.IntakeButtons.SCORE_HATCH)) {
+                if (!mDoneScoringHatch) {
                     mDoneScoringHatch = scorePanel();
                 }
-                if (mDoneScoringHatch) {
+                else {
                     mIntakeState = IntakeState.MANUAL;
+                    mDoneScoringHatch = false;
                 }
                 break;
             case BALL_SCORE_HIGH:
-                if (!mDoneScoringBallHigh || mJoystick.getRawButtonReleased(JoystickConstants.IntakeButtons.SCORE_BALL_HIGH)) {
+                if (!mDoneScoringBallHigh) {
                     mDoneScoringBallHigh = scoreBallHigh();
                 }
-                if (mDoneScoringBallHigh) {
+                else {
                     mIntakeState = IntakeState.MANUAL;
+                    mDoneScoringBallHigh = false;
                 }
                 break;
             case BALL_SCORE_LOW:
-                if (!mDoneScoringBallLow || mJoystick.getRawButtonReleased(JoystickConstants.IntakeButtons.SCORE_BALL_LOW)) {
+                if (!mDoneScoringBallLow) {
                     mDoneScoringBallLow = scoreBallLow();
                 }
-                if (mDoneScoringBallLow) {
+                else {
                     mIntakeState = IntakeState.MANUAL;
+                    mDoneScoringBallLow = false;
                 }
                 break;
             case MANUAL:
@@ -261,11 +268,12 @@ public class Intake {
             SmartDashboard.putNumber("BALL INTAKE STEP", 1);
             mStartIntakeTimeBall = System.currentTimeMillis();
             mBallIntake.letGo();
+            mBallIntake.retain();
             mHasAlignedBallIntake = true;
         }
         else if (mHasAlignedBallIntake && scoringSequenceElapsedMilliseconds < IntakeConstants.LoadBallTimes.STEP_TWO /*&& mBallIntake.isHoldingBall()*/){
             SmartDashboard.putNumber("BALL INTAKE STEP", 2);
-            mBallIntake.lock();
+            //mBallIntake.lock();
             mStartIntakeTimeBall = 0;
             mHasAlignedBallIntake = false;
             return true; 
@@ -310,7 +318,7 @@ public class Intake {
         else if (mHasAlignedBallScoreHigh && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallHighTimes.STEP_THREE){
             SmartDashboard.putNumber("BALL SCORE HIGH STEP", 3);
             mBallIntake.backward();
-            mBallIntake.lock();
+            //mBallIntake.lock();
             mStartScoreTimeBallHigh = 0;
             mHasAlignedBallScoreHigh = false;
             return true;
@@ -349,7 +357,7 @@ public class Intake {
         }
         else if (mHasAlignedBallScoreLow && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallLowTimes.STEP_TWO){
             SmartDashboard.putNumber("BALL SCORE LOW STEP", 2);
-            mBallIntake.retain();
+            //mBallIntake.retain();
             mStartScoreTimeBallLow = 0;
             mHasAlignedBallScoreLow = false;
             return true;
@@ -392,7 +400,7 @@ public class Intake {
         
         if (RunConstants.RUNNING_BALL) {
             mBallIntake.backward();
-            mBallIntake.lock();
+            mBallIntake.letGo();
             mBallIntake.retain();
         }
         
