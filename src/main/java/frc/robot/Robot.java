@@ -971,6 +971,18 @@ public class Robot extends SampleRobot {
 		if (RunConstants.RUNNING_PNEUMATICS) {
 			addLogValueDouble(logString, mCompressor.getCompressorCurrent());
 		}
+
+		if (RunConstants.RUNNING_CLIMBER){
+			addLogValueDouble(logString, mBackClimbTalon.getMotorOutputVoltage());
+			addLogValueDouble(logString, mFrontClimbTalon.getMotorOutputVoltage());
+			addLogValueDouble(logString, mDriveClimbTalon.getMotorOutputVoltage());
+		}
+
+		if(RunConstants.RUNNING_LEADSCREW){
+			addLogValueDouble(logString, mLeadscrewTalon.getMotorOutputVoltage());
+			addLogValueDouble(logString, mLeadscrewTalon.getOutputCurrent());
+		}
+
 		addLogValueDouble(logString, mPDP.getTotalCurrent());
 		addLogValueDouble(logString, mPDP.getVoltage());
 
