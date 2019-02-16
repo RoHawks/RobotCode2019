@@ -2,7 +2,7 @@ package constants;
 
 public class JoystickConstants {
 
-    public static final int BUTTONS = 32;
+    public static final int BUTTONS = 25;
 
     public static final int
         NUM_PROFILES = 9,
@@ -19,7 +19,7 @@ public class JoystickConstants {
     public static final long
         MILLISECONDS_RESET = 500;
         
-        // NUM_PROFILES = 4,s
+        // NUM_PROFILES = 4,
         // HATCH_PROFILE = 0,
         // LEADSCREW_PROFILE = 0,
         // BALL_PROFILE = 1,
@@ -79,7 +79,6 @@ public class JoystickConstants {
             DRIVE = 3 + (CLIMB_PROFILE * 10),
             BACK = 4 + (CLIMB_PROFILE * 10),
             FRONT = 5 + (CLIMB_PROFILE * 10);
-            ;
     }
 
     public static class FinalRobotButtons {
@@ -109,6 +108,5 @@ public class JoystickConstants {
             A = 4,
             B = 3,
             C = 2; 
-
     }
 }

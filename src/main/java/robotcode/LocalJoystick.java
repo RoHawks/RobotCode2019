@@ -7,20 +7,58 @@
 
 package robotcode;
 
+import java.util.Arrays;
+
 import constants.JoystickConstants;
 import constants.RunConstants;
 import edu.wpi.first.wpilibj.Joystick;
 
-/**
- * Add your docs here.
- */
+
 public class LocalJoystick extends Joystick {
 
     private int mProfiles = JoystickConstants.NUM_PROFILES;
     private int mCurrentProfile = 0;
 
+    private boolean[] mButtonsReleased = new boolean[32];
+    private boolean[] mButtonsPressed = new boolean[32];
+
+    private long[] mTimesReleased = new long[32];
+    private long[] mTimesPressed = new long[32];
+
     public LocalJoystick(int port) {
         super(port);
+
+        Arrays.fill(mButtonsReleased, false);
+        Arrays.fill(mButtonsPressed, false);
+
+        Arrays.fill(mTimesReleased, 0);
+        Arrays.fill(mTimesPressed, 0);
+    }
+
+    public void periodicUpdate() {
+        for (int i = 0; i < JoystickConstants.BUTTONS; i++) {
+
+            boolean buttonReleased = getRawButtonReleased(i+1);
+            if (buttonReleased) {
+                mTimesReleased[i] = System.currentTimeMillis();
+                mButtonsReleased[i] = true;
+            }
+            else {
+                mButtonsReleased[i] = buttonReleased || System.currentTimeMillis() - mTimesReleased[i] < JoystickConstants.MILLISECONDS_RESET;
+            }
+
+            boolean buttonPressed = getRawButtonPressed(i+1);
+            if (buttonPressed) {
+                mTimesPressed[i] = System.currentTimeMillis();
+                mButtonsPressed[i] = true;
+            }
+            else {
+                mButtonsPressed[i] = buttonPressed || System.currentTimeMillis() - mTimesPressed[i] < JoystickConstants.MILLISECONDS_RESET;
+            }
+            // else if(mTimesReleased[i] > mTimesPressed[i]){
+            //     mButtonsPressed[i] = buttonPressed || System.currentTimeMillis() - mTimesReleased[i] < JoystickConstants.MILLISECONDS_RESET;
+            // }
+        }
     }
 
     /**
@@ -34,12 +72,15 @@ public class LocalJoystick extends Joystick {
             if (realButton <= 1 || realButton > 11) {
                 return false;
             }
-            return super.getRawButtonReleased(realButton);
-        } else {                                                // if we're using the box
-            if (pButton < 1 || pButton > 19) {                  // do this simple stuff
+            return mButtonsReleased[realButton + 1];
+            //return super.getRawButtonReleased(realButton);
+        } 
+        else {                                                // if we're using the box
+            if (pButton < 1 || pButton > JoystickConstants.BUTTONS) {                  // do this simple stuff
                 return false;
             }
-            return super.getRawButtonReleased(pButton);
+            return mButtonsReleased[pButton + 1];
+            //return super.getRawButtonReleased(pButton);
         }
     }
 
@@ -55,12 +96,15 @@ public class LocalJoystick extends Joystick {
             if (realButton <= 1 || realButton > 11) {
                 return false;
             }
-            return super.getRawButtonPressed(realButton);
-        } else {                                                // if we're using the box
-            if (pButton < 1 || pButton > 19) {                  // do this simple stuff
+            return mButtonsPressed[realButton + 1];
+            //return super.getRawButtonPressed(realButton);
+        } 
+        else {                                                // if we're using the box
+            if (pButton < 1 || pButton > JoystickConstants.BUTTONS) {                  // do this simple stuff
                 return false;
             }
-            return super.getRawButtonPressed(pButton);
+            return mButtonsReleased[pButton + 1];
+            //return super.getRawButtonPressed(pButton);
         }
     }
 
@@ -72,7 +116,7 @@ public class LocalJoystick extends Joystick {
             }
             return super.getRawButton(realButton);
         } else {                                                // if we're using the box
-            if (pButton < 1 || pButton > 19) {                  // do this simple stuff
+            if (pButton < 1 || pButton > JoystickConstants.BUTTONS) {                  // do this simple stuff
                 return false;
             }
             return super.getRawButton(pButton);
