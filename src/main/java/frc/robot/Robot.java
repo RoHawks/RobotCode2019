@@ -523,6 +523,7 @@ public class Robot extends SampleRobot {
 
 
 	private boolean mLoadingBallBumperSensed = false;
+	private boolean mHasIntaken = false;
 
 	private void loadingBall() {
 		if (mBumperSensor.getState() == BumperState.BOTH
@@ -530,10 +531,14 @@ public class Robot extends SampleRobot {
 			mLoadingBallBumperSensed = true;
 		}
 
-		if (mLoadingBallBumperSensed && (mIntake.intakeBall()
-				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL))) {
+		if(mLoadingBallBumperSensed && !mHasIntaken && mIntake.intakeBall()){
+			mHasIntaken = true;
+		}
+
+		if (mHasIntaken && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL)) {
 			mCurrentState = RobotState.BALL_PRESCORE;
 			mLoadingBallBumperSensed = false;
+			mHasIntaken = false;
 		}
 	}
 

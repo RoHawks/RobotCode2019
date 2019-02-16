@@ -57,13 +57,13 @@ public class DriveConstants {
 			
 		public static final double
 			GYRO_P = 0.004,
-			GYRO_I = 0,
+			GYRO_I = 0.00002,
 			GYRO_D = 0,
 			GYRO_TOLERANCE = 5,
 			GYRO_MAX_SPEED = 1,
 			
 			DRIFT_COMP_P = 0.018, //0.06
-			DRIFT_COMP_I = 0.0003, //0.0006
+			DRIFT_COMP_I = 0, //0.0006
 			DRIFT_COMP_D = 0,
 			DRIFT_COMP_MAX = 0.3;
 	}
