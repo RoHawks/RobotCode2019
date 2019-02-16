@@ -8,6 +8,7 @@ import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
+import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -66,6 +67,7 @@ public class Robot extends SampleRobot {
 	private DriveTrain mDriveTrain;
 	private Wheel[] mWheel = new Wheel[4];
 	private CANSparkMax[] mDrive = new CANSparkMax[4];
+	private CANEncoder[] mDriveEncoders = new CANEncoder[4]; 
 	private WPI_TalonSRX[] mTurn = new WPI_TalonSRX[4];
 	private TalonAbsoluteEncoder[] mEncoder = new TalonAbsoluteEncoder[4];
 
@@ -326,7 +328,7 @@ public class Robot extends SampleRobot {
 
 			SmartDashboard.putString("bumper state", mBumperSensor.getState().toString());
 			Timer.delay(0.005); // wait for a motor update time
-		}
+			}
 	}
 
 	// SmartDashboard.putNumber("is enacting movement", System.currentTimeMillis());
@@ -422,6 +424,7 @@ public class Robot extends SampleRobot {
 				&& mJoystick.getRawButtonPressed(JoystickConstants.FinalRobotButtons.SCORE_PANEL_ROCKET)) {
 			mCurrentState = RobotState.HATCH_SCORE_ROCKET;
 		}
+
 
 		// if we accidentally drop the panel...
 		else if (mIntake.holdingHatch()
@@ -733,6 +736,8 @@ public class Robot extends SampleRobot {
 			mDrive[i].setCANTimeout(10);
 			mDrive[i].setOpenLoopRampRate(0.2);
 
+			mDriveEncoders[i] = new CANEncoder(mDrive[i]);
+
 			// initialize turn motors' encoders, as well as wheels:
 			mEncoder[i] = new TalonAbsoluteEncoder(mTurn[i], ResourceFunctions.tickToAngle(turnOffset));
 			mWheel[i] = new Wheel(mTurn[i], mDrive[i], mEncoder[i]);
@@ -803,8 +808,15 @@ public class Robot extends SampleRobot {
 			cameraInit();
 		}
 
+<<<<<<< HEAD
 		mLeadscrew = new Leadscrew(mLeadscrewTalon, mLeadscrewEncoder, mHatchCamera, mJoystick);
 
+=======
+
+
+		mLeadscrew = new Leadscrew(mLeadscrewTalon, mLeadscrewEncoder, mHatchCamera, mJoystick, mDriveTrain);
+		
+>>>>>>> c204280dd4d99a106ac0bb334dbb797e501c9693
 	}
 
 	private void intakeInit() {
