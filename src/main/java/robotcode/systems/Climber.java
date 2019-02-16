@@ -9,6 +9,7 @@ package robotcode.systems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 import constants.ClimberConstants;
 import constants.JoystickConstants;
@@ -19,11 +20,11 @@ import robotcode.pneumatics.SolenoidInterface;
 
 public class Climber {
 
-    private WPI_TalonSRX mFrontTalon, mBackTalon, mDriveTalon;
+    private WPI_VictorSPX mFrontTalon, mBackTalon, mDriveTalon;
     private SolenoidInterface mShifter;
     private LocalJoystick mJoystick;
 
-    public Climber(WPI_TalonSRX pFront, WPI_TalonSRX pBack, WPI_TalonSRX pDrive, SolenoidInterface pShifter, LocalJoystick pJoystick){
+    public Climber(WPI_VictorSPX pFront, WPI_VictorSPX pBack, WPI_VictorSPX pDrive, SolenoidInterface pShifter, LocalJoystick pJoystick){
         mFrontTalon = pFront;
         mBackTalon = pBack;
         mDriveTalon = pDrive;
@@ -59,35 +60,35 @@ public class Climber {
     }
 
     public void up(){
-        if(!mFrontTalon.getSensorCollection().isFwdLimitSwitchClosed()){
+        //if(!mFrontTalon. .getSensorCollection().isFwdLimitSwitchClosed()){
             mFrontTalon.set(ClimberConstants.ClimberSpeed);
-        }
-        else {
-            mFrontTalon.set(0);
-        }
+       // }
+        // else {
+        //     mFrontTalon.set(0);
+        // }
 
-        if(!mBackTalon.getSensorCollection().isFwdLimitSwitchClosed()){
+        //if(!mBackTalon.getSensorCollection().isFwdLimitSwitchClosed()){
             mBackTalon.set(ClimberConstants.ClimberSpeed);
-        }
-        else {
-            mBackTalon.set(0);
-        }
+        //}
+        // else {
+        //     mBackTalon.set(0);
+        // }
     }
 
     public void down(){
-        if(!mFrontTalon.getSensorCollection().isRevLimitSwitchClosed()){
+        //if(!mFrontTalon.getSensorCollection().isRevLimitSwitchClosed()){
             mFrontTalon.set(-ClimberConstants.ClimberSpeed);
-        }
-        else {
-            mFrontTalon.set(0);
-        }
+        //}
+        // else {
+        //     mFrontTalon.set(0);
+        // }
 
-        if(!mBackTalon.getSensorCollection().isRevLimitSwitchClosed()){
+        //if(!mBackTalon.getSensorCollection().isRevLimitSwitchClosed()){
             mBackTalon.set(-ClimberConstants.ClimberSpeed);
-        }
-        else {
-            mBackTalon.set(0);
-        }
+        //}
+        // else {
+        //     mBackTalon.set(0);
+        // }
     }
 
     public void climb(){

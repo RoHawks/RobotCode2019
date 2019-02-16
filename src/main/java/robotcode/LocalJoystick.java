@@ -72,14 +72,20 @@ public class LocalJoystick extends Joystick {
             if (realButton <= 1 || realButton > 11) {
                 return false;
             }
-            return mButtonsReleased[realButton + 1];
+            boolean toReturn = mButtonsReleased[realButton + 1];
+            mButtonsReleased[realButton + 1] = false;
+            mTimesReleased[realButton + 1] = 0;
+            return toReturn;
             //return super.getRawButtonReleased(realButton);
         } 
         else {                                                // if we're using the box
             if (pButton < 1 || pButton > JoystickConstants.BUTTONS) {                  // do this simple stuff
                 return false;
             }
-            return mButtonsReleased[pButton + 1];
+            boolean toReturn = mButtonsReleased[pButton + 1];
+            mButtonsReleased[pButton + 1] = false;
+            mTimesReleased[pButton + 1] = 0;
+            return toReturn;
             //return super.getRawButtonReleased(pButton);
         }
     }
@@ -96,14 +102,20 @@ public class LocalJoystick extends Joystick {
             if (realButton <= 1 || realButton > 11) {
                 return false;
             }
-            return mButtonsPressed[realButton + 1];
+            boolean toReturn = mButtonsPressed[realButton + 1];
+            mButtonsPressed[realButton + 1] = false;
+            mTimesPressed[realButton + 1] = 0;
+            return toReturn;
             //return super.getRawButtonPressed(realButton);
         } 
         else {                                                // if we're using the box
             if (pButton < 1 || pButton > JoystickConstants.BUTTONS) {                  // do this simple stuff
                 return false;
             }
-            return mButtonsReleased[pButton + 1];
+            boolean toReturn = mButtonsPressed[pButton + 1];
+            mButtonsPressed[pButton + 1] = false;
+            mTimesPressed[pButton + 1] = 0;
+            return toReturn;
             //return super.getRawButtonPressed(pButton);
         }
     }

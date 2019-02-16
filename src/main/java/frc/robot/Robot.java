@@ -7,6 +7,7 @@ import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
@@ -23,7 +24,6 @@ import constants.LeadscrewConstants;
 import constants.Ports;
 import constants.RunConstants;
 import constants.RobotState;
-import constants.BallIntakeConstants;
 import constants.CameraConstants;
 import constants.ClimberConstants;
 import edu.wpi.first.wpilibj.Compressor;
@@ -96,7 +96,7 @@ public class Robot extends SampleRobot {
 	private Intake mIntake;
 
 	// climber
-	private WPI_TalonSRX mFrontClimbTalon, mBackClimbTalon, mDriveClimbTalon;
+	private WPI_VictorSPX mFrontClimbTalon, mBackClimbTalon, mDriveClimbTalon;
 	private SolenoidInterface mClimbShifter;
 	private Climber mClimber;
 
@@ -141,6 +141,12 @@ public class Robot extends SampleRobot {
 				mHatchIntake.in();
 			}
 
+			if (RunConstants.RUNNING_BALL) {
+				mBallIntake.lock();
+				mBallIntake.retain();
+				mBallIntake.backward();
+			}
+
 			if (RunConstants.RUNNING_LEADSCREW) {
 				mLeadscrew.leadscrewInitialZero();
 				mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
@@ -157,8 +163,7 @@ public class Robot extends SampleRobot {
 		int error = mLeadscrewEncoder.getError((int) mLeadscrewTalon.getClosedLoopTarget());
 		SmartDashboard.putNumber("DUMMY: leadscrew inside", System.currentTimeMillis());
 		SmartDashboard.putNumber("DUMMY: leadscrew ticks", mLeadscrewTalon.getSelectedSensorPosition());
-		SmartDashboard.putNumber("DUMMY: leadscrew inches",
-				LeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getSelectedSensorPosition()));
+		SmartDashboard.putNumber("DUMMY: leadscrew inches", LeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getSelectedSensorPosition()));
 		SmartDashboard.putNumber("DUMMY: leadscrew motor goal ticks", mLeadscrewTalon.getClosedLoopTarget());
 		SmartDashboard.putNumber("DUMMY: leadscrew motor output", mLeadscrewTalon.getMotorOutputPercent());
 		SmartDashboard.putNumber("DUMMY: error", error);
@@ -268,7 +273,15 @@ public class Robot extends SampleRobot {
 
 			// ball
 			if (RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING) {
-				// mBallIntake.enactMovement();
+				
+				mIntake.intakeBall();
+				mIntake.scoreBallHigh();
+				mIntake.scoreBallLow();
+				mIntake.holdingBall();
+				mIntake.idle();
+
+
+
 			}
 
 			// leadscrew without hatch intake or ball
@@ -296,12 +309,8 @@ public class Robot extends SampleRobot {
 			}
 
 			// all intake things but not states -- for testing
-			if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW && RunConstants.RUNNING_BALL
-					&& !RunConstants.RUNNING_EVERYTHING) {
+			if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW && RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING) {
 				mIntake.enactMovement();
-				if (mJoystick.getRawButtonReleased(16)) {
-					mHatchIntake.setRotaryOpposite();
-				}
 			}
 
 			if (RunConstants.RUNNING_CLIMBER) {
@@ -424,7 +433,6 @@ public class Robot extends SampleRobot {
 				&& mJoystick.getRawButtonPressed(JoystickConstants.FinalRobotButtons.SCORE_PANEL_ROCKET)) {
 			mCurrentState = RobotState.HATCH_SCORE_ROCKET;
 		}
-
 
 		// if we accidentally drop the panel...
 		else if (mIntake.holdingHatch()
@@ -817,11 +825,11 @@ public class Robot extends SampleRobot {
 	}
 
 	private void climberInit() {
-		mFrontClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_FRONT);
+		mFrontClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_FRONT);
 		mFrontClimbTalon.setInverted(ClimberConstants.FRONT_REVERSED);
-		mBackClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_BACK);
+		mBackClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_BACK);
 		mBackClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
-		mDriveClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_DRIVE);
+		mDriveClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_DRIVE);
 		mDriveClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
 		mClimbShifter = new SingleSolenoidReal(Ports.ActualRobot.SHIFTER_SOLENOID_IN);
 		mClimber = new Climber(mFrontClimbTalon, mBackClimbTalon, mDriveClimbTalon, mClimbShifter, mJoystick);
