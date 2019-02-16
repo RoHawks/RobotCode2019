@@ -16,8 +16,8 @@ public class DriveConstants {
 			MAX_EMERGENCY_VOLTAGE = 0.5;
 
 	public static final double 
-			MAX_ANGULAR_VELOCITY = 0.6,
-			MAX_LINEAR_VELOCITY = 0.6;
+			MAX_ANGULAR_VELOCITY = 0.9,
+			MAX_LINEAR_VELOCITY = 0.9;
 
 	
 	//*****************//
@@ -50,20 +50,20 @@ public class DriveConstants {
 			ROTATION_D = new double[] { 0, 0, 0, 0 };
 
 		public static final int[] 
-			OFFSETS = new int[] { 2262, 21 , 791, 271 },
+			OFFSETS = new int[] { 2285, 50 , 791, 271 },
 			
 			ROTATION_IZONE = new int[] { 500, 500, 500, 500 },
 			ROTATION_TOLERANCE = new int[] { 5, 5, 5, 5 };
 			
 		public static final double
-			GYRO_P = 0.006,
-			GYRO_I = 0.00008,
+			GYRO_P = 0.004,
+			GYRO_I = 0,
 			GYRO_D = 0,
 			GYRO_TOLERANCE = 5,
 			GYRO_MAX_SPEED = 1,
 			
-			DRIFT_COMP_P = 0.06,
-			DRIFT_COMP_I = 0.0006,
+			DRIFT_COMP_P = 0.018, //0.06
+			DRIFT_COMP_I = 0.0003, //0.0006
 			DRIFT_COMP_D = 0,
 			DRIFT_COMP_MAX = 0.3;
 	}

@@ -144,7 +144,7 @@ public class DriveTrain {
 				linearVel = Vector.createPolar(robotDirectionAngle, pSpecificLinearVelocity);
 				break;
 			case NUDGE:
-				linearVel = (nudgeMove() != null) ? nudgeMove() : Vector.createPolar(robotDirectionAngle, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+				linearVel = nudgeMove();
 				break;
 			case ANGLE_ONLY:
 				break;
@@ -205,30 +205,14 @@ public class DriveTrain {
 				}
 				resetDriftCompensation();
 				mDriftCompensationPID.setSetpoint(mRobotAngle.getAngleDegrees());
-			} 
-			else if (mLinearVel == LinearVelocity.NORMAL) {
+			}
+			else if (mLinearVel == LinearVelocity.NORMAL || mLinearVel == LinearVelocity.NUDGE) {
 				mDriftCompensationPID.enable();
 				SmartDashboard.putNumber("Drift comp error", mDriftCompensationPID.getError());
 				SmartDashboard.putNumber("Drift comp value", mDriftCompensationOutput.getVal());
 				mSwerveDrive.calculateHoldDirection(mDriftCompensationOutput.getVal(), getDesiredRobotVel());
 				for (int i = 0; i < 4; i++) {
 					mWheels[i].set(mSwerveDrive.getOutput(i));
-				}
-			} 
-			else if (mLinearVel == LinearVelocity.NUDGE) {
-				mDriftCompensationPID.enable();
-				SmartDashboard.putNumber("Drift comp error", mDriftCompensationPID.getError());
-				SmartDashboard.putNumber("Drift comp value", mDriftCompensationOutput.getVal());
-				mSwerveDrive.calculateHoldDirection(mDriftCompensationOutput.getVal(), getDesiredRobotVel());
-				if(allWheelsInRange(getDesiredRobotVel().getAngle())){
-					for (int i = 0; i < 4; i++) {
-						mWheels[i].set(mSwerveDrive.getOutput(i));
-					}
-				}
-				else{
-					for (int i = 0; i < 4; i++) {
-						mWheels[i].setAngle(mSwerveDrive.getOutput(i).getAngle());
-					}
 				}
 			}
 		}
@@ -236,25 +220,8 @@ public class DriveTrain {
 			resetDriftCompensation();
 			mDriftCompensationPID.setSetpoint(mRobotAngle.getAngleDegrees());
 			mSwerveDrive.calculate(getDesiredAngularVel(), getDesiredRobotVel());
-			// if you're trying to nudge...
-			if (mLinearVel == LinearVelocity.NUDGE || mRotationalVel == RotationalVelocity.NUDGE) {
-				for (int i = 0; i < 4; i++) {
-					// if wheels are in range, do regular stuff
-					if (allWheelsInRange(getDesiredRobotVel().getAngle())) {
-						mWheels[i].set(mSwerveDrive.getOutput(i));
-					}
-					// if wheels are not in range, just set the angle of wheels and don't drive yet
-					else{
-						mWheels[i].setAngle(mSwerveDrive.getOutput(i).getAngle());
-					}
-				}
-			}
-
-			// if you're just vrooming around, do your regular thing
-			else{
-				for (int i = 0; i < 4; i++) {
-					mWheels[i].set(mSwerveDrive.getOutput(i));
-				}
+			for (int i = 0; i < 4; i++) {
+				mWheels[i].set(mSwerveDrive.getOutput(i));
 			}
 		}
 
@@ -263,6 +230,7 @@ public class DriveTrain {
 		for (int i = 0; i < 4; i++) {
 			SmartDashboard.putNumber("Error " + i + ":", robotDirectionAngle - mWheels[i].getAngle());
 			SmartDashboard.putNumber("Angle " + i + ":", mWheels[i].getAngle());
+			
 		}
 	}
 
@@ -361,9 +329,8 @@ public class DriveTrain {
 		double newAngle = 0;
 		double robotAngle = mRobotAngle.getAngleDegrees();
 
-		if(mController.getYButton()) {
-			newAngle = 0;
-		}
+		// Don't need to check Y button, which is 0 degrees, since newAngle set to 0 by default
+
 		if (mController.getBButton()) {
 			newAngle = 90;
 		}
@@ -372,9 +339,6 @@ public class DriveTrain {
 		}
 		else if (mController.getXButton()) {
 			newAngle = 270;
-		}
-		else{
-			return null;
 		}
 
 		if (mIsFieldRelative) {

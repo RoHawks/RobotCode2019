@@ -263,6 +263,7 @@ public class Robot extends SampleRobot {
 				swerveDrive();
 				for (int i = 0; i < 4; i++) {
 					SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].get());
+					SmartDashboard.putNumber("Wheel offset " + i, mTurn[i].getSelectedSensorPosition() % 4096);
 				}
 			}
 
@@ -796,10 +797,10 @@ public class Robot extends SampleRobot {
 
 		if (!mCameraInitialized) {
 			mHatchCamera = new Limelight();
+			mHatchCamera.setStreamSecondary();
 			mHatchCamera.setVisionProcessor();
 			mHatchCamera.setPipeline(CameraConstants.PIPELINE);
 			mHatchCamera.setLedFromPipeline();
-			mHatchCamera.setStreamSecondary();
 			mCameraInitialized = true;
 		}
 
@@ -978,6 +979,7 @@ public class Robot extends SampleRobot {
 				addLogValueDouble(logString, mDrive[i].getBusVoltage());
 
 				addLogValueDouble(logString, mEncoder[i].getAngleDegrees());
+				addLogValueDouble(logString, mTurn[i].getSelectedSensorPosition() % 4096);
 			}
 
 			addLogValueDouble(logString, mDriveTrain.getDesiredRobotVel().getMagnitude());
