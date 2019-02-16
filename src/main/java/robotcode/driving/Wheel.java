@@ -3,7 +3,6 @@ package robotcode.driving;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.ControlType;
 
 import constants.DriveConstants;
 import resource.ResourceFunctions;

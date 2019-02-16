@@ -16,14 +16,28 @@ import edu.wpi.first.wpilibj.DigitalInput;
 public class LimitSwitch extends DigitalInput implements IDigitalInput{
 
     private DigitalGlitchFilter mFilter;
+    private long mPeriod;
 
-    public LimitSwitch(int pPort){
+    public LimitSwitch(int pPort, long pNanoseconds){
         super(pPort);
+        mPeriod = pNanoseconds;
         mFilter = new DigitalGlitchFilter();
+        mFilter.add(this);
+        mFilter.setPeriodNanoSeconds(mPeriod);
     }
 
     public boolean get() {
-
         return super.get();
+    }
+
+    public void setPeriod(long pNanoseconds){
+        if (pNanoseconds != mPeriod){
+            mFilter.setPeriodNanoSeconds(pNanoseconds);
+            mPeriod = pNanoseconds;
+        }
+    }
+
+    public long getPeriod(){
+        return mPeriod;
     }
 }

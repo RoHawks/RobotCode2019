@@ -9,12 +9,12 @@ public class SingleSolenoidReal implements SolenoidInterface {
 
 	public SingleSolenoidReal(int pPort) {
 		mSingleSolenoid = new Solenoid(pPort);
-		mCurrent = this.get();
+		mCurrent = this.getActual();
 	}
 
 	public SingleSolenoidReal(int pPort, int pModuleNumber){
 		mSingleSolenoid = new Solenoid(pModuleNumber, pPort);
-		mCurrent = this.get();
+		mCurrent = this.getActual();
 	}
 
 	public void set(Value pDirection) {
@@ -26,7 +26,12 @@ public class SingleSolenoidReal implements SolenoidInterface {
 	}
 
 	public Value get() {
+		return mCurrent;
+	}
+
+	public Value getActual() {
 		return mSingleSolenoid.get() ? Value.kForward : Value.kReverse;
+
 	}
 
 	public void setOpposite() {
