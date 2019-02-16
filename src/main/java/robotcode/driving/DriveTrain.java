@@ -220,11 +220,13 @@ public class DriveTrain {
 				SmartDashboard.putNumber("Drift comp error", mDriftCompensationPID.getError());
 				SmartDashboard.putNumber("Drift comp value", mDriftCompensationOutput.getVal());
 				mSwerveDrive.calculateHoldDirection(mDriftCompensationOutput.getVal(), getDesiredRobotVel());
-				for (int i = 0; i < 4; i++) {
-					if(mWheels[i].isInRange(mSwerveDrive.getOutput(i).getAngle())){
+				if(allWheelsInRange(getDesiredRobotVel().getAngle())){
+					for (int i = 0; i < 4; i++) {
 						mWheels[i].set(mSwerveDrive.getOutput(i));
 					}
-					else{
+				}
+				else{
+					for (int i = 0; i < 4; i++) {
 						mWheels[i].setAngle(mSwerveDrive.getOutput(i).getAngle());
 					}
 				}
@@ -238,7 +240,7 @@ public class DriveTrain {
 			if (mLinearVel == LinearVelocity.NUDGE || mRotationalVel == RotationalVelocity.NUDGE) {
 				for (int i = 0; i < 4; i++) {
 					// if wheels are in range, do regular stuff
-					if (mWheels[i].isInRange(mSwerveDrive.getOutput(i).getAngle())) {
+					if (allWheelsInRange(getDesiredRobotVel().getAngle())) {
 						mWheels[i].set(mSwerveDrive.getOutput(i));
 					}
 					// if wheels are not in range, just set the angle of wheels and don't drive yet
@@ -558,7 +560,7 @@ public class DriveTrain {
 		mDriftCompensationPID.disable();
 	}
 
-	public boolean AllWheelsInRange(double pAngle) {
+	public boolean allWheelsInRange(double pAngle) {
 		for (int i = 0; i < 4; i++) {
 			if (!mWheels[i].isInRange(pAngle)) {
 				return false;

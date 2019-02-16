@@ -32,7 +32,7 @@ public class TurnWheelsToAngleCommand extends BaseAutonomousCommand {
 								  0, 
 								  RotationalVelocity.NONE);
 		
-		return mDriveTrain.AllWheelsInRange(mAngle);
+		return mDriveTrain.allWheelsInRange(mAngle);
 	}
 
 }

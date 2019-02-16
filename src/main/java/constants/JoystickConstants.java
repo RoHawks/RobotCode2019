@@ -51,10 +51,11 @@ public class JoystickConstants {
 
     public static class IntakeButtons {
         public static final int 
-            INTAKE_HATCH = 7 + (LEADSCREW_HATCH_PROFILE * 10),
-            SCORE_HATCH = 8 + (LEADSCREW_HATCH_PROFILE * 10),
-            INTAKE_BALL = 9 + (LEADSCREW_HATCH_PROFILE * 10),
-            SCORE_BALL = 10 + (LEADSCREW_HATCH_PROFILE * 10),
+            INTAKE_HATCH = 6 + (LEADSCREW_HATCH_PROFILE * 10),
+            SCORE_HATCH = 7 + (LEADSCREW_HATCH_PROFILE * 10),
+            INTAKE_BALL = 8 + (LEADSCREW_HATCH_PROFILE * 10),
+            SCORE_BALL_HIGH = 9 + (LEADSCREW_HATCH_PROFILE * 10),
+            SCORE_BALL_LOW = 10 + (LEADSCREW_HATCH_PROFILE * 10),
             MANUAL = 11 + (LEADSCREW_HATCH_PROFILE * 10);
     }
 
