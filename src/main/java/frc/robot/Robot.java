@@ -808,15 +808,8 @@ public class Robot extends SampleRobot {
 			cameraInit();
 		}
 
-<<<<<<< HEAD
-		mLeadscrew = new Leadscrew(mLeadscrewTalon, mLeadscrewEncoder, mHatchCamera, mJoystick);
-
-=======
-
-
 		mLeadscrew = new Leadscrew(mLeadscrewTalon, mLeadscrewEncoder, mHatchCamera, mJoystick, mDriveTrain);
 		
->>>>>>> c204280dd4d99a106ac0bb334dbb797e501c9693
 	}
 
 	private void intakeInit() {
