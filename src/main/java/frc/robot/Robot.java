@@ -972,9 +972,6 @@ public class Robot extends SampleRobot {
 			addLogValueDouble(logString, mBackClimbTalon.getMotorOutputVoltage());
 			addLogValueDouble(logString, mFrontClimbTalon.getMotorOutputVoltage());
 			addLogValueDouble(logString, mDriveClimbTalon.getMotorOutputVoltage());
-			addLogValueDouble(logString, mBackClimbTalon.getOutputCurrent());
-			addLogValueDouble(logString, mFrontClimbTalon.getOutputCurrent());
-			addLogValueDouble(logString, mDriveClimbTalon.getOutputCurrent());
 		}
 
 		if(RunConstants.RUNNING_LEADSCREW){
