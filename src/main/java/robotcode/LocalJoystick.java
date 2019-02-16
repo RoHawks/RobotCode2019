@@ -23,6 +23,11 @@ public class LocalJoystick extends Joystick {
         super(port);
     }
 
+    /**
+     * Whether the button was released since the last check. Button indexes begin at 1.
+     * @param pButton The button index, beginning at 1.
+     * @return Whether the button was released since the last check.
+     */
     public boolean getRawButtonReleased(int pButton) {
         if (!RunConstants.SECONDARY_JOYSTICK) {                 // if we're using the logitech attack 3
             int realButton = pButton - mCurrentProfile * 10;    // do all this stuff
@@ -39,6 +44,21 @@ public class LocalJoystick extends Joystick {
     }
 
 
+    /**
+     * Whether the buttno was released 
+     * @param pButton
+     * @return
+     */
+    public boolean getRawButtonReleaseTimed(int pButton){
+        return false;
+    }
+
+
+    /**
+     * Whether the button was pressed since the last check. Button indexes begin at 1.
+     * @param pButton The button index, beginning at 1.
+     * @return Whether the button was pressed since the last check.
+     */
     public boolean getRawButtonPressed(int pButton) {
         if (!RunConstants.SECONDARY_JOYSTICK) {                 // if we're using the logitech attack 3
             int realButton = pButton - mCurrentProfile * 10;    // do all this stuff
