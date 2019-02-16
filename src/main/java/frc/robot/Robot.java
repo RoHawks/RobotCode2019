@@ -9,6 +9,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
+import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -71,6 +72,7 @@ public class Robot extends SampleRobot {
 	private DriveTrain mDriveTrain;
 	private Wheel[] mWheel = new Wheel[4];
 	private CANSparkMax[] mDrive = new CANSparkMax[4];
+	private CANEncoder[] mDriveEncoders = new CANEncoder[4]; 
 	private WPI_TalonSRX[] mTurn = new WPI_TalonSRX[4];
 	private TalonAbsoluteEncoder[] mEncoder = new TalonAbsoluteEncoder[4];
 
@@ -321,7 +323,7 @@ public class Robot extends SampleRobot {
 			
 			SmartDashboard.putString("bumper state", mBumperSensor.getState().toString());
 			Timer.delay(0.005); // wait for a motor update time
-		}
+			}
 	}
 
 	
@@ -392,6 +394,7 @@ public class Robot extends SampleRobot {
 		if ((mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO))) {
 			mCurrentState = RobotState.HATCH_SCORE;
 		}
+
 
 		// if we accidentally drop the panel...
 		else if (mIntake.holdingHatch() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)){
@@ -610,6 +613,8 @@ public class Robot extends SampleRobot {
 			mDrive[i].setCANTimeout(10);
 			mDrive[i].setOpenLoopRampRate(0.2);
 
+			mDriveEncoders[i] = new CANEncoder(mDrive[i]);
+
 			// initialize turn motors' encoders, as well as wheels:
 			mEncoder[i] = new TalonAbsoluteEncoder(mTurn[i], ResourceFunctions.tickToAngle(turnOffset));
 			mWheel[i] = new Wheel(mTurn[i], mDrive[i], mEncoder[i]);
@@ -681,7 +686,7 @@ public class Robot extends SampleRobot {
 
 
 
-		mLeadscrew = new Leadscrew(mLeadscrewTalon, mLeadscrewEncoder, mHatchCamera, mJoystick);
+		mLeadscrew = new Leadscrew(mLeadscrewTalon, mLeadscrewEncoder, mHatchCamera, mJoystick, mDriveTrain);
 		
 	}
 

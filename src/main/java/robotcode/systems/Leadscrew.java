@@ -16,6 +16,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import resource.ResourceFunctions;
 import robotcode.LocalJoystick;
 import robotcode.camera.Limelight;
+import robotcode.driving.DriveTrain;
+import robotcode.driving.DriveTrain.LinearVelocity;
+import robotcode.driving.DriveTrain.RotationalVelocity;
 import sensors.LeadscrewEncoder;
 
 
@@ -27,6 +30,7 @@ public class Leadscrew {
 
     // joysticks used
     private LocalJoystick mJoystick;
+    private DriveTrain mDrivetrain;
 
     // leadscrew
     private WPI_TalonSRX mLeadscrew;
@@ -35,16 +39,16 @@ public class Leadscrew {
 
     // camera
     private Limelight mHatchCamera;
-
     
     // ***********//
     // INITIALIZE //
     // ***********//
-    public Leadscrew(WPI_TalonSRX pLeadscrew, LeadscrewEncoder pEncoder, Limelight pLimelight, LocalJoystick pJoystick) {
+    public Leadscrew(WPI_TalonSRX pLeadscrew, LeadscrewEncoder pEncoder, Limelight pLimelight, LocalJoystick pJoystick, DriveTrain pDrivetrain) {
         mLeadscrew = pLeadscrew;
         mEncoder = pEncoder;
         mHatchCamera = pLimelight;
         mJoystick = pJoystick;
+        mDrivetrain = pDrivetrain;
     }
 
     private enum LeadscrewState {
@@ -157,23 +161,48 @@ public class Leadscrew {
     }
 
     /**
-     * aligns the leadscrew with the tape using limelight. only works in the x
-     * dimension
+     * aligns the leadscrew with the tape using limelight. only works in the x dimension
      */
     public void centerWithCamera() {
         if(mHatchCamera.hasTarget()) {
             SmartDashboard.putBoolean("TAPE TARGET ACQUIRED", true);
-            double error = mHatchCamera.xAngleToDistance();
-            double goal = LeadscrewConstants.MIDDLE + error;
-            SmartDashboard.putNumber("Distance from Camera", goal - mEncoder.getDistanceInInchesFromEnd());
-            if (Math.abs(goal - mEncoder.getDistanceInInchesFromEnd()) > LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
-                setPosition(goal);
+            double distCameraToTape = mHatchCamera.xAngleToDistance();
+            double goalInches = LeadscrewConstants.MIDDLE + distCameraToTape;
+            SmartDashboard.putNumber("Distance from Camera", goalInches - mEncoder.getDistanceInInchesFromEnd());
+            if (Math.abs(goalInches - mEncoder.getDistanceInInchesFromEnd()) > LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
+                setPosition(goalInches);
             }
         }
         else {
             SmartDashboard.putBoolean("TAPE TARGET ACQUIRED", false);
         }
 
+    }
+
+    /**
+     * aligns the leadscrew with the tape using limelight + driving. only works in x dimension
+     */
+    public void centerWithCameraDrivetrain() {
+        if (mHatchCamera.hasTarget()) {
+            SmartDashboard.putBoolean("TAPE TARGET ACQUIRED", true);
+            double distCameraToTape = mHatchCamera.xAngleToDistance();
+            double goalInches = LeadscrewConstants.MIDDLE + distCameraToTape;
+            SmartDashboard.putNumber("Distance from tape to leadscrew", goalInches - mEncoder.getDistanceInInchesFromEnd());
+            // if the tape is farther than leadscrew's zero (0) or max distance (length)
+            if(goalInches < 0){ 
+                mDrivetrain.enactMovement(0, 270, LinearVelocity.NUDGE, 0, RotationalVelocity.NONE);
+            }
+            else if(goalInches > LeadscrewConstants.LENGTH){ 
+                mDrivetrain.enactMovement(0, 90, LinearVelocity.NUDGE, 0, RotationalVelocity.NONE);
+            }
+            else {
+                if (Math.abs(goalInches - mEncoder.getDistanceInInchesFromEnd()) > LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
+                    setPosition(goalInches);
+                }
+            }
+        } else {
+            SmartDashboard.putBoolean("TAPE TARGET ACQUIRED", false);
+        }
     }
 
     /**
