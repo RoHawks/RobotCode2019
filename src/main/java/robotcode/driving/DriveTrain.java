@@ -10,6 +10,7 @@ import resource.ResourceFunctions;
 import resource.Vector;
 import robotcode.LocalJoystick;
 import robotcode.pid.GenericPIDOutput;
+import robotcode.pid.LocalPIDController;
 import sensors.RobotAngle;
 
 public class DriveTrain {
@@ -31,10 +32,10 @@ public class DriveTrain {
 	private boolean mIsFieldRelative;
 
 	// PIDs
-	private PIDController mGyroPID;
+	private LocalPIDController mGyroPID;
 	private GenericPIDOutput mGyroOutput;
 
-	private PIDController mDriftCompensationPID;
+	private LocalPIDController mDriftCompensationPID;
 	private GenericPIDOutput mDriftCompensationOutput;
 
 	// Velocity modes
@@ -158,15 +159,15 @@ public class DriveTrain {
 
 		switch (mRotationalVel) {
 			case NORMAL:
-				mGyroPID.disable();
+				mGyroPID.reset();
 				mDesiredAngularVel = getStickAngularVel();
 				break;
 			case NUDGE:
-				mGyroPID.disable();
+				mGyroPID.reset();
 				mDesiredAngularVel = nudgeTurn();
 				break;
 			case NONE:
-				mGyroPID.disable();
+				mGyroPID.reset();
 				mDesiredAngularVel = 0;
 				break;
 			case POV:
@@ -383,9 +384,6 @@ public class DriveTrain {
 	 * Disables and resets drift compensation
 	 */
 	private void resetDriftCompensation() {
-		if (mDriftCompensationPID.isEnabled()) {
-			mDriftCompensationPID.disable();
-		}
 		mDriftCompensationPID.reset();
 	}
 
@@ -486,9 +484,8 @@ public class DriveTrain {
 	public double getAngularPIDVel(double setpointAngle) {
 		mGyroPID.setSetpoint(setpointAngle);
 
-		if (!mGyroPID.isEnabled()) {
-			mGyroPID.enable();
-		}
+		mGyroPID.enable();
+
 		double vel = mGyroOutput.getVal();
 
 		SmartDashboard.putNumber("Gyro PID Setpoint:", mGyroPID.getSetpoint());
@@ -507,17 +504,23 @@ public class DriveTrain {
 
 	private void pidInit() {
 		mGyroOutput = new GenericPIDOutput();
-		mGyroPID = new PIDController(DriveConstants.ActualRobot.GYRO_P, DriveConstants.ActualRobot.GYRO_I,
-				DriveConstants.ActualRobot.GYRO_D, mRobotAngle, mGyroOutput);
+		mGyroPID = new LocalPIDController(DriveConstants.ActualRobot.GYRO_P, DriveConstants.ActualRobot.GYRO_I,
+		DriveConstants.ActualRobot.GYRO_D, mRobotAngle, mGyroOutput);
+		//mGyroPID = new PIDController(DriveConstants.ActualRobot.GYRO_P, DriveConstants.ActualRobot.GYRO_I,
+			//	DriveConstants.ActualRobot.GYRO_D, mRobotAngle, mGyroOutput);
 		mGyroPID.setInputRange(0, 360.0);
 		mGyroPID.setOutputRange(-DriveConstants.ActualRobot.GYRO_MAX_SPEED, DriveConstants.ActualRobot.GYRO_MAX_SPEED);
 		mGyroPID.setAbsoluteTolerance(DriveConstants.ActualRobot.GYRO_TOLERANCE);
 		mGyroPID.setContinuous(true);
+		mGyroPID.disable();
+
+		//TODO add izone, deadband
 
 		mDriftCompensationOutput = new GenericPIDOutput();
-		mDriftCompensationPID = new PIDController(DriveConstants.ActualRobot.DRIFT_COMP_P,
+		mDriftCompensationPID = new LocalPIDController(DriveConstants.ActualRobot.DRIFT_COMP_P,
 				DriveConstants.ActualRobot.DRIFT_COMP_I, DriveConstants.ActualRobot.DRIFT_COMP_D, mRobotAngle,
 				mDriftCompensationOutput);
+		mDriftCompensationPID.setOutputRange(-DriveConstants.ActualRobot.DRIFT_COMP_MAX, DriveConstants.ActualRobot.DRIFT_COMP_MAX);
 		mDriftCompensationPID.setInputRange(0, 360);
 		mDriftCompensationPID.setContinuous(true);
 		mDriftCompensationPID.setSetpoint(0);
