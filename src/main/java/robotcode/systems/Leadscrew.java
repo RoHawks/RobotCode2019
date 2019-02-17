@@ -196,7 +196,7 @@ public class Leadscrew {
             double goalInches = LeadscrewConstants.MIDDLE + distCameraToTape;
             SmartDashboard.putNumber("Distance from tape to leadscrew", goalInches - mEncoder.getDistanceInInchesFromEnd());
             // if the tape is farther than leadscrew's zero (0)
-            if(goalInches < 0){ 
+            if(goalInches < 1){ 
                 if (!mStartDriveAlign) { // if you haven't started this drive align process, set mStartDriveAlign to true and start timing
                     mStartDriveAlign = true;
                     mTimeStartDriveAlign = System.currentTimeMillis();
@@ -209,7 +209,7 @@ public class Leadscrew {
                 }
             }
             // if the tape is farther than the leadscrew's max distance (length)
-            else if(goalInches > LeadscrewConstants.LENGTH){ // if you haven't started this drive align process, set mStartDriveAlign to true and start timing
+            else if(goalInches > LeadscrewConstants.LENGTH-1){ // if you haven't started this drive align process, set mStartDriveAlign to true and start timing
                 if (!mStartDriveAlign) {
                     mStartDriveAlign = true;
                     mTimeStartDriveAlign = System.currentTimeMillis();
