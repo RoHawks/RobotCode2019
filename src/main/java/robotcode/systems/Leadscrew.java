@@ -205,6 +205,11 @@ public class Leadscrew {
         }
     }
 
+    public void setPositionJoystick(){
+        double percentGoal = (mJoystick.getX() + 1) / 2; //this should be between 0 and 1
+        setPosition(percentGoal * LeadscrewConstants.LENGTH);
+    }
+
     /**
      * sets the current position of the lead screw to be zero
      */

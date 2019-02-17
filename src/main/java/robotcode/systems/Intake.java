@@ -151,13 +151,21 @@ public class Intake {
      */
     public boolean intakePanel() {
 
+        double position = LeadscrewConstants.MIDDLE;
+        double goal = LeadscrewConstants.MIDDLE;
         // start moving to position on button press
-        mLeadscrew.centerWithCamera();
+        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+            mLeadscrew.centerWithCamera();
+            // take these variables to find the error (not sure if motor.getClosedLoopError
+            // works, gives weird error)
+            position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+            goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
+        } else {
+            mLeadscrew.setPositionJoystick();
+            position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+            goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
+        }
 
-        // take these variables to find the error (not sure if motor.getClosedLoopError
-        // works, gives weird error)
-        double position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-        double goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
 
         SmartDashboard.putNumber("INTAKING STEP", 0);
         SmartDashboard.putBoolean("has aligned", mHasAlignedHatchIntake);
@@ -169,7 +177,7 @@ public class Intake {
         // step 2: 500 milliseconds after step 1, intake with rotary piston
         // step 3: 1000 milliseconds after step 1, bring linear piston back
 
-        if (!mHasAlignedHatchIntake && (Math.abs(position - goal) < LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE)) {
+        if (!mHasAlignedHatchIntake && (Math.abs(position - goal) < LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE)) { // can this be changed to isInRange instead
             SmartDashboard.putNumber("INTAKING STEP", 1);
             mStartIntakeTimeHatch = System.currentTimeMillis();
             mHatchIntake.out();
@@ -205,7 +213,11 @@ public class Intake {
      */
     public boolean scorePanel() {
         // start moving to position on button press
-        mLeadscrew.centerWithCamera();
+        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+            mLeadscrew.centerWithCamera();
+        } else {
+            mLeadscrew.setPositionJoystick();
+        }
 
         // take these variables to find the error (not sure if motor.getClosedLoopError
         // works, gives weird error)
@@ -251,13 +263,20 @@ public class Intake {
      * @return whether the ball has been intaken yet
      */
     public boolean intakeBall() {
-
-        mLeadscrew.centerWithCamera();
-
-        // take these variables to find the error (not sure if motor.getClosedLoopError
-        // works, gives weird error)
-        double position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-        double goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
+        double position = LeadscrewConstants.MIDDLE;
+        double goal = LeadscrewConstants.MIDDLE;
+        // start moving to position on button press
+        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+            mLeadscrew.centerWithCamera();
+            // take these variables to find the error (not sure if motor.getClosedLoopError
+            // works, gives weird error)
+            position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+            goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
+        } else {
+            mLeadscrew.setPositionJoystick();
+            position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+            goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
+        }
 
         SmartDashboard.putNumber("BALL INTAKE STEP", 0);
         SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
@@ -271,7 +290,7 @@ public class Intake {
             mBallIntake.retain();
             mHasAlignedBallIntake = true;
         }
-        else if (mHasAlignedBallIntake && scoringSequenceElapsedMilliseconds < IntakeConstants.LoadBallTimes.STEP_TWO /*&& mBallIntake.isHoldingBall()*/){
+        else if (mHasAlignedBallIntake /* && scoringSequenceElapsedMilliseconds < IntakeConstants.LoadBallTimes.STEP_TWO  *//*&& mBallIntake.isHoldingBall()*/){
             SmartDashboard.putNumber("BALL INTAKE STEP", 2);
             //mBallIntake.lock();
             mStartIntakeTimeBall = 0;
@@ -293,12 +312,20 @@ public class Intake {
      */
     public boolean scoreBallHigh() {
 
-        mLeadscrew.centerWithCamera();
-
-        // take these variables to find the error (not sure if motor.getClosedLoopError
-        // works, gives weird error)
-        double position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-        double goal = LeadscrewConstants.MIDDLE + mLimelight.xAngleToDistance();
+        double position = LeadscrewConstants.MIDDLE;
+        double goal = LeadscrewConstants.MIDDLE;
+        // start moving to position on button press
+        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+            mLeadscrew.centerWithCamera();
+            // take these variables to find the error (not sure if motor.getClosedLoopError
+            // works, gives weird error)
+            position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+            goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
+        } else {
+            mLeadscrew.setPositionJoystick();
+            position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+            goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
+        }
 
         SmartDashboard.putNumber("BALL SCORE HIGH STEP", 0);
         SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
@@ -337,12 +364,20 @@ public class Intake {
      * @return whether the ball has been scored yet
      */
     public boolean scoreBallLow() {
-        mLeadscrew.centerWithCamera();
-
-        // take these variables to find the error (not sure if motor.getClosedLoopError
-        // works, gives weird error)
-        double position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-        double goal = LeadscrewConstants.MIDDLE + mLimelight.xAngleToDistance();
+        double position = LeadscrewConstants.MIDDLE;
+        double goal = LeadscrewConstants.MIDDLE;
+        // start moving to position on button press
+        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+            mLeadscrew.centerWithCamera();
+            // take these variables to find the error (not sure if motor.getClosedLoopError
+            // works, gives weird error)
+            position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+            goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
+        } else {
+            mLeadscrew.setPositionJoystick();
+            position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+            goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
+        }
 
         SmartDashboard.putNumber("BALL SCORE LOW STEP", 0);
         SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreLow);
@@ -366,7 +401,12 @@ public class Intake {
     }
 
     public boolean holdingHatch() {
-        mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
+        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+            mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
+        } else {
+            mLeadscrew.setPositionJoystick();
+        }
+
         if (RunConstants.RUNNING_HATCH) {
             mHatchIntake.in();
             mHatchIntake.expand();
@@ -378,7 +418,13 @@ public class Intake {
     }
 
     public boolean holdingBall(){
-        mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
+        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+            mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
+        }
+        else{
+            mLeadscrew.setPositionJoystick();
+        }
+
         if (RunConstants.RUNNING_BALL) {
             mBallIntake.backward();
             mBallIntake.lock();
@@ -391,8 +437,13 @@ public class Intake {
     }
 
     public boolean idle(){
-        mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
-
+        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+            mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
+        }
+        else{
+            mLeadscrew.setPositionJoystick();
+        }
+        
         if (RunConstants.RUNNING_HATCH) {
             mHatchIntake.in();
             mHatchIntake.contract();
