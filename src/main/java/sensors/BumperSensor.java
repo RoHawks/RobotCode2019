@@ -7,7 +7,6 @@
 
 package sensors;
 
-import constants.Ports;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 

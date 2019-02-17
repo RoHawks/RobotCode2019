@@ -35,25 +35,20 @@ import static java.util.Objects.requireNonNull;
  * in the integral and derivative calculations. Therefore, the sample rate
  * affects the controller's behavior for a given set of PID constants.
  */
-@SuppressWarnings("PMD.TooManyFields")
 public class LocalPIDBase extends SendableBase implements PIDInterface, PIDOutput {
     public static final double kDefaultPeriod = 0.05;
     private static int instances;
 
     // Factor for "proportional" control
-    @SuppressWarnings("MemberName")
     private double m_P;
 
     // Factor for "integral" control
-    @SuppressWarnings("MemberName")
     private double m_I;
 
     // Factor for "derivative" control
-    @SuppressWarnings("MemberName")
     private double m_D;
 
     // Factor for "feed forward" control
-    @SuppressWarnings("MemberName")
     private double m_F;
 
     // |maximum output|
@@ -172,7 +167,6 @@ public class LocalPIDBase extends SendableBase implements PIDInterface, PIDOutpu
      * @param source The PIDSource object that is used to get values
      * @param output The PIDOutput object that is set to the output percentage
      */
-    @SuppressWarnings("ParameterName")
     public LocalPIDBase(double Kp, double Ki, double Kd, double Kf, PIDSource source, PIDOutput output) {
         super(false);
         requireNonNull(source, "Null PIDSource was given");
@@ -213,7 +207,6 @@ public class LocalPIDBase extends SendableBase implements PIDInterface, PIDOutpu
      * @param source the PIDSource object that is used to get values
      * @param output the PIDOutput object that is set to the output percentage
      */
-    @SuppressWarnings("ParameterName")
     public LocalPIDBase(double Kp, double Ki, double Kd, PIDSource source, PIDOutput output) {
         this(Kp, Ki, Kd, 0.0, source, output);
     }
@@ -223,7 +216,6 @@ public class LocalPIDBase extends SendableBase implements PIDInterface, PIDOutpu
      * This should only be called by the PIDTask and is created during
      * initialization.
      */
-    @SuppressWarnings({ "LocalVariableName", "PMD.ExcessiveMethodLength", "PMD.NPathComplexity" })
     protected void calculate() {
         if (m_origSource == null || m_pidOutput == null) {
             return;
@@ -404,7 +396,6 @@ public class LocalPIDBase extends SendableBase implements PIDInterface, PIDOutpu
      * @param d Differential coefficient
      */
     @Override
-    @SuppressWarnings("ParameterName")
     public void setPID(double p, double i, double d) {
         m_thisMutex.lock();
         try {
@@ -425,7 +416,6 @@ public class LocalPIDBase extends SendableBase implements PIDInterface, PIDOutpu
      * @param d Differential coefficient
      * @param f Feed forward coefficient
      */
-    @SuppressWarnings("ParameterName")
     public void setPID(double p, double i, double d, double f) {
         m_thisMutex.lock();
         try {
@@ -443,7 +433,6 @@ public class LocalPIDBase extends SendableBase implements PIDInterface, PIDOutpu
      *
      * @param p Proportional coefficient
      */
-    @SuppressWarnings("ParameterName")
     public void setP(double p) {
         m_thisMutex.lock();
         try {
@@ -458,7 +447,6 @@ public class LocalPIDBase extends SendableBase implements PIDInterface, PIDOutpu
      *
      * @param i Integral coefficient
      */
-    @SuppressWarnings("ParameterName")
     public void setI(double i) {
         m_thisMutex.lock();
         try {
@@ -473,7 +461,6 @@ public class LocalPIDBase extends SendableBase implements PIDInterface, PIDOutpu
      *
      * @param d differential coefficient
      */
-    @SuppressWarnings("ParameterName")
     public void setD(double d) {
         m_thisMutex.lock();
         try {
@@ -488,7 +475,6 @@ public class LocalPIDBase extends SendableBase implements PIDInterface, PIDOutpu
      *
      * @param f feed forward coefficient
      */
-    @SuppressWarnings("ParameterName")
     public void setF(double f) {
         m_thisMutex.lock();
         try {

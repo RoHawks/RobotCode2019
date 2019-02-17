@@ -37,6 +37,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import resource.ResourceFunctions;
 import robotcode.driving.*;
+import robotcode.driving.DriveTrain.LinearVelocity;
+import robotcode.driving.DriveTrain.RotationalVelocity;
 import robotcode.pneumatics.*;
 import robotcode.LocalJoystick;
 import robotcode.camera.*;
@@ -77,8 +79,7 @@ public class Robot extends SampleRobot {
 
 	// hatch intake
 	private HatchIntake mHatchIntake;
-	private SolenoidInterface mHatchRotaryPiston;
-	private SolenoidInterface mHatchLinearPiston;
+	private SolenoidInterface mHatchRotaryPiston, mHatchLinearPiston;
 
 	// ball intake
 	private BallIntake mBallIntake;
@@ -113,7 +114,8 @@ public class Robot extends SampleRobot {
 
 	// game setup
 	private boolean mInGame = false, mCameraInitialized = false;
-	private long mGameStartMillis;
+	private long mGameStartMillis, mTimeLastCycleStarted;
+
 	RobotState mCurrentState = RobotState.INITIAL_HOLDING_HATCH;
 
 	// *************//
@@ -126,11 +128,19 @@ public class Robot extends SampleRobot {
 	}
 
 	public void endGame() {
+		if(RunConstants.LOGGING){
+			SmartDashboard.putString("DashboardCommand", "EndRecording");
+		}
 	}
 
 	public void startGame() {
 		if (!mInGame) {
 			mGameStartMillis = System.currentTimeMillis();
+
+			if(RunConstants.LOGGING){
+				SmartDashboard.putString("DashboardCommand", "StartRecording");
+				//createHeaderString();
+			}
 
 			if (RunConstants.RUNNING_PNEUMATICS) {
 				mCompressor.start();
@@ -173,14 +183,15 @@ public class Robot extends SampleRobot {
 	public void robotInit() {
 
 		mController = new XboxController(Ports.XBOX);
-		mNavX = new AHRS(Ports.NAVX);
-		mPDP = new PowerDistributionPanel();
 		mJoystick = new LocalJoystick(Ports.JOYSTICK);
+
+		mNavX = new AHRS(Ports.NAVX);
+
+		mPDP = new PowerDistributionPanel();
 		mCompressor = new Compressor(Ports.COMPRESSOR);
 
 		mFrontLimitLeft = new LimitSwitch(Ports.ActualRobot.FRONT_LIMIT_LEFT, 300000000);
 		mFrontLimitRight = new LimitSwitch(Ports.ActualRobot.FRONT_LIMIT_RIGHT, 300000000);
-
 		mBumperSensor = new BumperSensor(mFrontLimitLeft, mFrontLimitRight);
 
 		if (RunConstants.RUNNING_DRIVE) {
@@ -195,15 +206,15 @@ public class Robot extends SampleRobot {
 			ballInit();
 		}
 
-		if (RunConstants.RUNNING_LEADSCREW) {
-			leadscrewInit();
-		}
-
 		if (RunConstants.RUNNING_CAMERA) {
 			cameraInit();
 			// UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
 			// camera.setResolution(240, 180);
 			// camera.setFPS(30);
+		}
+
+		if (RunConstants.RUNNING_LEADSCREW) {
+			leadscrewInit();
 		}
 
 		if (RunConstants.RUNNING_LEADSCREW && RunConstants.RUNNING_HATCH && RunConstants.RUNNING_BALL) {
@@ -257,8 +268,21 @@ public class Robot extends SampleRobot {
 	public void operatorControl() {
 		// start game, again
 		startGame();
+		mTimeLastCycleStarted = System.currentTimeMillis();
+		long timeCycleStart;
+		long lastCycleTime;
 
 		while (isOperatorControl() && isEnabled()) {
+
+			timeCycleStart = System.currentTimeMillis();
+			lastCycleTime = timeCycleStart - mTimeLastCycleStarted;
+			mTimeLastCycleStarted = timeCycleStart;
+			SmartDashboard.putNumber("Cycle Time", lastCycleTime);
+
+			if(RunConstants.LOGGING){
+				log();
+			}
+
 			if (RunConstants.RUNNING_DRIVE) {
 				swerveDrive();
 				for (int i = 0; i < 4; i++) {
@@ -422,6 +446,7 @@ public class Robot extends SampleRobot {
 	private void initialHoldingHatch() {
 		// mClimber.up();
 		swerveDrive();
+
 		// when the robot wants to score...
 		if (mIntake.holdingHatch()
 				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)) {
@@ -443,7 +468,9 @@ public class Robot extends SampleRobot {
 	}
 
 	private void initialHoldingBall() {
+
 		swerveDrive();
+		
 		if (mIntake.holdingBall()
 				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)) {
 			mCurrentState = RobotState.BALL_FRONT_SCORE;
@@ -467,13 +494,19 @@ public class Robot extends SampleRobot {
 	 * Score the hatch. when it's done go to WAITING_TO_LOAD state
 	 */
 	private void hatchScoreCargo() {
+
 		if (!mHatchScoreBumperSensed) {
 			swerveDrive();
 		}
+		else{
+			mDriveTrain.stop();
+		}
+
 		if (mBumperSensor.getState() == BumperSensor.BumperState.BOTH
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)) {
 			mHatchScoreBumperSensed = true;
 		}
+
 		// if robot or driver says scoring is done...
 		if (mHatchScoreBumperSensed && (mIntake.scorePanel()
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL))) {
@@ -483,6 +516,7 @@ public class Robot extends SampleRobot {
 	}
 
 	private void hatchScoreRocket() {
+
 		// if robot or driver says scoring is done...
 		if (mIntake.scorePanel()
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL)) {
@@ -500,6 +534,7 @@ public class Robot extends SampleRobot {
 	private void waitingToLoad() {
 		// has_loaded button is pressed and thingy is flipped to ball side
 		swerveDrive();
+
 		if (!mHasWaitedToLoad) {
 			mStartWaitingToLoad = System.currentTimeMillis();
 			mHasWaitedToLoad = true;
@@ -539,6 +574,9 @@ public class Robot extends SampleRobot {
 		if (!mLoadingBallBumperSensed) {
 			swerveDrive();
 		}
+		else {
+			mDriveTrain.stop();
+		}
 
 		if (mBumperSensor.getState() == BumperState.BOTH
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL)) {
@@ -558,11 +596,14 @@ public class Robot extends SampleRobot {
 	 * HATCH_PRESCORE
 	 */
 	private void loadingHatch() {
-		// mDriveTrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0,
-		// RotationalVelocity.NONE);
+
 		if (!mLoadingHatchBumperSensed) {
 			swerveDrive();
 		}
+		else {
+			mDriveTrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
+		}
+
 		if (mBumperSensor.getState() == BumperState.BOTH
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)) {
 			mLoadingHatchBumperSensed = true;
@@ -580,7 +621,9 @@ public class Robot extends SampleRobot {
 
 
 	private void hatchPrescore() {
+
 		swerveDrive();
+
 		if (!mHasStartedHatchPrescore) {
 			mTimeStartHatchPrescore = System.currentTimeMillis();
 			mHasStartedHatchPrescore = true;
@@ -626,7 +669,9 @@ public class Robot extends SampleRobot {
 	 * 
 	 */
 	private void ballPrescore() {
+
 		swerveDrive();
+
 		// if (!mHasStartedBallPrescore) {
 		// 	mTimeStartBallPrescore = System.currentTimeMillis();
 		// 	mHasStartedBallPrescore = true;
@@ -666,8 +711,12 @@ public class Robot extends SampleRobot {
 
 	private boolean mBallFrontScoreBumperSensed = false;
 	private void ballFrontScore() {
+
 		if(!mBallFrontScoreBumperSensed){
 			swerveDrive();
+		}
+		else {
+			mDriveTrain.stop();
 		}
 		// if robot or driver says scoring is done...
 		if (mBumperSensor.getState() == BumperState.BOTH
@@ -685,6 +734,7 @@ public class Robot extends SampleRobot {
 	
 
 	private void ballBackScore() {
+
 		// if robot or driver says scoring is done...
 		if (mIntake.scoreBallLow()
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)) {
@@ -706,7 +756,18 @@ public class Robot extends SampleRobot {
 
 	public void disabled() {
 
+		long timeDisabledStarted = System.currentTimeMillis();
+		boolean ended = false;
+
 		while (this.isDisabled()) {
+			long timeElapsed = System.currentTimeMillis() - timeDisabledStarted;
+
+			if (timeElapsed > 3000 && !ended) {
+				endGame();
+				ended = true;
+				SmartDashboard.putString("CURRENT ROBOT MODE: ", "DISABLED");
+			}
+
 			if (mJoystick.getTriggerPressed()) {
 				// rotate autonomous routines to select which one to start with:
 				if (mAutonomousRoutine == AutonomousRoutineType.DEFAULT) {
@@ -718,7 +779,7 @@ public class Robot extends SampleRobot {
 			}
 		}
 
-		// SmartDashboard.putString("AUTO ROUTINE:", mAutonomousRoutine.toString());
+		SmartDashboard.putString("AUTO ROUTINE:", mAutonomousRoutine.toString());
 		Timer.delay(0.005); // wait for a motor update time
 	}
 
@@ -850,10 +911,6 @@ public class Robot extends SampleRobot {
 		mLeadscrewTalon.configAllowableClosedloopError(0, LeadscrewConstants.PID.LEADSCREW_TOLERANCE, 10);
 
 		mLeadscrewEncoder = new LeadscrewEncoder(mLeadscrewTalon);
-
-		if (RunConstants.RUNNING_CAMERA) {
-			cameraInit();
-		}
 
 		mLeadscrew = new Leadscrew(mLeadscrewTalon, mLeadscrewEncoder, mHatchCamera, mJoystick, mDriveTrain);
 		

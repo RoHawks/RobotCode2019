@@ -41,7 +41,6 @@ public class LocalPIDController extends LocalPIDBase implements Controller {
      *               particularly affects calculations of the integral and
      *               differential terms. The default is 0.05 (50ms).
      */
-    @SuppressWarnings("ParameterName")
     public LocalPIDController(double Kp, double Ki, double Kd, double Kf, PIDSource source, PIDOutput output,
             double period) {
         super(Kp, Ki, Kd, Kf, source, output);
@@ -60,7 +59,6 @@ public class LocalPIDController extends LocalPIDBase implements Controller {
      *               particularly affects calculations of the integral and
      *               differential terms. The default is 0.05 (50ms).
      */
-    @SuppressWarnings("ParameterName")
     public LocalPIDController(double Kp, double Ki, double Kd, PIDSource source, PIDOutput output, double period) {
         this(Kp, Ki, Kd, 0.0, source, output, period);
     }
@@ -75,7 +73,6 @@ public class LocalPIDController extends LocalPIDBase implements Controller {
      * @param source The PIDSource object that is used to get values
      * @param output The PIDOutput object that is set to the output percentage
      */
-    @SuppressWarnings("ParameterName")
     public LocalPIDController(double Kp, double Ki, double Kd, PIDSource source, PIDOutput output) {
         this(Kp, Ki, Kd, source, output, kDefaultPeriod);
     }
@@ -91,7 +88,6 @@ public class LocalPIDController extends LocalPIDBase implements Controller {
      * @param source The PIDSource object that is used to get values
      * @param output The PIDOutput object that is set to the output percentage
      */
-    @SuppressWarnings("ParameterName")
     public LocalPIDController(double Kp, double Ki, double Kd, double Kf, PIDSource source, PIDOutput output) {
         this(Kp, Ki, Kd, Kf, source, output, kDefaultPeriod);
     }
