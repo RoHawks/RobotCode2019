@@ -83,6 +83,10 @@ public class SwerveDrive {
 			}
 		}
 
+		for (int i = 0; i < 4; i++){
+			velocities[i].scaleTotal(DriveConstants.INDIVIDUAL_SCALE_FACTORS[i]);
+		}
+
 		for (int i = 0; i < 4; i++) {
 			mOutputs[i] = new Vector(velocities[i]);
 			SmartDashboard.putNumber("Vector Angle " + i, mOutputs[i].getAngle());

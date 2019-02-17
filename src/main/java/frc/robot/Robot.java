@@ -421,7 +421,7 @@ public class Robot extends SampleRobot {
 	 */
 	private void initialHoldingHatch() {
 		// mClimber.up();
-
+		swerveDrive();
 		// when the robot wants to score...
 		if (mIntake.holdingHatch()
 				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)) {
@@ -443,6 +443,7 @@ public class Robot extends SampleRobot {
 	}
 
 	private void initialHoldingBall() {
+		swerveDrive();
 		if (mIntake.holdingBall()
 				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)) {
 			mCurrentState = RobotState.BALL_FRONT_SCORE;
@@ -466,17 +467,19 @@ public class Robot extends SampleRobot {
 	 * Score the hatch. when it's done go to WAITING_TO_LOAD state
 	 */
 	private void hatchScoreCargo() {
+		if (!mHatchScoreBumperSensed) {
+			swerveDrive();
+		}
 		if (mBumperSensor.getState() == BumperSensor.BumperState.BOTH
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)) {
 			mHatchScoreBumperSensed = true;
 		}
-			// if robot or driver says scoring is done...
+		// if robot or driver says scoring is done...
 		if (mHatchScoreBumperSensed && (mIntake.scorePanel()
-					|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL))) {
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL))) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 			mHatchScoreBumperSensed = false;
 		}
-
 	}
 
 	private void hatchScoreRocket() {
@@ -496,7 +499,7 @@ public class Robot extends SampleRobot {
 	 */
 	private void waitingToLoad() {
 		// has_loaded button is pressed and thingy is flipped to ball side
-
+		swerveDrive();
 		if (!mHasWaitedToLoad) {
 			mStartWaitingToLoad = System.currentTimeMillis();
 			mHasWaitedToLoad = true;
@@ -531,25 +534,23 @@ public class Robot extends SampleRobot {
 
 
 	private boolean mLoadingBallBumperSensed = false;
-	private boolean mHasIntaken = false;
 
 	private void loadingBall() {
+		if (!mLoadingBallBumperSensed) {
+			swerveDrive();
+		}
+
 		if (mBumperSensor.getState() == BumperState.BOTH
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL)) {
 			mLoadingBallBumperSensed = true;
 		}
 
-		if(mLoadingBallBumperSensed && !mHasIntaken && mIntake.intakeBall()){
-			mHasIntaken = true;
-		}
-
-		if (mHasIntaken && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL)) {
+		if (mLoadingBallBumperSensed && (mIntake.intakeBall()
+				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL))) {
 			mCurrentState = RobotState.BALL_PRESCORE;
 			mLoadingBallBumperSensed = false;
-			mHasIntaken = false;
 		}
 	}
-
 
 	private boolean mLoadingHatchBumperSensed = false;
 	/**
@@ -559,14 +560,16 @@ public class Robot extends SampleRobot {
 	private void loadingHatch() {
 		// mDriveTrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0,
 		// RotationalVelocity.NONE);
-
+		if (!mLoadingHatchBumperSensed) {
+			swerveDrive();
+		}
 		if (mBumperSensor.getState() == BumperState.BOTH
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)) {
 			mLoadingHatchBumperSensed = true;
 		}
-			// either robot or person says the thing has been intaken
+		// either robot or person says the thing has been intaken
 		if (mLoadingHatchBumperSensed && (mIntake.intakePanel()
-					|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL))) {
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL))) {
 			mCurrentState = RobotState.HATCH_PRESCORE;
 			mLoadingHatchBumperSensed = false;
 		}
@@ -575,11 +578,9 @@ public class Robot extends SampleRobot {
 	private long mTimeStartHatchPrescore = 0;
 	private boolean mHasStartedHatchPrescore = false;
 
-	/**
-	 * 
-	 */
-	private void hatchPrescore() {
 
+	private void hatchPrescore() {
+		swerveDrive();
 		if (!mHasStartedHatchPrescore) {
 			mTimeStartHatchPrescore = System.currentTimeMillis();
 			mHasStartedHatchPrescore = true;
@@ -625,7 +626,7 @@ public class Robot extends SampleRobot {
 	 * 
 	 */
 	private void ballPrescore() {
-
+		swerveDrive();
 		// if (!mHasStartedBallPrescore) {
 		// 	mTimeStartBallPrescore = System.currentTimeMillis();
 		// 	mHasStartedBallPrescore = true;
@@ -665,6 +666,9 @@ public class Robot extends SampleRobot {
 
 	private boolean mBallFrontScoreBumperSensed = false;
 	private void ballFrontScore() {
+		if(!mBallFrontScoreBumperSensed){
+			swerveDrive();
+		}
 		// if robot or driver says scoring is done...
 		if (mBumperSensor.getState() == BumperState.BOTH
 		|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)) {

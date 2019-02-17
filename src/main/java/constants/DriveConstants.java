@@ -7,17 +7,20 @@ public class DriveConstants {
 	// GENERAL VARIABLES //
 	//*******************//
 	public static final double  // speed mins, when lower than these don't do anything
-			MIN_LINEAR_VELOCITY = 0.02,
-			MIN_DIRECTION_MAG = 0.25, // refers to joystick magnitudes
-			MAX_INDIVIDUAL_VELOCITY = 1.0;
+		MIN_LINEAR_VELOCITY = 0.02, // determines NORMAL vs ANGLE_ONLY linear velocity mode
+		MIN_DIRECTION_MAG = 0.25, // refers to joystick magnitudes
+		MAX_INDIVIDUAL_VELOCITY = 1.0; // max length of wheel vectors
+		
+	public static final double[]
+		INDIVIDUAL_SCALE_FACTORS = { 1.0 , 1.0 , 1.0 , 1.0 };
 	
 	public static final double
-			EMERGENCY_VOLTAGE = 10000,
-			MAX_EMERGENCY_VOLTAGE = 0.5;
+		EMERGENCY_VOLTAGE = 10000,
+		MAX_EMERGENCY_VOLTAGE = 0.5;
 
 	public static final double 
-			MAX_ANGULAR_VELOCITY = 0.9,
-			MAX_LINEAR_VELOCITY = 0.9;
+		MAX_ANGULAR_VELOCITY = 0.9, // does absolutely nothing lol
+		MAX_LINEAR_VELOCITY = 0.9; // absolute max linear velocity (no scaling)
 
 	
 	//*****************//
