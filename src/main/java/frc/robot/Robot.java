@@ -561,7 +561,7 @@ public class Robot extends SampleRobot {
 				mHasWaitedToLoad = false;
 			}
 
-			else if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL)) {
+			else if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL)) {
 				mCurrentState = RobotState.LOADING_BALL;
 				mStartWaitingToLoad = 0;
 				mHasWaitedToLoad = false;
@@ -587,8 +587,12 @@ public class Robot extends SampleRobot {
 			mLoadingBallBumperSensed = true;
 		}
 
-		if (mLoadingBallBumperSensed && (mIntake.intakeBall()
-				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL))) {
+		if (mLoadingBallBumperSensed){
+			mIntake.intakeBall();
+		}
+		
+		if (mLoadingBallBumperSensed &&
+				mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL)) {
 			mCurrentState = RobotState.BALL_PRESCORE;
 			mLoadingBallBumperSensed = false;
 		}
@@ -681,8 +685,10 @@ public class Robot extends SampleRobot {
 		// long ballPrescoreElapsedMilliseconds = System.currentTimeMillis() - mTimeStartBallPrescore;
 
 		// if (ballPrescoreElapsedMilliseconds > 500) {
-			if (mIntake.holdingBall()
-					&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)) {
+
+			mIntake.holdingBall();
+
+			if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)) {
 
 				mCurrentState = RobotState.BALL_FRONT_SCORE;
 				mTimeStartBallPrescore = 0;
@@ -690,8 +696,7 @@ public class Robot extends SampleRobot {
 
 			} 
 			
-			else if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_ROCKET)
-					&& mIntake.holdingBall()) {
+			else if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_ROCKET)) {
 
 				mCurrentState = RobotState.BALL_BACK_SCORE;
 				mTimeStartBallPrescore = 0;
@@ -699,8 +704,7 @@ public class Robot extends SampleRobot {
 			}
 
 			else if ((mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)
-					|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL))
-					&& mIntake.holdingBall()) {
+					|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL))) {
 
 				mCurrentState = RobotState.WAITING_TO_LOAD;
 				mTimeStartHatchPrescore = 0;

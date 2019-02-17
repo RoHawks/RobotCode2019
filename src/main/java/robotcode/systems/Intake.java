@@ -424,10 +424,16 @@ public class Intake {
         else if (mHasAlignedBallScoreLow && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallLowTimes.STEP_TWO){
             SmartDashboard.putNumber("BALL SCORE LOW STEP", 2);
             //mBallIntake.retain();
+            
+        }
+        else if (mHasAlignedBallScoreLow && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallLowTimes.STEP_TWO + 10000){
+            SmartDashboard.putNumber("BALL SCORE LOW STEP", 3);
+
             mStartScoreTimeBallLow = 0;
             mHasAlignedBallScoreLow = false;
             return true;
         }
+
         return false;
     }
 
