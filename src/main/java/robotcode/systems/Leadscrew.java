@@ -189,13 +189,13 @@ public class Leadscrew {
     /**
      * aligns the leadscrew with the tape using limelight + driving. only works in x dimension
      */
-    public void centerWithCameraDrivetrain() {
+    public void centerWithCameraDrivetrain() { // absolute cancer
         if (mHatchCamera.hasTarget()) {
             SmartDashboard.putBoolean("TAPE TARGET ACQUIRED", true);
             double distCameraToTape = mHatchCamera.xAngleToDistance();
             double goalInches = LeadscrewConstants.MIDDLE + distCameraToTape;
             SmartDashboard.putNumber("Distance from tape to leadscrew", goalInches - mEncoder.getDistanceInInchesFromEnd());
-            // if the tape is farther than leadscrew's zero (0)
+            // if the tape is farther than 1 inch from leadscrew's zero (0)
             if(goalInches < 1){ 
                 if (!mStartDriveAlign) { // if you haven't started this drive align process, set mStartDriveAlign to true and start timing
                     mStartDriveAlign = true;
@@ -208,7 +208,7 @@ public class Leadscrew {
                     mDrivetrain.enactMovement(0, 270, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
                 }
             }
-            // if the tape is farther than the leadscrew's max distance (length)
+            // if the tape is farther than 1inch from leadscrew's max distance (length)
             else if(goalInches > LeadscrewConstants.LENGTH-1){ // if you haven't started this drive align process, set mStartDriveAlign to true and start timing
                 if (!mStartDriveAlign) {
                     mStartDriveAlign = true;

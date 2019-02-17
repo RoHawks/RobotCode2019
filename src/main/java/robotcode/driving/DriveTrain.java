@@ -320,16 +320,16 @@ public class DriveTrain {
 	 */
 	private double nudgeTurn() {
 		double leftTrigger = mController.getTriggerAxis(Hand.kLeft);
-		if (mController.getBumper(Hand.kLeft) && leftTrigger < 0.2) {
+		if (mController.getBumper(Hand.kLeft) && leftTrigger < 0.2) { // left trigger not pressed
 			return -DriveConstants.SwerveSpeeds.NUDGE_TURN_SPEED;
 		}
-		else if (mController.getBumper(Hand.kRight) && leftTrigger < 0.2) {
+		else if (mController.getBumper(Hand.kRight) && leftTrigger < 0.2) { // left trigger not pressed
 			return DriveConstants.SwerveSpeeds.NUDGE_TURN_SPEED;
 		}
-		else if (mController.getBumper(Hand.kLeft) && leftTrigger > 0.2){
+		else if (mController.getBumper(Hand.kLeft) && leftTrigger > 0.2){ // left trigger pressed
 			return -((leftTrigger * 0.4) + 0.2);
 		}
-		else if (mController.getBumper(Hand.kRight) && leftTrigger < 0.2){
+		else if (mController.getBumper(Hand.kRight) && leftTrigger < 0.2){ // left trigger pressed
 			return (leftTrigger * 0.4) + 0.2;
 		}
 
@@ -362,6 +362,10 @@ public class DriveTrain {
 
 		if (mController.getBackButton()) {
 			sum.setAngle(sum.getAngle() - robotAngle);
+		}
+
+		if(mController.getTriggerAxis(Hand.kLeft) > 0.2){	// if left trigger axis is pressed, set magnitude
+			sum.setTotal((mController.getTriggerAxis(Hand.kLeft) * 0.4) + 0.2);
 		}
 
 		return sum;
