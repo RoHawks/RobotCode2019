@@ -319,11 +319,18 @@ public class DriveTrain {
 	 * @return correct angular velocity
 	 */
 	private double nudgeTurn() {
-		if (mController.getBumper(Hand.kLeft)) {
+		double leftTrigger = mController.getTriggerAxis(Hand.kLeft);
+		if (mController.getBumper(Hand.kLeft) && leftTrigger < 0.2) {
 			return -DriveConstants.SwerveSpeeds.NUDGE_TURN_SPEED;
 		}
-		else if (mController.getBumper(Hand.kRight)) {
+		else if (mController.getBumper(Hand.kRight) && leftTrigger < 0.2) {
 			return DriveConstants.SwerveSpeeds.NUDGE_TURN_SPEED;
+		}
+		else if (mController.getBumper(Hand.kLeft) && leftTrigger > 0.2){
+			return -((leftTrigger * 0.4) + 0.2);
+		}
+		else if (mController.getBumper(Hand.kRight) && leftTrigger < 0.2){
+			return (leftTrigger * 0.4) + 0.2;
 		}
 
 		return 0;
@@ -335,26 +342,29 @@ public class DriveTrain {
 	 * @return correct direction vector
 	 */
 	private Vector nudgeMove() {
-		double newAngle = 0;
 		double robotAngle = mRobotAngle.getAngleDegrees();
 
-		// Don't need to check Y button, which is 0 degrees, since newAngle set to 0 by default
+		Vector sum = new Vector(0, 0);
 
+		// Don't need to check Y button, which is 0 degrees, since newAngle set to 0 by default
+		if(mController.getYButton()){
+			sum.addPolar(0, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+		}
 		if (mController.getBButton()) {
-			newAngle = 90;
+			sum.addPolar(90, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
-		else if (mController.getAButton()) {
-			newAngle = 180;
+		 if (mController.getAButton()) {
+			sum.addPolar(180, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
-		else if (mController.getXButton()) {
-			newAngle = 270;
+		if (mController.getXButton()) {
+			sum.addPolar(270, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
 
 		if (mController.getBackButton()) {
-			newAngle -= robotAngle;
+			sum.setAngle(sum.getAngle() - robotAngle);
 		}
 
-		return Vector.createPolar(newAngle, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+		return sum;
 	}
 
 	/**
