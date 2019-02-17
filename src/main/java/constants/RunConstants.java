@@ -11,6 +11,7 @@ public class RunConstants {
 		RUNNING_CAMERA = true,
 		SECONDARY_JOYSTICK = false, // using the box instead of logitech attack
 		IS_PROTOTYPE = false,
+		LOGGING = false,
 		
 		RUNNING_EVERYTHING = true && RUNNING_DRIVE && RUNNING_PNEUMATICS && RUNNING_LEADSCREW && RUNNING_HATCH && SECONDARY_JOYSTICK;
 }

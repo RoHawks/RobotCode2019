@@ -3,7 +3,6 @@ package robotcode.driving;
 import constants.DriveConstants;
 import constants.JoystickConstants;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
-import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import resource.ResourceFunctions;
@@ -84,6 +83,16 @@ public class DriveTrain {
 				getRotationalVelocityState());
 	}
 
+	public void stop(){
+		enactMovement(0, 0, LinearVelocity.NONE, 0, RotationalVelocity.NONE);
+
+		// TODO would this be better?
+		// for (int i = 0; i < 4; i++) {
+		// 	mWheels[i].setLinearVelocity(0);
+		// 	mWheels[i].setTurnSpeed(0);
+		// }
+	}
+
 	public void enactMovement(double pGyroAngle, double pRobotDirectionAngle, LinearVelocity pLinearVel,
 			double pSpecificLinearVelocity, RotationalVelocity pRotationalVel) {
 		SmartDashboard.putNumber("Robot Angle", mRobotAngle.getAngleDegrees());
@@ -138,7 +147,6 @@ public class DriveTrain {
 		}
 
 		
-
 		Vector linearVel = new Vector();
 		switch (mLinearVel) {
 			case NORMAL:
