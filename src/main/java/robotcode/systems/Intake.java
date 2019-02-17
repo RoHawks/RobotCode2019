@@ -271,7 +271,7 @@ public class Intake {
             mBallIntake.retain();
             mHasAlignedBallIntake = true;
         }
-        else if (mHasAlignedBallIntake && scoringSequenceElapsedMilliseconds < IntakeConstants.LoadBallTimes.STEP_TWO /*&& mBallIntake.isHoldingBall()*/){
+        else if (mHasAlignedBallIntake /*&& scoringSequenceElapsedMilliseconds < IntakeConstants.LoadBallTimes.STEP_TWO /*&& mBallIntake.isHoldingBall()*/){
             SmartDashboard.putNumber("BALL INTAKE STEP", 2);
             //mBallIntake.lock();
             mStartIntakeTimeBall = 0;

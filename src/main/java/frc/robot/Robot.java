@@ -284,6 +284,10 @@ public class Robot extends SampleRobot {
 				log();
 			}
 
+			if(RunConstants.RUNNING_CAMERA){
+				mHatchCamera.setStreamSecondary();
+			}
+
 			if (RunConstants.RUNNING_DRIVE) {
 				swerveDrive();
 				for (int i = 0; i < 4; i++) {
@@ -613,7 +617,7 @@ public class Robot extends SampleRobot {
 		}
 		// either robot or person says the thing has been intaken
 		if (mLoadingHatchBumperSensed && (mIntake.intakePanel()
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL))) {
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_PANEL))) {
 			mCurrentState = RobotState.HATCH_PRESCORE;
 			mLoadingHatchBumperSensed = false;
 		}
@@ -845,7 +849,7 @@ public class Robot extends SampleRobot {
 			mDrive[i].setInverted(driveReversed);
 			mDrive[i].setIdleMode(IdleMode.kBrake); // TOOD check
 			mDrive[i].setCANTimeout(10);
-			mDrive[i].setOpenLoopRampRate(0.2);
+			mDrive[i].setOpenLoopRampRate(0.35);
 
 			mDriveEncoders[i] = new CANEncoder(mDrive[i]);
 

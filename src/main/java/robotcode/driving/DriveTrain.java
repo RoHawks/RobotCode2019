@@ -54,7 +54,7 @@ public class DriveTrain {
 		mDesiredAngularVel = 0;
 
 		mJoystickAngle = 0;
-		mIsFieldRelative = false;
+		mIsFieldRelative = true;
 
 		mLinearVel = LinearVelocity.NONE;
 		mPrevLinearVel = LinearVelocity.NONE;
@@ -350,7 +350,7 @@ public class DriveTrain {
 			newAngle = 270;
 		}
 
-		if (mIsFieldRelative) {
+		if (mController.getBackButton()) {
 			newAngle -= robotAngle;
 		}
 
