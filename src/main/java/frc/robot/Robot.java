@@ -505,9 +505,6 @@ public class Robot extends SampleRobot {
 		if (!mHatchScoreBumperSensed) {
 			swerveDrive();
 		}
-		else{
-			mDriveTrain.stop();
-		}
 
 		if (mBumperSensor.getState() == BumperSensor.BumperState.BOTH
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)) {
@@ -606,9 +603,6 @@ public class Robot extends SampleRobot {
 
 		if (!mLoadingHatchBumperSensed) {
 			swerveDrive();
-		}
-		else {
-			mDriveTrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
 		}
 
 		if (mBumperSensor.getState() == BumperState.BOTH
@@ -924,7 +918,7 @@ public class Robot extends SampleRobot {
 	}
 
 	private void intakeInit() {
-		mIntake = new Intake(mHatchIntake, mBallIntake, mLeadscrew, mHatchCamera, mJoystick);
+		mIntake = new Intake(mHatchIntake, mBallIntake, mLeadscrew, mHatchCamera, mDriveTrain, mJoystick);
 	}
 
 	private void climberInit() {
