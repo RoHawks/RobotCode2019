@@ -14,6 +14,9 @@ import constants.RunConstants;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import robotcode.LocalJoystick;
 import robotcode.camera.Limelight;
+import robotcode.driving.DriveTrain;
+import robotcode.driving.DriveTrain.LinearVelocity;
+import robotcode.driving.DriveTrain.RotationalVelocity;
 
 public class Intake {
 
@@ -24,6 +27,7 @@ public class Intake {
     private BallIntake mBallIntake;
     private Leadscrew mLeadscrew;
     private Limelight mLimelight;
+    private DriveTrain mDrivetrain;
     private LocalJoystick mJoystick;
 
     private IntakeState mIntakeState = IntakeState.IDLE;
@@ -32,11 +36,12 @@ public class Intake {
     // INITIALIZE //
     // ***********//
 
-    public Intake(HatchIntake pHatchIntake, BallIntake pBallIntake, Leadscrew pLeadscrew, Limelight pLimelight, LocalJoystick pJoystick) {
+    public Intake(HatchIntake pHatchIntake, BallIntake pBallIntake, Leadscrew pLeadscrew, Limelight pLimelight, DriveTrain pDrivetrain, LocalJoystick pJoystick) {
         mHatchIntake = pHatchIntake;
         mBallIntake = pBallIntake;
         mLeadscrew = pLeadscrew;
         mLimelight = pLimelight;
+        mDrivetrain = pDrivetrain;
         mJoystick = pJoystick;
         
     }
@@ -180,21 +185,34 @@ public class Intake {
         if (!mHasAlignedHatchIntake && (Math.abs(position - goal) < LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE)) { // can this be changed to isInRange instead
             SmartDashboard.putNumber("INTAKING STEP", 1);
             mStartIntakeTimeHatch = System.currentTimeMillis();
+			mDrivetrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
             mHatchIntake.out();
             mHatchIntake.contract();
             mHasAlignedHatchIntake = true;
         }
         else if (!mHasAlignedHatchIntake) {
+            mDrivetrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
             mHatchIntake.contract();
             // TZ this might be redundant, rotary piston should already be contracted whenever you get to this state
         }
         else if (mHasAlignedHatchIntake && (loadingSequenceElapsedMilliseconds < IntakeConstants.LoadHatchTimes.STEP_TWO)) {
+            mDrivetrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
             SmartDashboard.putNumber("INTAKING STEP", 2);
             mHatchIntake.expand();
         }
         else if (mHasAlignedHatchIntake && (loadingSequenceElapsedMilliseconds < IntakeConstants.LoadHatchTimes.STEP_THREE)) {
+            mDrivetrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
             SmartDashboard.putNumber("INTAKING STEP", 3);
             mHatchIntake.in();
+        } 
+        else if (mHasAlignedHatchIntake && (loadingSequenceElapsedMilliseconds < IntakeConstants.LoadHatchTimes.STEP_FOUR)){
+            SmartDashboard.putNumber("INTAKING STEP", 4);
+            mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
+            mHasAlignedHatchIntake = false;
+            mStartIntakeTimeHatch = 0;
+            return true;
+        }
+        else if (mHasAlignedHatchIntake && loadingSequenceElapsedMilliseconds > IntakeConstants.LoadHatchTimes.STEP_FOUR){
             mHasAlignedHatchIntake = false;
             mStartIntakeTimeHatch = 0;
             return true;
@@ -246,6 +264,15 @@ public class Intake {
         else if (mHasAlignedHatchScore && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_THREE)) {
             SmartDashboard.putNumber("SCORING STEP", 3);
             mHatchIntake.in();
+        }
+        else if (mHasAlignedHatchIntake && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_FOUR)){
+            SmartDashboard.putNumber("SCORING STEP", 4);
+            mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
+            mStartScoreTimeHatch = 0;
+            mHasAlignedHatchScore = false;
+            return true;
+        }
+        else if(mHasAlignedHatchIntake && scoringSequenceElapsedMilliseconds > IntakeConstants.ScoreHatchTimes.STEP_FOUR){ // if the time overshoots, we need to be able to exit this mode
             mStartScoreTimeHatch = 0;
             mHasAlignedHatchScore = false;
             return true;
@@ -281,7 +308,7 @@ public class Intake {
         SmartDashboard.putNumber("BALL INTAKE STEP", 0);
         SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
 
-        long scoringSequenceElapsedMilliseconds = System.currentTimeMillis() - mStartIntakeTimeBall;
+        long ballLoadingSequenceElapsedMilliseconds = System.currentTimeMillis() - mStartIntakeTimeBall;
 
         if (!mHasAlignedBallIntake && Math.abs(position - goal) < LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
             SmartDashboard.putNumber("BALL INTAKE STEP", 1);
@@ -290,12 +317,10 @@ public class Intake {
             mBallIntake.retain();
             mHasAlignedBallIntake = true;
         }
-        else if (mHasAlignedBallIntake /*&& scoringSequenceElapsedMilliseconds < IntakeConstants.LoadBallTimes.STEP_TWO /*&& mBallIntake.isHoldingBall()*/){
+        
+        else if (mHasAlignedBallIntake && ballLoadingSequenceElapsedMilliseconds < IntakeConstants.LoadBallTimes.STEP_TWO /*&& mBallIntake.isHoldingBall()*/){
             SmartDashboard.putNumber("BALL INTAKE STEP", 2);
             //mBallIntake.lock();
-            mStartIntakeTimeBall = 0;
-            mHasAlignedBallIntake = false;
-            return true; 
         }
 
         return false;
@@ -349,6 +374,12 @@ public class Intake {
             mStartScoreTimeBallHigh = 0;
             mHasAlignedBallScoreHigh = false;
             return true;
+        }
+        else if (mHasAlignedBallScoreHigh && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallHighTimes.STEP_FOUR) {
+            SmartDashboard.putNumber("BALL SCORE HIGH STEP", 4);
+            mStartScoreTimeBallHigh = 0;
+            mHasAlignedBallScoreHigh = false;
+            return true;            
         }
 
         return false;
