@@ -19,7 +19,7 @@ public class LeadscrewConstants {
         LENGTH = 9.75, //14.875, 
         MIDDLE = 5.25,
         SOFT_LIMIT = 0.75, 
-        LEADSCREW_CAMERA_TOLERANCE = 0.2; // inches
+        LEADSCREW_CAMERA_TOLERANCE = 0.3; // inches
 
     public static final boolean 
         ENCODER_REVERSED = true, 
