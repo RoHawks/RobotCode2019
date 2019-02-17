@@ -273,11 +273,8 @@ public class Robot extends SampleRobot {
 		long timeCycleStart;
 		long lastCycleTime;
 
-		LeadscrewConstants.LEADSCREW_OVERRIDE = mJoystick.getRawButton(1);
-
 		while (isOperatorControl() && isEnabled()) {
 			
-
 			timeCycleStart = System.currentTimeMillis();
 			lastCycleTime = timeCycleStart - mTimeLastCycleStarted;
 			mTimeLastCycleStarted = timeCycleStart;
@@ -351,6 +348,7 @@ public class Robot extends SampleRobot {
 
 			if (RunConstants.RUNNING_EVERYTHING) {
 				SmartDashboard.putNumber("z value", mJoystick.getZ());
+				LeadscrewConstants.LEADSCREW_OVERRIDE = mJoystick.getRawButton(1);
 				doWork();
 			}
 		
