@@ -91,9 +91,9 @@ public class Ports {
 
 		// CLIMBER
 		public static final int
-			CLIMB_FRONT = 0,
-			CLIMB_BACK = 1,
-			CLIMB_DRIVE = 2,
+			CLIMB_FRONT = 6,
+			CLIMB_BACK = 7,
+			CLIMB_DRIVE = 8,
 
 			SHIFTER_SOLENOID_IN = 0,
 			SHIFTER_SOLENOID_OUT = 0;

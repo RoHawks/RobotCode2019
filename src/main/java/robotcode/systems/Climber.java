@@ -15,6 +15,7 @@ import constants.ClimberConstants;
 import constants.JoystickConstants;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import robotcode.LocalJoystick;
 import robotcode.pneumatics.SolenoidInterface;
 
@@ -36,22 +37,23 @@ public class Climber {
         if (mJoystick.getRawButtonReleased(JoystickConstants.ClimbButtons.SHIFT)) {
             mShifter.setOpposite();
         }
+        // add buttons here for link and unlink 
 
-        if(mJoystick.getRawButton(JoystickConstants.ClimbButtons.FRONT) && Math.abs(mJoystick.getY()) > 0.25){
+        if(mJoystick.getRawButton(JoystickConstants.ClimbButtons.FRONT) && Math.abs(mJoystick.getY(JoystickConstants.CLIMB_PROFILE)) > 0.25){
             mFrontTalon.set(ControlMode.PercentOutput, -mJoystick.getY(JoystickConstants.CLIMB_PROFILE));
         }
         else {
             mFrontTalon.set(0);
         }
 
-        if(mJoystick.getRawButton(JoystickConstants.ClimbButtons.BACK) && Math.abs(mJoystick.getY()) > 0.25){
+        if(mJoystick.getRawButton(JoystickConstants.ClimbButtons.BACK) && Math.abs(mJoystick.getY(JoystickConstants.CLIMB_PROFILE)) > 0.25){
             mBackTalon.set(ControlMode.PercentOutput, -mJoystick.getY(JoystickConstants.CLIMB_PROFILE));
         }
         else{
             mBackTalon.set(0);
         }
 
-        if(mJoystick.getRawButton(JoystickConstants.ClimbButtons.DRIVE) && Math.abs(mJoystick.getZ()) > 0.5){
+        if(mJoystick.getRawButton(JoystickConstants.ClimbButtons.DRIVE) && Math.abs(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) > 0.5){
             mDriveTalon.set(ControlMode.PercentOutput, -Math.signum(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) * (Math.abs(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) - 0.5));
         }
         else{

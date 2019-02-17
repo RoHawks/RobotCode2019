@@ -11,6 +11,9 @@ package constants;
  * Add your docs here.
  */
 public class LeadscrewConstants {
+    public static boolean 
+        LEADSCREW_OVERRIDE = false; //not implemented yet
+
     public static final double 
         PITCH = 12.0, 
         LENGTH = 9.75, //14.875, 

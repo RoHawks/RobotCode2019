@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.SampleRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import resource.ResourceFunctions;
@@ -258,8 +259,12 @@ public class Robot extends SampleRobot {
 		// start game, again
 		startGame();
 
+		LeadscrewConstants.LEADSCREW_OVERRIDE = mJoystick.getRawButton(1);
+
 		while (isOperatorControl() && isEnabled()) {
-			if (RunConstants.RUNNING_DRIVE) {
+			SmartDashboard.putNumber("CLIMB front(?) current draw",mPDP.getCurrent(2));
+			SmartDashboard.putNumber("CLIMB back(?) current draw",mPDP.getCurrent(3));
+			if (RunConstants.RUNNING_DRIVE && !RunConstants.RUNNING_EVERYTHING) {
 				swerveDrive();
 				for (int i = 0; i < 4; i++) {
 					SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].get());
@@ -323,7 +328,7 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putNumber("z value", mJoystick.getZ());
 				doWork();
 			}
-
+		
 			// put info on SmartDashboard
 			SmartDashboard.putString("Current State", mCurrentState.toString());
 
@@ -332,8 +337,7 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putNumber("JOYSTICK PROFILE NUMBER", mJoystick.getProfile());
 				SmartDashboard.putString("JOYSTICK PROFILE",
 						(mJoystick.getProfile() == 0) ? "HATCH/LEADSCREW" : "BALL");
-			}
-		
+			} 
 			SmartDashboard.putString("bumper state", mBumperSensor.getState().toString());
 			Timer.delay(0.005); // wait for a motor update time
 		}
