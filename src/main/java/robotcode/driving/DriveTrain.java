@@ -346,26 +346,27 @@ public class DriveTrain {
 		double robotAngle = mRobotAngle.getAngleDegrees();
 
 		
-		Vector a = new Vector();
-		Vector b = new Vector();
-		Vector c = new Vector();
-		Vector d = new Vector();
+		// Vector a = new Vector();
+		// Vector b = new Vector();
+		// Vector c = new Vector();
+		// Vector d = new Vector();
+		Vector sum = new Vector();
 
 		// Don't need to check Y button, which is 0 degrees, since newAngle set to 0 by default
 		if(mController.getYButton()){
-			a.setPolar(0, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+			sum.addPolar(0, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
 		if (mController.getBButton()) {
-			b.setPolar(90, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+			sum.addPolar(90, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
 		if (mController.getAButton()) {
-			c.addPolar(180, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+			sum.addPolar(180, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
 		if (mController.getXButton()) {
-			d.addPolar(270, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+			sum.addPolar(270, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
 
-		Vector sum = Vector.add(Vector.add(a, b), Vector.add(c, d));
+		//Vector sum = Vector.add(Vector.add(a, b), Vector.add(c, d));
 		if (sum.getMagnitude() > DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED) {
 			sum.setTotal(DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
