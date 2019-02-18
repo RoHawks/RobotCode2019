@@ -208,7 +208,9 @@ public class Vector {
 	 *            magnitude of polar vector to add
 	 */
 	public void addPolar(double angle, double total) {
-		this.setPolar(this.getAngle() + angle, this.getMagnitude() + total);
+		double x = this.getX() + total * Math.cos(Math.toRadians(angle));
+		double y = this.getY() + total * Math.sin(Math.toRadians(angle));
+		this.setCartesian(x, y);
 	}
 
 	/**

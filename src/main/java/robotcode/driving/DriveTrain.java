@@ -330,7 +330,7 @@ public class DriveTrain {
 		else if (mController.getBumper(Hand.kLeft) && leftTrigger > 0.2){ // left trigger pressed
 			return -((Math.pow(leftTrigger, 2) * 0.4) + 0.2);
 		}
-		else if (mController.getBumper(Hand.kRight) && leftTrigger < 0.2){ // left trigger pressed
+		else if (mController.getBumper(Hand.kRight) && leftTrigger > 0.2){ // left trigger pressed
 			return (Math.pow(leftTrigger, 2) * 0.4) + 0.2;
 		}
 
@@ -345,27 +345,38 @@ public class DriveTrain {
 	private Vector nudgeMove() {
 		double robotAngle = mRobotAngle.getAngleDegrees();
 
-		Vector sum = new Vector(0, 0);
+		
+		Vector a = new Vector();
+		Vector b = new Vector();
+		Vector c = new Vector();
+		Vector d = new Vector();
 
 		// Don't need to check Y button, which is 0 degrees, since newAngle set to 0 by default
 		if(mController.getYButton()){
-			sum.addPolar(0, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+			a.setPolar(0, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
 		if (mController.getBButton()) {
-			sum.addPolar(90, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+			b.setPolar(90, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
-		 if (mController.getAButton()) {
-			sum.addPolar(180, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+		if (mController.getAButton()) {
+			c.addPolar(180, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
 		if (mController.getXButton()) {
-			sum.addPolar(270, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+			d.addPolar(270, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
+
+		Vector sum = Vector.add(Vector.add(a, b), Vector.add(c, d));
+		if (sum.getMagnitude() > DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED) {
+			sum.setTotal(DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+		}
+
+		SmartDashboard.putNumber("NUDGE angle", sum.getAngle());
 
 		if (mController.getBackButton()) {
 			sum.setAngle(sum.getAngle() - robotAngle);
 		}
 
-		if(mController.getTriggerAxis(Hand.kLeft) > 0.2){	// if left trigger axis is pressed, set magnitude
+		if(mController.getTriggerAxis(Hand.kLeft) > 0.25){	// if left trigger axis is pressed, set magnitude
 			sum.setTotal((Math.pow(mController.getTriggerAxis(Hand.kLeft), 2) * 0.4) + 0.2);
 		}
 
