@@ -30,6 +30,7 @@ public class Leadscrew {
 
     // joysticks used
     private LocalJoystick mJoystick;
+
     private DriveTrain mDrivetrain;
 
     // leadscrew
@@ -148,13 +149,6 @@ public class Leadscrew {
     public void setPosition(double pInchMeasurement) {
 
         double goal = LeadscrewEncoder.leadscrewInchToTick(ResourceFunctions.putNumInAbsoluteRange(pInchMeasurement, 0, LeadscrewConstants.LENGTH));
-
-        // if (getInSoftLimit()) { /*** SLOW IT DOWN IF CLOSE TO END ***/
-        //     mLeadscrew.config_kP(0, LeadscrewConstants.PID.LEADSCREW_P / 2, 10);
-        // } 
-        // else {
-            //mLeadscrew.config_kP(0, LeadscrewConstants.PID.LEADSCREW_P, 10);
-        //}
         SmartDashboard.putNumber("ERROR IN LEADSCREW SET POSITION METHOD", goal - mEncoder.getRawTicks());
 
         mLeadscrew.set(ControlMode.Position, goal);
@@ -190,12 +184,14 @@ public class Leadscrew {
      * aligns the leadscrew with the tape using limelight + driving. only works in x dimension
      */
     public void centerWithCameraDrivetrain() { // absolute cancer
+
         if (mHatchCamera.hasTarget()) {
+
             SmartDashboard.putBoolean("TAPE TARGET ACQUIRED", true);
             double distCameraToTape = mHatchCamera.xAngleToDistance();
             double goalInches = LeadscrewConstants.MIDDLE + distCameraToTape;
-            SmartDashboard.putNumber("Distance from tape to leadscrew",
-                    goalInches - mEncoder.getDistanceInInchesFromEnd());
+            SmartDashboard.putNumber("Distance from tape to leadscrew", goalInches - mEncoder.getDistanceInInchesFromEnd());
+
             // if the tape is farther than 1 inch from leadscrew's zero (0)
             if (goalInches < 1) {
                 if (!mStartDriveAlign) {
@@ -204,10 +200,12 @@ public class Leadscrew {
                     mStartDriveAlign = true;
                     mTimeStartDriveAlign = System.currentTimeMillis();
                 } 
+
                 else if (mStartDriveAlign && System.currentTimeMillis() - mTimeStartDriveAlign < mTimeMoveBack) {
                     // if you've started drive align process, move back for TIME
                     mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
-                } 
+                }
+
                 else {
                     // if you've started drive align process and have moved back already, then start
                     // moving towards the tape. when you reach it, you'll go to the else statement
@@ -246,15 +244,22 @@ public class Leadscrew {
                 } 
                 else { // once you've moved forward, align the leadscrew
                     mDrivetrain.stop();
-                    if (Math.abs(goalInches
-                            - mEncoder.getDistanceInInchesFromEnd()) > LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
-                        setPosition(goalInches);
-                    } 
-                    else { // once the leadscrew error is less than the tolerance, you're done. reset
-                             // everything
-                        mTimeStartDriveScore = 0;
-                        mStartDriveScore = false;
-                    }
+                    // if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)){
+                    //     double joystickPosition = mJoystick.getX();
+                    //     if (Math.abs(joystickPosition) < 0.2){
+                    //         setPosition(LeadscrewConstants.MIDDLE);
+                    //     }
+                    // }
+                    // else {
+                        if (Math.abs(goalInches - mEncoder.getDistanceInInchesFromEnd()) > LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
+                            setPosition(goalInches);
+                        } 
+                        else { // once the leadscrew error is less than the tolerance, you're done. reset
+                                 // everything
+                            mTimeStartDriveScore = 0;
+                            mStartDriveScore = false;
+                        }
+                   // }
                 }
             }
         } 
@@ -264,8 +269,22 @@ public class Leadscrew {
     }
 
     public void setPositionJoystick(){
-        double percentGoal = (mJoystick.getX() + 1) / 2; //this should be between 0 and 1
-        setPosition(percentGoal * LeadscrewConstants.LENGTH);
+        double joystickPosition = mJoystick.getX();
+        double goal = LeadscrewConstants.MIDDLE;
+
+        if(Math.abs(joystickPosition) < 0.2){
+
+        }
+        else if (joystickPosition > 0){
+            goal = LeadscrewConstants.MIDDLE + (LeadscrewConstants.LENGTH - LeadscrewConstants.MIDDLE) * joystickPosition;
+        }
+        else if (joystickPosition < 0){
+            goal = LeadscrewConstants.MIDDLE * (1 + joystickPosition);
+        }
+
+        setPosition(goal);
+        // double percentGoal = (mJoystick.getX() + 1) / 2; //this should be between 0 and 1
+        // setPosition(percentGoal * LeadscrewConstants.LENGTH);
     }
 
     /**

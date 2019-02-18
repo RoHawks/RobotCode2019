@@ -715,6 +715,7 @@ public class Robot extends SampleRobot {
 
 
 	private boolean mBallFrontScoreBumperSensed = false;
+	
 	private void ballFrontScore() {
 
 		if(!mBallFrontScoreBumperSensed){
