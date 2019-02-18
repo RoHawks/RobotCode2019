@@ -1,7 +1,8 @@
 package constants;
 
 public class RunConstants {
-	public static boolean
+
+	public static final boolean
 		RUNNING_DRIVE = true,
 		RUNNING_PNEUMATICS = false,
 		RUNNING_LEADSCREW = false,
@@ -9,6 +10,7 @@ public class RunConstants {
 		RUNNING_BALL = RUNNING_PNEUMATICS && false,
 		RUNNING_CLIMBER = false,
 		RUNNING_CAMERA = true,
+	
 		
 		SECONDARY_JOYSTICK = true, // using the box instead of logitech attack
 		IS_PROTOTYPE = false,
