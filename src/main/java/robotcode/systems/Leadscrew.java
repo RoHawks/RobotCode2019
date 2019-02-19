@@ -13,6 +13,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import constants.JoystickConstants;
 import constants.LeadscrewConstants;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import resource.MovingAverage;
 import resource.ResourceFunctions;
 import robotcode.LocalJoystick;
 import robotcode.camera.Limelight;
@@ -94,7 +95,8 @@ public class Leadscrew {
                 mLeadscrew.set(ControlMode.PercentOutput, (Math.abs(mJoystick.getX()) > 0.25) ? mJoystick.getX() : 0);
                 break;
             case CAMERA_ALIGN:
-                centerWithCamera();
+                //centerWithCamera();
+                centerWithCameraDrivetrain();
                 break;
             case IDLE:
                 setSpeed(0);
@@ -154,6 +156,8 @@ public class Leadscrew {
         mLeadscrew.set(ControlMode.Position, goal);
     }
 
+    //pass moving average in constructor
+    //MovingAverage mCameraAverage = new MovingAverage(5);
     /**
      * aligns the leadscrew with the tape using limelight. only works in the x dimension
      */
@@ -161,6 +165,8 @@ public class Leadscrew {
         if(mHatchCamera.hasTarget()) {
             SmartDashboard.putBoolean("TAPE TARGET ACQUIRED", true);
             double distCameraToTape = mHatchCamera.xAngleToDistance();
+            //mCameraAverage.addNumber(distCameraToTape);
+            //distCameraToTape = mCameraAverage.getAverage;
             double goalInches = LeadscrewConstants.MIDDLE + distCameraToTape;
             SmartDashboard.putNumber("Distance from Camera", goalInches - mEncoder.getDistanceInInchesFromEnd());
             if (Math.abs(goalInches - mEncoder.getDistanceInInchesFromEnd()) > LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
@@ -170,16 +176,18 @@ public class Leadscrew {
         else {
             SmartDashboard.putBoolean("TAPE TARGET ACQUIRED", false);
         }
-
+        //mCameraAverage.clear();
     }
 
     private long mTimeStartDriveAlign = 0;
     private boolean mStartDriveAlign = false;
-    private long mTimeMoveBack = 1000;
+    private long mTimeMoveBack = 450;
 
     private boolean mStartDriveScore = false;
     private long mTimeStartDriveScore = 0;
-    private long mTimeMoveForward = 2000;
+    private long mTimeMoveForward = 500;
+
+    private MovingAverage mAvg = new MovingAverage(5);
     /**
      * aligns the leadscrew with the tape using limelight + driving. only works in x dimension
      */
@@ -189,11 +197,14 @@ public class Leadscrew {
 
             SmartDashboard.putBoolean("TAPE TARGET ACQUIRED", true);
             double distCameraToTape = mHatchCamera.xAngleToDistance();
+            //TODO check moving average
+            mAvg.addNumber(distCameraToTape);
+            distCameraToTape = mAvg.getAverage();
             double goalInches = LeadscrewConstants.MIDDLE + distCameraToTape;
             SmartDashboard.putNumber("Distance from tape to leadscrew", goalInches - mEncoder.getDistanceInInchesFromEnd());
 
             // if the tape is farther than 1 inch from leadscrew's zero (0)
-            if (goalInches < 1) {
+            if (goalInches < 3) {
                 if (!mStartDriveAlign) {
                     // if you haven't started this drive align process, set mStartDriveAlign to true
                     // and start timing
@@ -201,32 +212,34 @@ public class Leadscrew {
                     mTimeStartDriveAlign = System.currentTimeMillis();
                 } 
 
-                else if (mStartDriveAlign && System.currentTimeMillis() - mTimeStartDriveAlign < mTimeMoveBack) {
+                if (mStartDriveAlign && System.currentTimeMillis() - mTimeStartDriveAlign < mTimeMoveBack) {
                     // if you've started drive align process, move back for TIME
-                    mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
+                    mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.5, RotationalVelocity.NONE);
                 }
 
                 else {
                     // if you've started drive align process and have moved back already, then start
                     // moving towards the tape. when you reach it, you'll go to the else statement
-                    mDrivetrain.enactMovement(0, 270, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
+                    mDrivetrain.enactMovement(0, 270, LinearVelocity.NORMAL, 0.4, RotationalVelocity.NONE);
                 }
             }
             // if the tape is farther than 1inch from leadscrew's max distance (length)
-            else if (goalInches > LeadscrewConstants.LENGTH - 1) {
+            else if (goalInches > LeadscrewConstants.LENGTH - 3) {
                 // if you haven't started this drive align process, set mStartDriveAlign to true
                 // and start timing
                 if (!mStartDriveAlign) {
                     mStartDriveAlign = true;
                     mTimeStartDriveAlign = System.currentTimeMillis();
                 } 
-                else if (mStartDriveAlign && System.currentTimeMillis() - mTimeStartDriveAlign < mTimeMoveBack) {
+                
+                if (mStartDriveAlign && System.currentTimeMillis() - mTimeStartDriveAlign < mTimeMoveBack) {
                     // if you've started drive align process, move back for TIME
-                    mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
-                } 
+                    mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.5, RotationalVelocity.NONE);
+                }
+
                 else { // if you've started drive align process and have moved back already, then start
                          // moving towards the tape. when you reach it, you'll go to the else statement
-                    mDrivetrain.enactMovement(0, 90, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
+                    mDrivetrain.enactMovement(0, 90, LinearVelocity.NORMAL, 0.4, RotationalVelocity.NONE);
                 }
             } 
             
@@ -240,7 +253,7 @@ public class Leadscrew {
                 else if (mStartDriveScore && System.currentTimeMillis() - mTimeStartDriveScore < mTimeMoveForward) {
                     // when you want to score process, move forward to compensate for backwards
                     // movement above / ram into the ship
-                    mDrivetrain.enactMovement(0, 0, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
+                    mDrivetrain.enactMovement(0, 0, LinearVelocity.NORMAL, 0.5, RotationalVelocity.NONE);
                 } 
                 else { // once you've moved forward, align the leadscrew
                     mDrivetrain.stop();
@@ -256,8 +269,9 @@ public class Leadscrew {
                         } 
                         else { // once the leadscrew error is less than the tolerance, you're done. reset
                                  // everything
-                            mTimeStartDriveScore = 0;
-                            mStartDriveScore = false;
+                            //mTimeStartDriveScore = 0;
+                           // mStartDriveScore = false;
+                           //mAvg.clear();
                         }
                    // }
                 }

@@ -18,14 +18,7 @@ import autonomous.AutonomousRoutineType;
 import autonomous.commands.AutonomousCommand;
 import autonomous.routines.DefaultRoutine;
 import autonomous.routines.DoNothingRoutine;
-import constants.DriveConstants;
-import constants.JoystickConstants;
-import constants.LeadscrewConstants;
-import constants.Ports;
-import constants.RunConstants;
-import constants.RobotState;
-import constants.CameraConstants;
-import constants.ClimberConstants;
+import constants.*;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
@@ -38,21 +31,11 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import resource.ResourceFunctions;
 import robotcode.driving.*;
-import robotcode.driving.DriveTrain.LinearVelocity;
-import robotcode.driving.DriveTrain.RotationalVelocity;
 import robotcode.pneumatics.*;
 import robotcode.LocalJoystick;
 import robotcode.camera.*;
-import robotcode.systems.BallIntake;
-import robotcode.systems.Climber;
-import robotcode.systems.HatchIntake;
-import robotcode.systems.Intake;
-import robotcode.systems.Leadscrew;
-import sensors.BumperSensor;
-import sensors.LeadscrewEncoder;
-import sensors.LimitSwitch;
-import sensors.RobotAngle;
-import sensors.TalonAbsoluteEncoder;
+import robotcode.systems.*;
+import sensors.*;
 import sensors.BumperSensor.BumperState;
 
 @SuppressWarnings("deprecation")
@@ -293,6 +276,7 @@ public class Robot extends SampleRobot {
 				swerveDrive();
 				for (int i = 0; i < 4; i++) {
 					SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].get());
+					SmartDashboard.putNumber("Motor current " + i, mTurn[i].getOutputCurrent());
 					SmartDashboard.putNumber("Wheel offset " + i, mTurn[i].getSelectedSensorPosition() % 4096);
 				}
 			}
@@ -349,6 +333,7 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putNumber("CLIMB Z Axis", mJoystick.getZ());
 				SmartDashboard.putNumber("CLIMB front(?) current draw", mPDP.getCurrent(2));
 				SmartDashboard.putNumber("CLIMB back(?) current draw", mPDP.getCurrent(3));
+				SmartDashboard.putNumber("Climb back other current draw", mPDP.getCurrent(13));
 			}
 
 			if (RunConstants.RUNNING_EVERYTHING) {
