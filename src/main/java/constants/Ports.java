@@ -8,7 +8,7 @@ public class Ports {
 	//*******************//
 	// GENERAL VARIABLES //
 	//*******************//
-	public static final SerialPort.Port NAVX = Port.kMXP;
+	public static final SerialPort.Port NAVX = Port.kUSB;
 
 	public static final int
 		//Controllers
@@ -46,8 +46,16 @@ public class Ports {
 		public static final int
 			CLIMB_FRONT = 6,
 			CLIMB_BACK = 7,
+			CLIMB_OTHER_BACK = 5,
 			CLIMB_DRIVE = 8,
 
+			CLIMB_FRONT_TOP_LIMIT = 100,
+			CLIMB_BACK_TOP_LIMIT = 101,
+			CLIMB_FRONT_BOTTOM_LIMIT = 102, 
+			CLIMB_BACK_BOTTOM_LIMIT = 103,
+			CLIMB_FRONT_LEG_LIMIT = 104,
+			CLIMB_BACK_LEG_LIMIT = 105,
+			
 			SHIFTER_SOLENOID_IN = 3;
 
 		// FRONT LIMIT SWITCHES

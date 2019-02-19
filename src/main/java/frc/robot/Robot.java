@@ -98,7 +98,8 @@ public class Robot extends SampleRobot {
 	private Intake mIntake;
 
 	// climber
-	private WPI_VictorSPX mFrontClimbTalon, mBackClimbTalon, mDriveClimbTalon;
+	private WPI_VictorSPX mFrontClimbTalon, mBackClimbTalon;
+	private WPI_TalonSRX mOtherBackClimbTalon, mDriveClimbTalon;
 	private SolenoidInterface mClimbShifter;
 	private Climber mClimber;
 
@@ -929,12 +930,23 @@ public class Robot extends SampleRobot {
 	private void climberInit() {
 		mFrontClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_FRONT);
 		mFrontClimbTalon.setInverted(ClimberConstants.FRONT_REVERSED);
+		mFrontClimbTalon.setNeutralMode(NeutralMode.Coast);
+
 		mBackClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_BACK);
 		mBackClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
-		mDriveClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_DRIVE);
+		mBackClimbTalon.setNeutralMode(NeutralMode.Coast);
+		
+		mOtherBackClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_OTHER_BACK);
+		mOtherBackClimbTalon.setInverted(ClimberConstants.OTHER_BACK_REVERSED);
+		mOtherBackClimbTalon.setNeutralMode(NeutralMode.Coast);
+
+		mDriveClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_DRIVE);
 		mDriveClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
+		mDriveClimbTalon.setNeutralMode(NeutralMode.Brake);
+
 		mClimbShifter = new SingleSolenoidReal(Ports.ActualRobot.SHIFTER_SOLENOID_IN);
-		mClimber = new Climber(mFrontClimbTalon, mBackClimbTalon, mDriveClimbTalon, mClimbShifter, mJoystick);
+
+		mClimber = new Climber(mFrontClimbTalon, mBackClimbTalon, mOtherBackClimbTalon, mDriveClimbTalon, mClimbShifter, mDriveTrain, mJoystick);
 	}
 
 	// ******//
