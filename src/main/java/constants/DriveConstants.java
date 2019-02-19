@@ -30,7 +30,7 @@ public class DriveConstants {
 		public static final double 
 			SPEED_MULT = 0.75,
 			ANGULAR_SPEED_MULT = 0.75,
-			NUDGE_MOVE_SPEED = 0.2,
+			NUDGE_MOVE_SPEED = 0.1,
 			NUDGE_TURN_SPEED = 0.1;
 	}
 
@@ -53,7 +53,7 @@ public class DriveConstants {
 			ROTATION_D = new double[] { 0, 0, 0, 0 };
 
 		public static final int[] 
-			OFFSETS = new int[] { 2285, 50 , 791, 271 },
+			OFFSETS = new int[] { 2241, 30 , 905, 477 },
 			
 			ROTATION_IZONE = new int[] { 500, 500, 500, 500 },
 			ROTATION_TOLERANCE = new int[] { 5, 5, 5, 5 };
@@ -65,7 +65,7 @@ public class DriveConstants {
 			GYRO_TOLERANCE = 5,
 			GYRO_MAX_SPEED = 1,
 			
-			DRIFT_COMP_P = 0.018, //0.06
+			DRIFT_COMP_P = 0.03, //0.06
 			DRIFT_COMP_I = 0, //0.0006
 			DRIFT_COMP_D = 0,
 			DRIFT_COMP_MAX = 0.3;
