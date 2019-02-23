@@ -363,6 +363,8 @@ public class Robot extends SampleRobot {
 			SmartDashboard.putString("bumper state", mBumperSensor.getState().toString());
 			SmartDashboard.putBoolean("left bumper", mFrontLimitLeft.get());
 			SmartDashboard.putBoolean("right bumper", mFrontLimitRight.get());
+
+			SmartDashboard.putString("Bumper State", mBumperSensor.getState().toString());
 			Timer.delay(0.005); // wait for a motor update time
 		}
 	}
