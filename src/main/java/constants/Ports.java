@@ -8,7 +8,7 @@ public class Ports {
 	//*******************//
 	// GENERAL VARIABLES //
 	//*******************//
-	public static final SerialPort.Port NAVX = Port.kUSB2;
+	public static final SerialPort.Port NAVX = Port.kMXP;
 
 	public static final int
 		//Controllers
