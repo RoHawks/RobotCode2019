@@ -351,7 +351,7 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putString("JOYSTICK PROFILE",
 						(mJoystick.getProfile() == 0) ? "HATCH/LEADSCREW" : "BALL");
 			} 
-			SmartDashboard.putString("bumper state", mBumperSensor.getState().toString());
+			SmartDashboard.putString("Bumper State", mBumperSensor.getState().toString());
 			Timer.delay(0.005); // wait for a motor update time
 		}
 	}
