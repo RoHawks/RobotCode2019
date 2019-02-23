@@ -208,9 +208,6 @@ public class Intake {
         else if (mHasAlignedHatchIntake && (loadingSequenceElapsedMilliseconds < IntakeConstants.LoadHatchTimes.STEP_FOUR)){
             SmartDashboard.putNumber("INTAKING STEP", 4);
             mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
-            mHasAlignedHatchIntake = false;
-            mStartIntakeTimeHatch = 0;
-            return true;
         }
         else if (mHasAlignedHatchIntake && loadingSequenceElapsedMilliseconds > IntakeConstants.LoadHatchTimes.STEP_FOUR){
             mHasAlignedHatchIntake = false;
@@ -265,14 +262,11 @@ public class Intake {
             SmartDashboard.putNumber("SCORING STEP", 3);
             mHatchIntake.in();
         }
-        else if (mHasAlignedHatchIntake && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_FOUR)){
+        else if (mHasAlignedHatchScore && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_FOUR)){
             SmartDashboard.putNumber("SCORING STEP", 4);
             mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
-            mStartScoreTimeHatch = 0;
-            mHasAlignedHatchScore = false;
-            return true;
         }
-        else if(mHasAlignedHatchIntake && scoringSequenceElapsedMilliseconds > IntakeConstants.ScoreHatchTimes.STEP_FOUR){ // if the time overshoots, we need to be able to exit this mode
+        else if(mHasAlignedHatchScore && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_FOUR){ // if the time overshoots, we need to be able to exit this mode
             mStartScoreTimeHatch = 0;
             mHasAlignedHatchScore = false;
             return true;
@@ -318,9 +312,10 @@ public class Intake {
             mHasAlignedBallIntake = true;
         }
         
-        else if (mHasAlignedBallIntake && ballLoadingSequenceElapsedMilliseconds < IntakeConstants.LoadBallTimes.STEP_TWO /*&& mBallIntake.isHoldingBall()*/){
+        else if (mHasAlignedBallIntake && ballLoadingSequenceElapsedMilliseconds < IntakeConstants.LoadBallTimes.STEP_TWO && mBallIntake.isHoldingBall()){
             SmartDashboard.putNumber("BALL INTAKE STEP", 2);
-            //mBallIntake.lock();
+            mBallIntake.lock();
+            return true;
         }
 
         return false;

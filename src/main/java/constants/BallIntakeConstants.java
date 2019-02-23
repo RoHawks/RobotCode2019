@@ -8,6 +8,7 @@
 package constants;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.command.WaitCommand;
 
 /**
  * Add your docs here.
@@ -80,5 +81,12 @@ public class BallIntakeConstants {
         public static final long
             OPEN_TIME = 1000,
             CLOSE_TIME = 1000;
+    }
+
+    public static class Ultrasonic{
+        public static final int BALL_DISTANCE_THRESHOLD = 1500;
+
+        public static final long BALL_TIME_THRESHOLD = 300;
+
     }
 }

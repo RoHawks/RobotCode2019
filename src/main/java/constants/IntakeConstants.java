@@ -9,7 +9,7 @@ package constants;
 
 public class IntakeConstants {
 
-    public static final long MOVE_BACK_TIME = 1500;
+    public static final long MOVE_BACK_TIME = 700;
 
     public static class ScoreHatchTimes {
         public static final long

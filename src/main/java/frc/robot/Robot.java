@@ -11,6 +11,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANDigitalInput.LimitSwitchPolarity;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
@@ -68,6 +69,7 @@ public class Robot extends SampleRobot {
 	// ball intake
 	private BallIntake mBallIntake;
 	private SolenoidInterface mBallRotary, mBallLock, mBallRetain;
+	private UltrasonicSensor mUltra;
 
 	// leadscrew
 	private WPI_TalonSRX mLeadscrewTalon;
@@ -81,10 +83,13 @@ public class Robot extends SampleRobot {
 	private Intake mIntake;
 
 	// climber
-	private WPI_VictorSPX mFrontClimbTalon, mBackClimbTalon;
-	private WPI_TalonSRX mOtherBackClimbTalon, mDriveClimbTalon;
+	private CANSparkMax mFrontClimbTalon, mBackClimbTalon;
+	private CANEncoder mFrontEncoder, mBackEncoder;
+	// private WPI_VictorSPX mFrontClimbTalon, mBackClimbTalon;
+	// private WPI_TalonSRX mOtherBackClimbTalon;
+	private WPI_TalonSRX mDriveClimbTalon;
 	private SolenoidInterface mClimbShifter;
-	private Climber mClimber;
+	private ClimberSpark mClimber;
 
 	// digital inputs
 	private DigitalInput mFrontLimitLeft, mFrontLimitRight;
@@ -98,7 +103,7 @@ public class Robot extends SampleRobot {
 	private AutonomousRoutineType mAutonomousRoutine = AutonomousRoutineType.DEFAULT;
 
 	// game setup
-	private boolean mInGame = false, mCameraInitialized = false;
+	private boolean mInGame = false;
 	private long mGameStartMillis, mTimeLastCycleStarted;
 
 	RobotState mCurrentState = RobotState.INITIAL_HOLDING_HATCH;
@@ -146,7 +151,6 @@ public class Robot extends SampleRobot {
 				mLeadscrew.leadscrewInitialZero();
 				mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
 				while (dummy()) {
-					// System.out.println("IN THE LOOP");
 				}
 			}
 
@@ -341,6 +345,11 @@ public class Robot extends SampleRobot {
 				LeadscrewConstants.LEADSCREW_OVERRIDE = mJoystick.getRawButton(1);
 				doWork();
 			}
+
+			if(RunConstants.RUNNING_BALL){
+				SmartDashboard.putBoolean("Ultrasonic value", mBallIntake.isHoldingBall());
+				SmartDashboard.putNumber("Ultrasonic voltage", mBallIntake.getUltrasonic().getValue());
+			}
 		
 			// put info on SmartDashboard
 			SmartDashboard.putString("Current State", mCurrentState.toString());
@@ -352,6 +361,8 @@ public class Robot extends SampleRobot {
 						(mJoystick.getProfile() == 0) ? "HATCH/LEADSCREW" : "BALL");
 			} 
 			SmartDashboard.putString("bumper state", mBumperSensor.getState().toString());
+			SmartDashboard.putBoolean("left bumper", mFrontLimitLeft.get());
+			SmartDashboard.putBoolean("right bumper", mFrontLimitRight.get());
 			Timer.delay(0.005); // wait for a motor update time
 		}
 	}
@@ -572,13 +583,9 @@ public class Robot extends SampleRobot {
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL)) {
 			mLoadingBallBumperSensed = true;
 		}
-
-		if (mLoadingBallBumperSensed){
-			mIntake.intakeBall();
-		}
 		
 		if (mLoadingBallBumperSensed &&
-				mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL)) {
+				(mIntake.intakeBall() || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL))) {
 			mCurrentState = RobotState.BALL_PRESCORE;
 			mLoadingBallBumperSensed = false;
 		}
@@ -859,20 +866,18 @@ public class Robot extends SampleRobot {
 		mBallRotary = new SingleSolenoidReal(Ports.ActualRobot.BALL_ROTARY);
 		mBallLock = new SingleSolenoidReal(Ports.ActualRobot.BALL_LOCK);
 		mBallRetain = new SingleSolenoidReal(Ports.ActualRobot.BALL_RETAIN);
+		mUltra = new UltrasonicSensor(Ports.ActualRobot.ULTRASONIC_SENSOR);
 
-		mBallIntake = new BallIntake(mBallRotary, mBallLock, mBallRetain);
+		mBallIntake = new BallIntake(mBallRotary, mBallLock, mBallRetain, mUltra);
 	}
 
 	private void cameraInit() {
 
-		if (!mCameraInitialized) {
-			mHatchCamera = new Limelight();
-			mHatchCamera.setStreamSecondary();
-			mHatchCamera.setVisionProcessor();
-			mHatchCamera.setPipeline(CameraConstants.PIPELINE);
-			mHatchCamera.setLedFromPipeline();
-			mCameraInitialized = true;
-		}
+		mHatchCamera = new Limelight();
+		mHatchCamera.setStreamSecondary();
+		mHatchCamera.setVisionProcessor();
+		mHatchCamera.setPipeline(CameraConstants.PIPELINE);
+		mHatchCamera.setLedFromPipeline();
 
 	}
 
@@ -889,10 +894,10 @@ public class Robot extends SampleRobot {
 		mLeadscrewTalon.configClearPositionOnLimitF(false, 10);
 		// mLeadscrewTalon.configAllSettings(new TalonSRXConfiguration());
 
-		// mLeadscrewTalon.configForwardSoftLimitEnable(false, 10);
+		mLeadscrewTalon.configForwardSoftLimitEnable(false, 10);
 		// mLeadscrewTalon.configForwardSoftLimitThreshold(LeadscrewConstants.FORWARD_SOFT_LIMIT,
 		// 10);
-		// mLeadscrewTalon.configReverseSoftLimitEnable(false, 10);
+		mLeadscrewTalon.configReverseSoftLimitEnable(false, 10);
 		// mLeadscrewTalon.configReverseSoftLimitThreshold(LeadscrewConstants.REVERSE_SOFT_LIMIT,
 		// 10);
 
@@ -913,17 +918,35 @@ public class Robot extends SampleRobot {
 	}
 
 	private void climberInit() {
-		mFrontClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_FRONT);
+		mFrontClimbTalon = new CANSparkMax(Ports.ActualRobot.CLIMB_FRONT, MotorType.kBrushless);
 		mFrontClimbTalon.setInverted(ClimberConstants.FRONT_REVERSED);
-		mFrontClimbTalon.setNeutralMode(NeutralMode.Coast);
+		mFrontClimbTalon.setIdleMode(IdleMode.kCoast);
+		mFrontClimbTalon.setOpenLoopRampRate(0.2);
+		mFrontClimbTalon.setSmartCurrentLimit(40);
+		mFrontClimbTalon.getForwardLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(true);
+		mFrontClimbTalon.getReverseLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(true);
+		mFrontEncoder = new CANEncoder(mFrontClimbTalon);
+		mFrontEncoder.setPosition(0);
+		// mFrontClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_FRONT);
+		// mFrontClimbTalon.setInverted(ClimberConstants.FRONT_REVERSED);
+		// mFrontClimbTalon.setNeutralMode(NeutralMode.Coast);
 
-		mBackClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_BACK);
+		mBackClimbTalon = new CANSparkMax(Ports.ActualRobot.CLIMB_BACK, MotorType.kBrushless);
 		mBackClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
-		mBackClimbTalon.setNeutralMode(NeutralMode.Coast);
+		mBackClimbTalon.setIdleMode(IdleMode.kCoast);
+		mBackClimbTalon.setOpenLoopRampRate(0.2);
+		mBackClimbTalon.setSmartCurrentLimit(40);
+		mBackClimbTalon.getForwardLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(true);
+		mBackClimbTalon.getReverseLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(true);
+		mBackEncoder = new CANEncoder(mBackClimbTalon);
+		mBackEncoder.setPosition(0);
+		// mBackClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_BACK);
+		// mBackClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
+		// mBackClimbTalon.setNeutralMode(NeutralMode.Coast);
 		
-		mOtherBackClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_OTHER_BACK);
-		mOtherBackClimbTalon.setInverted(ClimberConstants.OTHER_BACK_REVERSED);
-		mOtherBackClimbTalon.setNeutralMode(NeutralMode.Coast);
+		// mOtherBackClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_OTHER_BACK);
+		// mOtherBackClimbTalon.setInverted(ClimberConstants.OTHER_BACK_REVERSED);
+		// mOtherBackClimbTalon.setNeutralMode(NeutralMode.Coast);
 
 		mDriveClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_DRIVE);
 		mDriveClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
@@ -931,7 +954,7 @@ public class Robot extends SampleRobot {
 
 		mClimbShifter = new SingleSolenoidReal(Ports.ActualRobot.SHIFTER_SOLENOID_IN);
 
-		mClimber = new Climber(mFrontClimbTalon, mBackClimbTalon, mOtherBackClimbTalon, mDriveClimbTalon, mClimbShifter, mDriveTrain, mJoystick);
+		mClimber = new ClimberSpark(mFrontClimbTalon, mBackClimbTalon, /*mOtherBackClimbTalon,*/ mDriveClimbTalon, mClimbShifter, mDriveTrain, mJoystick);
 	}
 
 	// ******//
@@ -1069,8 +1092,8 @@ public class Robot extends SampleRobot {
 		}
 
 		if (RunConstants.RUNNING_CLIMBER){
-			addLogValueDouble(logString, mBackClimbTalon.getMotorOutputVoltage());
-			addLogValueDouble(logString, mFrontClimbTalon.getMotorOutputVoltage());
+			addLogValueDouble(logString, mBackClimbTalon.getBusVoltage());
+			addLogValueDouble(logString, mFrontClimbTalon.getBusVoltage());
 			addLogValueDouble(logString, mDriveClimbTalon.getMotorOutputVoltage());
 		}
 

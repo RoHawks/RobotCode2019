@@ -10,6 +10,7 @@ package robotcode.systems;
 import constants.BallIntakeConstants;
 import edu.wpi.first.wpilibj.DigitalInput;
 import robotcode.pneumatics.SolenoidInterface;
+import sensors.UltrasonicSensor;
 
 public class BallIntake {
 
@@ -18,12 +19,13 @@ public class BallIntake {
         mLock, //front
         mRetain; //middle
 
-    private DigitalInput mBreakbeam;
+    private UltrasonicSensor mUltra;
 
-    public BallIntake (SolenoidInterface pRotary, SolenoidInterface pLock, SolenoidInterface pRetain){
+    public BallIntake (SolenoidInterface pRotary, SolenoidInterface pLock, SolenoidInterface pRetain, UltrasonicSensor pSensor){
         mRotary = pRotary;
         mLock = pLock;
         mRetain = pRetain;
+        mUltra = pSensor;
     }
 
     private enum BallIntakeState{
@@ -79,6 +81,10 @@ public class BallIntake {
     }
 
     public boolean isHoldingBall(){
-        return !mBreakbeam.get();
+        return mUltra.getCooked();
     } //TZ add delayed boolean
+
+    public UltrasonicSensor getUltrasonic(){
+        return mUltra;
+    }
 }
