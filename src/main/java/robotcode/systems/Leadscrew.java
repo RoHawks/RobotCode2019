@@ -283,20 +283,7 @@ public class Leadscrew {
     }
 
     public void setPositionJoystick(){
-        double joystickPosition = mJoystick.getX();
-        double goal = LeadscrewConstants.MIDDLE;
-
-        if(Math.abs(joystickPosition) < 0.2){
-
-        }
-        else if (joystickPosition > 0){
-            goal = LeadscrewConstants.MIDDLE + (LeadscrewConstants.LENGTH - LeadscrewConstants.MIDDLE) * joystickPosition;
-        }
-        else if (joystickPosition < 0){
-            goal = LeadscrewConstants.MIDDLE * (1 + joystickPosition);
-        }
-
-        setPosition(goal);
+        setPosition(mJoystick.getX());
         // double percentGoal = (mJoystick.getX() + 1) / 2; //this should be between 0 and 1
         // setPosition(percentGoal * LeadscrewConstants.LENGTH);
     }

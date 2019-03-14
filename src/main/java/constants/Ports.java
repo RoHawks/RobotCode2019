@@ -66,6 +66,10 @@ public class Ports {
 			FRONT_LIMIT_LEFT = 8,
 			FRONT_LIMIT_RIGHT = 9;
 
+		// LEDs
+		public static final int
+			BLINKIN_CHANNEL = 1;
+
 	}
 	
 	//***************************//
