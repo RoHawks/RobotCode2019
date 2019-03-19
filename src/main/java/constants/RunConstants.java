@@ -4,10 +4,10 @@ public class RunConstants {
 
 	public static final boolean
 		RUNNING_DRIVE = true,
-		RUNNING_PNEUMATICS = true,
-		RUNNING_LEADSCREW = true,
-		RUNNING_HATCH = RUNNING_PNEUMATICS && true,
-		RUNNING_BALL = RUNNING_PNEUMATICS && true,
+		RUNNING_PNEUMATICS = false,
+		RUNNING_LEADSCREW = false,
+		RUNNING_HATCH = RUNNING_PNEUMATICS && false,
+		RUNNING_BALL = RUNNING_PNEUMATICS && false,
 		RUNNING_CLIMBER = false,
 		RUNNING_CAMERA = true,
 	

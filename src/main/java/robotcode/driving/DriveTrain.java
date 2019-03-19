@@ -79,8 +79,10 @@ public class DriveTrain {
 	}
 
 	private void enactMovement() {
-		enactMovement(mController.getPOV(), getStickAngle(Hand.kLeft), getLinearVelocityState(), getStickLinearVel(),
+		enactMovement(getLetterAngle(), getStickAngle(Hand.kLeft), getLinearVelocityState(), getStickLinearVel(),
 				getRotationalVelocityState());
+		// enactMovement(mController.getPOV(), getStickAngle(Hand.kLeft), getLinearVelocityState(), getStickLinearVel(),
+		// 		getRotationalVelocityState());
 	}
 
 	public void stop(){
@@ -343,45 +345,49 @@ public class DriveTrain {
 	 * @return correct direction vector
 	 */
 	private Vector nudgeMove() {
-		double robotAngle = mRobotAngle.getAngleDegrees();
+		if(mController.getPOV() != -1){
+			return Vector.createPolar(mController.getPOV(), DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+		}
+		return new Vector();
+		// double robotAngle = mRobotAngle.getAngleDegrees();
 
 		
-		// Vector a = new Vector();
-		// Vector b = new Vector();
-		// Vector c = new Vector();
-		// Vector d = new Vector();
-		Vector sum = new Vector();
+		// // Vector a = new Vector();
+		// // Vector b = new Vector();
+		// // Vector c = new Vector();
+		// // Vector d = new Vector();
+		// Vector sum = new Vector();
 
-		// Don't need to check Y button, which is 0 degrees, since newAngle set to 0 by default
-		if(mController.getYButton()){
-			sum.addPolar(0, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
-		}
-		if (mController.getBButton()) {
-			sum.addPolar(90, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
-		}
-		if (mController.getAButton()) {
-			sum.addPolar(180, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
-		}
-		if (mController.getXButton()) {
-			sum.addPolar(270, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
-		}
+		// // Don't need to check Y button, which is 0 degrees, since newAngle set to 0 by default
+		// if(mController.getYButton()){
+		// 	sum.addPolar(0, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+		// }
+		// if (mController.getBButton()) {
+		// 	sum.addPolar(90, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+		// }
+		// if (mController.getAButton()) {
+		// 	sum.addPolar(180, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+		// }
+		// if (mController.getXButton()) {
+		// 	sum.addPolar(270, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+		// }
 
-		//Vector sum = Vector.add(Vector.add(a, b), Vector.add(c, d));
-		if (sum.getMagnitude() > DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED) {
-			sum.setTotal(DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
-		}
+		// //Vector sum = Vector.add(Vector.add(a, b), Vector.add(c, d));
+		// if (sum.getMagnitude() > DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED) {
+		// 	sum.setTotal(DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+		// }
 
-		SmartDashboard.putNumber("NUDGE angle", sum.getAngle());
+		// SmartDashboard.putNumber("NUDGE angle", sum.getAngle());
 
-		if (mController.getBackButton()) {
-			sum.setAngle(sum.getAngle() - robotAngle);
-		}
+		// if (mController.getBackButton()) {
+		// 	sum.setAngle(sum.getAngle() - robotAngle);
+		// }
 
-		if(mController.getTriggerAxis(Hand.kLeft) > 0.25){	// if left trigger axis is pressed, set magnitude
-			sum.setTotal((Math.pow(mController.getTriggerAxis(Hand.kLeft), 2) * 0.4) + 0.2);
-		}
+		// if(mController.getTriggerAxis(Hand.kLeft) > 0.25){	// if left trigger axis is pressed, set magnitude
+		// 	sum.setTotal((Math.pow(mController.getTriggerAxis(Hand.kLeft), 2) * 0.4) + 0.2);
+		// }
 
-		return sum;
+		// return sum;
 	}
 
 	/**
@@ -429,7 +435,8 @@ public class DriveTrain {
 	 */
 	private LinearVelocity getLinearVelocityState() {
 		LinearVelocity linVel = LinearVelocity.NONE;
-		if (getLetterPressed()) {
+		// if (getLetterPressed()) {
+		if(mController.getPOV() >= 0){
 			linVel = LinearVelocity.NUDGE;
 		} 
 		else if (getStickLinearVel() < DriveConstants.MIN_LINEAR_VELOCITY
@@ -465,9 +472,12 @@ public class DriveTrain {
 		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_TOP)){
 			return RotationalVelocity.SECONDARY;
 		 }
-		else if (mController.getPOV() >= 0) {
-			return RotationalVelocity.POV;
-		} 
+		 else if(getLetterAngle() >= 0){
+			 return RotationalVelocity.POV;
+		 }
+		// else if (mController.getPOV() >= 0) {
+		// 	return RotationalVelocity.POV;
+		// } 
 		else if (mController.getBumper(Hand.kRight) || mController.getBumper(Hand.kLeft)) {
 			return RotationalVelocity.NUDGE;
 		} 
@@ -480,6 +490,26 @@ public class DriveTrain {
 	private boolean getLetterPressed() {
 		return (mController.getAButton() || mController.getBButton() || mController.getXButton()
 				|| mController.getYButton());
+	}
+
+	private double getLetterAngle() {
+		if(mController.getAButton()){
+			return 180;
+		}
+		if(mController.getBButton()){
+			return 90;
+		}
+		if(mController.getXButton()){
+			return 270;
+		}
+		if(mController.getYButton()){
+			return 0;
+		}
+		return -1;
+	}
+
+	private boolean getPOVPressed() {
+		return (mController.getPOV() >= 0);
 	}
 
 	// private boolean getGyroGoalAngle() {

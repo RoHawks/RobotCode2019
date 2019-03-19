@@ -68,7 +68,7 @@ public class Ports {
 
 		// LEDs
 		public static final int
-			BLINKIN_CHANNEL = 1;
+			BLINKIN_CHANNEL = 0;
 
 	}
 	
