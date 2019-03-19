@@ -2,6 +2,7 @@ package frc.robot;
 
 import java.util.ArrayList;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
@@ -50,6 +51,7 @@ public class Robot extends SampleRobot {
 	// controllers
 	private XboxController mController;
 	private LocalJoystick mJoystick;
+	private Joystick mClimbJoystick;
 
 	// drive train
 	private DriveTrain mDriveTrain;
@@ -177,6 +179,7 @@ public class Robot extends SampleRobot {
 
 		mController = new XboxController(Ports.XBOX);
 		mJoystick = new LocalJoystick(Ports.JOYSTICK);
+		mClimbJoystick = new Joystick(Ports.CLIMB_JOYSTICK);
 
 		mNavX = new AHRS(Ports.NAVX);
 
@@ -283,11 +286,15 @@ public class Robot extends SampleRobot {
 			}
 
 			if (RunConstants.RUNNING_DRIVE) {
-				swerveDrive();
+				mTurn[3].set(ControlMode.Position, 0);
+				mTurn[3].getInverted();
+				
+				//swerveDrive();
 				for (int i = 0; i < 4; i++) {
 					SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].get());
 					SmartDashboard.putNumber("Motor current " + i, mTurn[i].getOutputCurrent());
 					SmartDashboard.putNumber("Wheel offset " + i, mTurn[i].getSelectedSensorPosition() % 4096);
+					SmartDashboard.putNumber("Wheel position " + i, mTurn[i].getSelectedSensorPosition());
 				}
 			}
 
@@ -775,7 +782,7 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putString("CURRENT ROBOT MODE: ", "DISABLED");
 			}
 
-			if (mJoystick.getTriggerPressed()) {
+			if (mClimbJoystick.getTriggerPressed()) {
 				// rotate autonomous routines to select which one to start with:
 				if (mAutonomousRoutine == AutonomousRoutineType.DEFAULT) {
 					mAutonomousRoutine = AutonomousRoutineType.DO_NOTHING;
@@ -783,6 +790,16 @@ public class Robot extends SampleRobot {
 				else if (mAutonomousRoutine == AutonomousRoutineType.DO_NOTHING) {
 					mAutonomousRoutine = AutonomousRoutineType.DEFAULT;
 				}
+			}
+
+			if(mClimbJoystick.getRawButtonPressed(2)){
+				mNavX.setAngleAdjustment(0);
+			}
+			else if(mClimbJoystick.getRawButtonPressed(7)){
+				mNavX.setAngleAdjustment(-90);
+			}
+			else if(mClimbJoystick.getRawButtonPressed(10)){
+				mNavX.setAngleAdjustment(90);
 			}
 		}
 

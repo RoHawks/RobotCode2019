@@ -14,6 +14,7 @@ public class Ports {
 		//Controllers
 		XBOX = 0,
 		JOYSTICK = 1,
+		CLIMB_JOYSTICK = 2,
 	
 		COMPRESSOR = 0;
 	

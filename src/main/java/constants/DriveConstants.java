@@ -77,9 +77,9 @@ public class DriveConstants {
 	//***************************//
 	public static class PrototypeRobot { //SW, SE, NE, NW
 		public static final boolean[]
-			TURN_INVERTED = new boolean[] {false, false, false, true},
+			TURN_INVERTED = new boolean[] { true, true, true, true },
 			DRIVE_INVERTED = new boolean[] { false, false, false, false },
-			ENCODER_REVERSED = new boolean[] {true, true, true, false};
+			ENCODER_REVERSED = new boolean[] { true, true, true, true };
 		
 		public static final double[] 
 			X_OFF = new double[] { -19.0 / 2.0, -19.0 / 2.0, 19.0 / 2.0, 19.0 / 2.0 }, //27.5 along y, 29.25 along x
@@ -90,7 +90,7 @@ public class DriveConstants {
 			ROTATION_D = new double[] { 0, 0, 0, 0 };
 
 		public static final int[] 
-			OFFSETS = new int[] { 3721 , 767, 3402, 2527 },
+			OFFSETS = new int[] { 3669, 3228, 1130, 2256 },
 			ROTATION_IZONE = new int[] { 500, 500, 500, 500 },
 			ROTATION_TOLERANCE = new int[] { 3, 3, 3, 3 };
 		
