@@ -84,20 +84,20 @@ public class JoystickConstants {
 
     public static class FinalRobotButtons {
         public static final int
-            SCORE_PANEL_CARGO = 16,
-            LOAD_PANEL = 18,
-            LEADSCREW_OVERRIDE = 1,
-            SCORE_PANEL_ROCKET = 15,
-            HAS_LOADED_PANEL = 17,
-            HAS_SCORED_PANEL = 6,
+            SCORE_PANEL_CARGO = 5,
+            LOAD_PANEL = 7,
+            LEADSCREW_OVERRIDE = 3,
+            SCORE_PANEL_ROCKET = 4,
+            HAS_LOADED_PANEL = 6,
+            HAS_SCORED_PANEL = 1,
             LOADING_STATION = 11,
             CARGO_SHIP_FRONT = 7,
             LEFT_ROCKET_SIDE = 5,
             RIGHT_ROCKET_SIDE = 9,
-            LEFT_ROCKET_TOP = 13,
-            LEFT_ROCKET_BOTTOM = 12,
-            RIGHT_ROCKET_TOP = 8,
-            RIGHT_ROCKET_BOTTOM = 10,
+            LEFT_ROCKET_TOP = 15,
+            LEFT_ROCKET_BOTTOM = 16,
+            RIGHT_ROCKET_TOP = 2,
+            RIGHT_ROCKET_BOTTOM = 14,
             CARGO_SHIP_LEFT = 9,
             CARGO_SHIP_RIGHT = 5,
             SCORE_BALL_ROCKET = 22,
@@ -105,7 +105,7 @@ public class JoystickConstants {
             LOAD_BALL = 25,
             HAS_LOADED_BALL = 24,
             HAS_SCORED_BALL = 21,
-            BALL_PANEL_SWITCH = 19, //when ball, off, when panel, on
+            BALL_PANEL_SWITCH = 8, //when ball, off, when panel, on
             A = 4,
             B = 3,
             C = 2; 
