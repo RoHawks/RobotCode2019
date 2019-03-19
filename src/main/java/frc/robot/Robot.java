@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.SampleRobot;
+import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.XboxController;
@@ -90,6 +91,9 @@ public class Robot extends SampleRobot {
 	private WPI_TalonSRX mDriveClimbTalon;
 	private SolenoidInterface mClimbShifter;
 	private ClimberSpark mClimber;
+
+	// LEDs
+	private Spark mBlinkin;
 
 	// digital inputs
 	private DigitalInput mFrontLimitLeft, mFrontLimitRight;
@@ -178,6 +182,8 @@ public class Robot extends SampleRobot {
 
 		mPDP = new PowerDistributionPanel();
 		mCompressor = new Compressor(Ports.COMPRESSOR);
+
+		mBlinkin = new Spark(Ports.ActualRobot.BLINKIN_CHANNEL);
 
 		mFrontLimitLeft = new LimitSwitch(Ports.ActualRobot.FRONT_LIMIT_LEFT, 300000000);
 		mFrontLimitRight = new LimitSwitch(Ports.ActualRobot.FRONT_LIMIT_RIGHT, 300000000);
@@ -357,12 +363,12 @@ public class Robot extends SampleRobot {
 			if (!RunConstants.SECONDARY_JOYSTICK) { // only do this if we're using the logitech attack 3
 				mJoystick.updateProfile();
 				SmartDashboard.putNumber("JOYSTICK PROFILE NUMBER", mJoystick.getProfile());
-				SmartDashboard.putString("JOYSTICK PROFILE",
-						(mJoystick.getProfile() == 0) ? "HATCH/LEADSCREW" : "BALL");
 			} 
 			SmartDashboard.putString("bumper state", mBumperSensor.getState().toString());
 			SmartDashboard.putBoolean("left bumper", mFrontLimitLeft.get());
 			SmartDashboard.putBoolean("right bumper", mFrontLimitRight.get());
+
+			SmartDashboard.putNumber("BLINKIN value", mBlinkin.get());
 
 			SmartDashboard.putString("Bumper State", mBumperSensor.getState().toString());
 			Timer.delay(0.005); // wait for a motor update time
