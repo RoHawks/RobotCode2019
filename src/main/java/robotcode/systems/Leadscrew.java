@@ -71,13 +71,13 @@ public class Leadscrew {
 
 
         // change states
-        if (mJoystick.getRawButtonPressed(6)) {
+        if (mJoystick.getRawButtonPressed(26)) {
             mLeadscrewState = LeadscrewState.MANUAL;
         } 
-        else if (mJoystick.getRawButtonPressed(2)) {
+        else if (mJoystick.getRawButtonPressed(22)) {
             mLeadscrewState = LeadscrewState.CAMERA_ALIGN;
         } 
-        else if (mJoystick.getRawButtonPressed(3)){
+        else if (mJoystick.getRawButtonPressed(23)){
             mLeadscrewState = LeadscrewState.CENTER;
         }
         // else {
@@ -95,8 +95,8 @@ public class Leadscrew {
                 mLeadscrew.set(ControlMode.PercentOutput, (Math.abs(mJoystick.getX()) > 0.25) ? mJoystick.getX() : 0);
                 break;
             case CAMERA_ALIGN:
-                //centerWithCamera();
-                centerWithCameraDrivetrain();
+                centerWithCamera();
+                //centerWithCameraDrivetrain();
                 break;
             case IDLE:
                 setSpeed(0);

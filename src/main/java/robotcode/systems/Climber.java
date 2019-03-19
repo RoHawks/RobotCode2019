@@ -75,13 +75,13 @@ public class Climber {
             mBackTalon.set(0);
         }
 
-        // if (mJoystick.getRawButton(JoystickConstants.ClimbButtons.DRIVE)
-        //         && Math.abs(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) > 0.5) {
-        //     mDriveTalon.set(ControlMode.PercentOutput, -Math.signum(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE))
-        //             * (Math.abs(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) - 0.5));
-        // } else {
-        //     mDriveTalon.set(0);
-        // }
+        if (mJoystick.getRawButton(JoystickConstants.ClimbButtons.DRIVE)
+                && Math.abs(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) > 0.5) {
+            mDriveTalon.set(ControlMode.PercentOutput, -Math.signum(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE))
+                    * (Math.abs(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) - 0.5));
+        } else {
+            mDriveTalon.set(0);
+        }
     }
 
     private boolean mStartUpLegs = false;

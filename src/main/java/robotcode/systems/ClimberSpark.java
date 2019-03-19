@@ -53,17 +53,17 @@ public class ClimberSpark {
         mDrivetrain = pDriveTrain;
         mJoystick = pJoystick;
 
-        mBackTopLimit = mBackTalon.getForwardLimitSwitch(LimitSwitchPolarity.kNormallyOpen);
-        mBackTopLimit.enableLimitSwitch(true);
+        // mBackTopLimit = mBackTalon.getForwardLimitSwitch(LimitSwitchPolarity.kNormallyOpen);
+        // mBackTopLimit.enableLimitSwitch(true);
 
-        mBackBottomLimit = mBackTalon.getReverseLimitSwitch(LimitSwitchPolarity.kNormallyOpen);
-        mBackBottomLimit.enableLimitSwitch(true);
+        // mBackBottomLimit = mBackTalon.getReverseLimitSwitch(LimitSwitchPolarity.kNormallyOpen);
+        // mBackBottomLimit.enableLimitSwitch(true);
 
-        mFrontTopLimit = mFrontTalon.getForwardLimitSwitch(LimitSwitchPolarity.kNormallyOpen);
-        mFrontTopLimit.enableLimitSwitch(true);
+        // mFrontTopLimit = mFrontTalon.getForwardLimitSwitch(LimitSwitchPolarity.kNormallyOpen);
+        // mFrontTopLimit.enableLimitSwitch(true);
 
-        mFrontBottomLimit = mFrontTalon.getReverseLimitSwitch(LimitSwitchPolarity.kNormallyOpen);
-        mFrontBottomLimit.enableLimitSwitch(true);
+        // mFrontBottomLimit = mFrontTalon.getReverseLimitSwitch(LimitSwitchPolarity.kNormallyOpen);
+        // mFrontBottomLimit.enableLimitSwitch(true);
 
         mFrontEncoder = mFrontTalon.getEncoder();
         mBackEncoder = mBackTalon.getEncoder();
@@ -76,8 +76,8 @@ public class ClimberSpark {
         // LimitSwitch(Ports.ActualRobot.CLIMB_FRONT_BOTTOM_LIMIT, 300000000);
         // mBackBottomLimit = new LimitSwitch(Ports.ActualRobot.CLIMB_BACK_BOTTOM_LIMIT,
         // 300000000);
-        mFrontLegLimit = new LimitSwitch(Ports.ActualRobot.CLIMB_FRONT_LEG_LIMIT, 300000000);
-        mBackLegLimit = new LimitSwitch(Ports.ActualRobot.CLIMB_BACK_LEG_LIMIT, 300000000);
+        // mFrontLegLimit = new LimitSwitch(Ports.ActualRobot.CLIMB_FRONT_LEG_LIMIT, 300000000);
+        // mBackLegLimit = new LimitSwitch(Ports.ActualRobot.CLIMB_BACK_LEG_LIMIT, 300000000);
     }
 
     public void link() {
@@ -95,26 +95,25 @@ public class ClimberSpark {
 
         if (mJoystick.getRawButton(JoystickConstants.ClimbButtons.FRONT)
                 && Math.abs(mJoystick.getY(JoystickConstants.CLIMB_PROFILE)) > 0.25) {
-            mFrontTalon.set(mJoystick.getY(JoystickConstants.CLIMB_PROFILE));
+            mFrontTalon.set(mJoystick.getY(JoystickConstants.CLIMB_PROFILE)*0.85);
         } else {
             mFrontTalon.set(0);
         }
 
         if (mJoystick.getRawButton(JoystickConstants.ClimbButtons.BACK)
                 && Math.abs(mJoystick.getY(JoystickConstants.CLIMB_PROFILE)) > 0.25) {
-            mBackTalon.set(mJoystick.getY(JoystickConstants.CLIMB_PROFILE));
+            mBackTalon.set(mJoystick.getY(JoystickConstants.CLIMB_PROFILE)*0.85);
         } else {
             mBackTalon.set(0);
         }
 
-        // if (mJoystick.getRawButton(JoystickConstants.ClimbButtons.DRIVE)
-        // && Math.abs(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) > 0.5) {
-        // mDriveTalon.set(ControlMode.PercentOutput,
-        // -Math.signum(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE))
-        // * (Math.abs(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) - 0.5));
-        // } else {
-        // mDriveTalon.set(0);
-        // }
+        if (mJoystick.getRawButton(JoystickConstants.ClimbButtons.DRIVE)
+                && Math.abs(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) > 0.5) {
+            mDriveTalon.set(ControlMode.PercentOutput, -Math.signum(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE))
+                    * (Math.abs(mJoystick.getZ(JoystickConstants.CLIMB_PROFILE)) - 0.5));
+        } else {
+            mDriveTalon.set(0);
+        }
     }
 
     /**

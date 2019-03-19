@@ -924,7 +924,7 @@ public class Robot extends SampleRobot {
 		mFrontClimbTalon.setInverted(ClimberConstants.FRONT_REVERSED);
 		mFrontClimbTalon.setIdleMode(IdleMode.kCoast);
 		mFrontClimbTalon.setOpenLoopRampRate(0.2);
-		mFrontClimbTalon.setSmartCurrentLimit(40);
+		mFrontClimbTalon.setSmartCurrentLimit(80);
 		mFrontClimbTalon.getForwardLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(true);
 		mFrontClimbTalon.getReverseLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(true);
 		mFrontEncoder = new CANEncoder(mFrontClimbTalon);
@@ -937,9 +937,9 @@ public class Robot extends SampleRobot {
 		mBackClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
 		mBackClimbTalon.setIdleMode(IdleMode.kCoast);
 		mBackClimbTalon.setOpenLoopRampRate(0.2);
-		mBackClimbTalon.setSmartCurrentLimit(40);
-		mBackClimbTalon.getForwardLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(true);
-		mBackClimbTalon.getReverseLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(true);
+		mBackClimbTalon.setSmartCurrentLimit(80);
+		mBackClimbTalon.getForwardLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(false);
+		mBackClimbTalon.getReverseLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(false);//TODO change
 		mBackEncoder = new CANEncoder(mBackClimbTalon);
 		mBackEncoder.setPosition(0);
 		// mBackClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_BACK);
