@@ -9,7 +9,7 @@ package constants;
 
 public class IntakeConstants {
 
-    public static final long MOVE_BACK_TIME = 700;
+    public static final long MOVE_BACK_TIME = 500;
 
     public static class ScoreHatchTimes {
         public static final long
@@ -20,7 +20,7 @@ public class IntakeConstants {
 
     public static class LoadHatchTimes {
         public static final long
-            STEP_TWO = Math.max(HatchIntakeConstants.RotaryPiston.CONTRACT_TIME, HatchIntakeConstants.LinearPiston.OUT_TIME),
+            STEP_TWO = Math.max(HatchIntakeConstants.RotaryPiston.CONTRACT_TIME, HatchIntakeConstants.LinearPiston.OUT_TIME) + 100,
             STEP_THREE = HatchIntakeConstants.RotaryPiston.EXPAND_TIME + STEP_TWO,
             STEP_FOUR = MOVE_BACK_TIME + STEP_THREE;
     }

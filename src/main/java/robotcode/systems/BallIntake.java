@@ -19,13 +19,14 @@ public class BallIntake {
         mLock, //front
         mRetain; //middle
 
-    private UltrasonicSensor mUltra;
+    private UltrasonicSensor mUltraRight, mUltraLeft;
 
-    public BallIntake (SolenoidInterface pRotary, SolenoidInterface pLock, SolenoidInterface pRetain, UltrasonicSensor pSensor){
+    public BallIntake (SolenoidInterface pRotary, SolenoidInterface pLock, SolenoidInterface pRetain, UltrasonicSensor pSensorRight, UltrasonicSensor pSensorLeft){
         mRotary = pRotary;
         mLock = pLock;
         mRetain = pRetain;
-        mUltra = pSensor;
+        mUltraRight = pSensorRight;
+        mUltraLeft = pSensorLeft;
     }
 
     private enum BallIntakeState{
@@ -81,10 +82,14 @@ public class BallIntake {
     }
 
     public boolean isHoldingBall(){
-        return mUltra.getCooked();
+        return mUltraRight.getCooked();// || mUltraLeft.getCooked();
     } //TZ add delayed boolean
 
-    public UltrasonicSensor getUltrasonic(){
-        return mUltra;
+    public UltrasonicSensor getUltrasonicRight(){
+        return mUltraRight;
+    }
+
+    public UltrasonicSensor getUltrasonicLeft(){
+        return mUltraLeft;
     }
 }

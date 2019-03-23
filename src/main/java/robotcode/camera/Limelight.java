@@ -125,8 +125,6 @@ public class Limelight {
     
     public void setStreamSecondary(){
         getEntryFromNetworkTable("stream").setNumber(2);
-        NetworkTableEntry e = getEntryFromNetworkTable("stream");
-        System.out.print(e.getDouble(-1));
     }
 
 

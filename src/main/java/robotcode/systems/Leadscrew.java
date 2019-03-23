@@ -151,8 +151,6 @@ public class Leadscrew {
     public void setPosition(double pInchMeasurement) {
 
         double goal = LeadscrewEncoder.leadscrewInchToTick(ResourceFunctions.putNumInAbsoluteRange(pInchMeasurement, 0, LeadscrewConstants.LENGTH));
-        SmartDashboard.putNumber("ERROR IN LEADSCREW SET POSITION METHOD", goal - mEncoder.getRawTicks());
-
         mLeadscrew.set(ControlMode.Position, goal);
     }
 
@@ -168,7 +166,7 @@ public class Leadscrew {
             //mCameraAverage.addNumber(distCameraToTape);
             //distCameraToTape = mCameraAverage.getAverage;
             double goalInches = LeadscrewConstants.MIDDLE + distCameraToTape;
-            SmartDashboard.putNumber("Distance from Camera", goalInches - mEncoder.getDistanceInInchesFromEnd());
+            //SmartDashboard.putNumber("Distance from Camera", goalInches - mEncoder.getDistanceInInchesFromEnd());
             if (Math.abs(goalInches - mEncoder.getDistanceInInchesFromEnd()) > LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
                 setPosition(goalInches);
             }
@@ -201,8 +199,6 @@ public class Leadscrew {
             mAvg.addNumber(distCameraToTape);
             distCameraToTape = mAvg.getAverage();
             double goalInches = LeadscrewConstants.MIDDLE + distCameraToTape;
-            SmartDashboard.putNumber("Distance from tape to leadscrew", goalInches - mEncoder.getDistanceInInchesFromEnd());
-
             // if the tape is farther than 1 inch from leadscrew's zero (0)
             if (goalInches < 3) {
                 if (!mStartDriveAlign) {
@@ -301,19 +297,15 @@ public class Leadscrew {
     public void leadscrewInitialZero() {
         while (mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
             mLeadscrew.set(ControlMode.PercentOutput, -0.2);
-            SmartDashboard.putNumber("is zeroing", System.currentTimeMillis());
-            //SmartDashboard.putNumber("Talon zeroing error value", mLeadscrew.getClosedLoopError());
-            //SmartDashboard.putNumber("Talon zeroing target value", mLeadscrew.getClosedLoopTarget());
         }
         mLeadscrew.set(ControlMode.PercentOutput, 0);
-        // mLeadscrewTalon.configForwardSoftLimitEnable(true, 10);
-		// mLeadscrewTalon.configReverseSoftLimitEnable(true, 10);
+        mLeadscrew.configForwardSoftLimitEnable(false, 10);
+		mLeadscrew.configReverseSoftLimitEnable(false, 10);
         zero();
     }
 
     public boolean isInRange(){
         boolean inRange = Math.abs(mEncoder.getError((int) mLeadscrew.getClosedLoopTarget())) <= LeadscrewConstants.PID.LEADSCREW_TOLERANCE;
-        SmartDashboard.putBoolean("Leadscrew is in range", inRange);
         return inRange;
     }
 

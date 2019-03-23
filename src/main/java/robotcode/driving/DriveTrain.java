@@ -107,9 +107,9 @@ public class DriveTrain {
 		mLinearVel = pLinearVel;
 		mRotationalVel = pRotationalVel;
 
-		SmartDashboard.putString("Linear Velocity State", mLinearVel.name());
-		SmartDashboard.putString("Previous Linear Velocity", mPrevLinearVel.name());
-		SmartDashboard.putString("Rotational Velocity State", mRotationalVel.name());
+		// SmartDashboard.putString("Linear Velocity State", mLinearVel.name());
+		// SmartDashboard.putString("Previous Linear Velocity", mPrevLinearVel.name());
+		// SmartDashboard.putString("Rotational Velocity State", mRotationalVel.name());
 
 		if (mController.getStartButtonReleased()) {
 			mIsFieldRelative = !mIsFieldRelative;
@@ -125,26 +125,14 @@ public class DriveTrain {
 			if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_BOTTOM)){
 				secondaryJoystickAngle = 331.3;
 			}
-			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_SIDE) || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_RIGHT)){
-				secondaryJoystickAngle = 270;
-			}
 			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_TOP)){
 				secondaryJoystickAngle = 208.7;
 			}
 			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_BOTTOM)){
 				secondaryJoystickAngle = 28.7;
 			}
-			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_SIDE) || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_LEFT)){
-				secondaryJoystickAngle = 90;
-			}
 			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_TOP)){
 				secondaryJoystickAngle = 151.3;
-			}
-			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LOADING_STATION)){
-				secondaryJoystickAngle = 180;
-			}
-			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_FRONT)){
-				secondaryJoystickAngle = 0;
 			}
 		}
 
@@ -165,7 +153,6 @@ public class DriveTrain {
 				throw new RuntimeException("Unknown drivetrain linear velocity state");
 		}
 		mDesiredRobotVel = new Vector(linearVel);
-		SmartDashboard.putNumber("Linear velocity after switch", mDesiredRobotVel.getMagnitude());
 
 		switch (mRotationalVel) {
 			case NORMAL:
@@ -182,18 +169,18 @@ public class DriveTrain {
 				break;
 			case POV:
 				mDesiredAngularVel = getAngularPIDVel(pGyroAngle); // TZ
-				SmartDashboard.putNumber("Gyro PID error", mGyroPID.getError());
+				//SmartDashboard.putNumber("Gyro PID error", mGyroPID.getError());
 				break;
 			case SECONDARY:
 				mDesiredAngularVel = getAngularPIDVel(secondaryJoystickAngle);
-				SmartDashboard.putNumber("Gyro PID error", mGyroPID.getError());
+				//SmartDashboard.putNumber("Gyro PID error", mGyroPID.getError());
 				break;
 			default:
 				throw new RuntimeException("Unknown drivetrain rotational velocity state");
 		}
 
-		SmartDashboard.putNumber("POV", mController.getPOV());
-		SmartDashboard.putString("Rotational Velocity State", mRotationalVel.toString());
+		// SmartDashboard.putNumber("POV", mController.getPOV());
+		// SmartDashboard.putString("Rotational Velocity State", mRotationalVel.toString());
 		if (mRotationalVel == RotationalVelocity.NONE) {
 			if (mLinearVel == LinearVelocity.ANGLE_ONLY) {
 				for (int i = 0; i < 4; i++) {
@@ -219,8 +206,8 @@ public class DriveTrain {
 			}
 			else if (mLinearVel == LinearVelocity.NORMAL || mLinearVel == LinearVelocity.NUDGE) {
 				mDriftCompensationPID.enable();
-				SmartDashboard.putNumber("Drift comp error", mDriftCompensationPID.getError());
-				SmartDashboard.putNumber("Drift comp value", mDriftCompensationOutput.getVal());
+				// SmartDashboard.putNumber("Drift comp error", mDriftCompensationPID.getError());
+				// SmartDashboard.putNumber("Drift comp value", mDriftCompensationOutput.getVal());
 				mSwerveDrive.calculateHoldDirection(mDriftCompensationOutput.getVal(), getDesiredRobotVel());
 				for (int i = 0; i < 4; i++) {
 					mWheels[i].set(mSwerveDrive.getOutput(i));
@@ -236,13 +223,13 @@ public class DriveTrain {
 			}
 		}
 
-		SmartDashboard.putBoolean("Drift comp enabled", mDriftCompensationPID.isEnabled());
+		//SmartDashboard.putBoolean("Drift comp enabled", mDriftCompensationPID.isEnabled());
 
-		for (int i = 0; i < 4; i++) {
-			SmartDashboard.putNumber("Error " + i + ":", robotDirectionAngle - mWheels[i].getAngle());
-			SmartDashboard.putNumber("Angle " + i + ":", mWheels[i].getAngle());
+		// for (int i = 0; i < 4; i++) {
+		// 	SmartDashboard.putNumber("Error " + i + ":", robotDirectionAngle - mWheels[i].getAngle());
+		// 	SmartDashboard.putNumber("Angle " + i + ":", mWheels[i].getAngle());
 			
-		}
+		// }
 	}
 
 	public void driveSwerve() {
@@ -294,13 +281,13 @@ public class DriveTrain {
 	public double getStickAngle(Hand h) {
 		double x = mController.getX(h);
 		double y = -mController.getY(h);
-		SmartDashboard.putNumber("X-Value " + h.toString() + ":", x);
-		SmartDashboard.putNumber("Y-Yalue " + h.toString() + ":", y);
+		// SmartDashboard.putNumber("X-Value " + h.toString() + ":", x);
+		// SmartDashboard.putNumber("Y-Yalue " + h.toString() + ":", y);
 		if (Math.abs(y) >= DriveConstants.MIN_DIRECTION_MAG || Math.abs(x) >= DriveConstants.MIN_DIRECTION_MAG) {
 			mJoystickAngle = -Math.toDegrees(Math.atan2(y, x)) + 90;
 			mJoystickAngle = ResourceFunctions.putAngleInRange(mJoystickAngle); // puts angle between zero and 360
 		}
-		SmartDashboard.putNumber(h.toString() + " Joystick Angle: ", mJoystickAngle);
+		//SmartDashboard.putNumber(h.toString() + " Joystick Angle: ", mJoystickAngle);
 		return mJoystickAngle;
 	}
 
@@ -397,7 +384,7 @@ public class DriveTrain {
 	 */
 	private double getStickLinearVel() {
 		double speed = mController.getTriggerAxis(Hand.kRight);
-		SmartDashboard.putNumber("Right Trigger Axis", speed);
+		//SmartDashboard.putNumber("Right Trigger Axis", speed);
 		speed = Math.pow(speed, 2) * DriveConstants.SwerveSpeeds.SPEED_MULT;
 		// quadratic control, finer control of lower speeds
 		return speed;
@@ -410,14 +397,14 @@ public class DriveTrain {
 	 */
 	private double getStickAngularVel() {
 		double joystickValue = mController.getX(Hand.kRight);
-		SmartDashboard.putNumber("Right Joystick X", joystickValue);
+		//SmartDashboard.putNumber("Right Joystick X", joystickValue);
 
 		if (Math.abs(joystickValue) < DriveConstants.MIN_DIRECTION_MAG) {
 			return 0;
 		}
 		double angularVel = joystickValue * Math.abs(joystickValue);
 		angularVel *= DriveConstants.SwerveSpeeds.ANGULAR_SPEED_MULT;
-		SmartDashboard.putNumber("Angular Velocity", angularVel);
+		//SmartDashboard.putNumber("Angular Velocity", angularVel);
 		return angularVel; // quadratic control for finer movements
 	}
 
@@ -460,15 +447,9 @@ public class DriveTrain {
 	 * @return bumper --> nudge; no move --> none; else --> normal
 	 */
 	private RotationalVelocity getRotationalVelocityState() {
-		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_RIGHT)
-		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_FRONT) 
-		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CARGO_SHIP_LEFT)
-		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_BOTTOM)
-		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_SIDE)
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_BOTTOM)
 		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_TOP)
-		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LOADING_STATION)
 		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_BOTTOM)
-		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_SIDE)
 		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_TOP)){
 			return RotationalVelocity.SECONDARY;
 		 }
@@ -554,7 +535,7 @@ public class DriveTrain {
 		double vel = mGyroOutput.getVal();
 
 		SmartDashboard.putNumber("Gyro PID Setpoint:", mGyroPID.getSetpoint());
-		SmartDashboard.putNumber("Gyro PID Output:", vel);
+		//SmartDashboard.putNumber("Gyro PID Output:", vel);
 
 		return vel;
 	}

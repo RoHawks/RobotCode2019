@@ -8,7 +8,6 @@
 package sensors;
 
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class BumperSensor {
 
@@ -33,7 +32,6 @@ public class BumperSensor {
         else if(!mFrontLimitRight.get()){
             return BumperState.RIGHT;
         }
-        SmartDashboard.putBoolean("bumper value", !mFrontLimitLeft.get() && !mFrontLimitRight.get());
         return BumperState.NEITHER;
         
     }

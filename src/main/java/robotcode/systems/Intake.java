@@ -165,7 +165,8 @@ public class Intake {
             // works, gives weird error)
             position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
             goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
-        } else {
+        } 
+        else {
             mLeadscrew.setPositionJoystick();
             position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
             goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
@@ -173,7 +174,7 @@ public class Intake {
 
 
         SmartDashboard.putNumber("INTAKING STEP", 0);
-        SmartDashboard.putBoolean("has aligned", mHasAlignedHatchIntake);
+        //SmartDashboard.putBoolean("has aligned", mHasAlignedHatchIntake);
 
         long loadingSequenceElapsedMilliseconds = System.currentTimeMillis() - mStartIntakeTimeHatch;
 
@@ -193,7 +194,7 @@ public class Intake {
         else if (!mHasAlignedHatchIntake) {
             mDrivetrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
             mHatchIntake.contract();
-            // TZ this might be redundant, rotary piston should already be contracted whenever you get to this state
+            // TODO this might be redundant, rotary piston should already be contracted whenever you get to this state
         }
         else if (mHasAlignedHatchIntake && (loadingSequenceElapsedMilliseconds < IntakeConstants.LoadHatchTimes.STEP_TWO)) {
             mDrivetrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
@@ -210,6 +211,7 @@ public class Intake {
             mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
         }
         else if (mHasAlignedHatchIntake && loadingSequenceElapsedMilliseconds > IntakeConstants.LoadHatchTimes.STEP_FOUR){
+            mDrivetrain.stop();
             mHasAlignedHatchIntake = false;
             mStartIntakeTimeHatch = 0;
             return true;
@@ -240,7 +242,7 @@ public class Intake {
         double goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
 
         SmartDashboard.putNumber("SCORING STEP", 0);
-        SmartDashboard.putBoolean("scoring has aligned", mHasAlignedHatchScore);
+        //SmartDashboard.putBoolean("scoring has aligned", mHasAlignedHatchScore);
 
         long scoringSequenceElapsedMilliseconds = System.currentTimeMillis() - mStartScoreTimeHatch;
 
@@ -250,23 +252,27 @@ public class Intake {
 
         if (!mHasAlignedHatchScore && mLeadscrew.isInRange()) { //Math.abs(position - goal) < LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE
             SmartDashboard.putNumber("SCORING STEP", 1);
+            mDrivetrain.stop();
             mStartScoreTimeHatch = System.currentTimeMillis();
             mHatchIntake.out();
             mHasAlignedHatchScore = true;
         }
         else if (mHasAlignedHatchScore && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_TWO)) {
             SmartDashboard.putNumber("SCORING STEP", 2);
+            mDrivetrain.stop();
             mHatchIntake.contract();
         }
         else if (mHasAlignedHatchScore && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_THREE)) {
             SmartDashboard.putNumber("SCORING STEP", 3);
+            mDrivetrain.stop();
             mHatchIntake.in();
         }
         else if (mHasAlignedHatchScore && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_FOUR)){
             SmartDashboard.putNumber("SCORING STEP", 4);
             mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
         }
-        else if(mHasAlignedHatchScore && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_FOUR){ // if the time overshoots, we need to be able to exit this mode
+        else if (mHasAlignedHatchScore && scoringSequenceElapsedMilliseconds > IntakeConstants.ScoreHatchTimes.STEP_FOUR){ // if the time overshoots, we need to be able to exit this mode
+            mDrivetrain.stop();
             mStartScoreTimeHatch = 0;
             mHasAlignedHatchScore = false;
             return true;
@@ -300,7 +306,7 @@ public class Intake {
         }
 
         SmartDashboard.putNumber("BALL INTAKE STEP", 0);
-        SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
+        //SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
 
         long ballLoadingSequenceElapsedMilliseconds = System.currentTimeMillis() - mStartIntakeTimeBall;
 
@@ -348,7 +354,7 @@ public class Intake {
         }
 
         SmartDashboard.putNumber("BALL SCORE HIGH STEP", 0);
-        SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
+        //SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
 
         long scoringSequenceElapsedMilliseconds = System.currentTimeMillis() - mStartScoreTimeBallHigh;
 
@@ -406,7 +412,7 @@ public class Intake {
         }
 
         SmartDashboard.putNumber("BALL SCORE LOW STEP", 0);
-        SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreLow);
+        //SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreLow);
 
         long scoringSequenceElapsedMilliseconds = System.currentTimeMillis() - mStartScoreTimeBallLow;
 

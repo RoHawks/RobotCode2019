@@ -89,8 +89,8 @@ public class SwerveDrive {
 
 		for (int i = 0; i < 4; i++) {
 			mOutputs[i] = new Vector(velocities[i]);
-			SmartDashboard.putNumber("Vector Angle " + i, mOutputs[i].getAngle());
-			SmartDashboard.putNumber("Vector Mag " + i, mOutputs[i].getMagnitude());
+			// SmartDashboard.putNumber("Vector Angle " + i, mOutputs[i].getAngle());
+			// SmartDashboard.putNumber("Vector Mag " + i, mOutputs[i].getMagnitude());
 		}
 	}
 
@@ -140,8 +140,8 @@ public class SwerveDrive {
 
 		for (int i = 0; i < 4; i++) {
 			mOutputs[i] = new Vector(velocities[i]);
-			SmartDashboard.putNumber("Vector Angle " + i, mOutputs[i].getAngle());
-			SmartDashboard.putNumber("Vector Mag " + i, mOutputs[i].getMagnitude());
+			// SmartDashboard.putNumber("Vector Angle " + i, mOutputs[i].getAngle());
+			// SmartDashboard.putNumber("Vector Mag " + i, mOutputs[i].getMagnitude());
 		}
 	}
 

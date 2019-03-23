@@ -23,6 +23,7 @@ import autonomous.routines.DoNothingRoutine;
 import constants.*;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
@@ -72,7 +73,7 @@ public class Robot extends SampleRobot {
 	// ball intake
 	private BallIntake mBallIntake;
 	private SolenoidInterface mBallRotary, mBallLock, mBallRetain;
-	private UltrasonicSensor mUltra;
+	private UltrasonicSensor mUltraRight, mUltraLeft;
 
 	// leadscrew
 	private WPI_TalonSRX mLeadscrewTalon;
@@ -127,6 +128,7 @@ public class Robot extends SampleRobot {
 		if(RunConstants.LOGGING){
 			SmartDashboard.putString("DashboardCommand", "EndRecording");
 		}
+
 	}
 
 	public void startGame() {
@@ -134,8 +136,13 @@ public class Robot extends SampleRobot {
 			mGameStartMillis = System.currentTimeMillis();
 
 			if(RunConstants.LOGGING){
+				createHeaderString();
 				SmartDashboard.putString("DashboardCommand", "StartRecording");
-				//createHeaderString();
+			}
+
+			if(RunConstants.SECONDARY_JOYSTICK){
+				SmartDashboard.putString("JoystickCommand", "StartUpdating");
+				SmartDashboard.putString("LEDCommand", "ENABLED");
 			}
 
 			if (RunConstants.RUNNING_PNEUMATICS) {
@@ -166,12 +173,6 @@ public class Robot extends SampleRobot {
 
 	public boolean dummy() {
 		int error = mLeadscrewEncoder.getError((int) mLeadscrewTalon.getClosedLoopTarget());
-		SmartDashboard.putNumber("DUMMY: leadscrew inside", System.currentTimeMillis());
-		SmartDashboard.putNumber("DUMMY: leadscrew ticks", mLeadscrewTalon.getSelectedSensorPosition());
-		SmartDashboard.putNumber("DUMMY: leadscrew inches", LeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getSelectedSensorPosition()));
-		SmartDashboard.putNumber("DUMMY: leadscrew motor goal ticks", mLeadscrewTalon.getClosedLoopTarget());
-		SmartDashboard.putNumber("DUMMY: leadscrew motor output", mLeadscrewTalon.getMotorOutputPercent());
-		SmartDashboard.putNumber("DUMMY: error", error);
 		return error > LeadscrewConstants.PID.LEADSCREW_TOLERANCE;
 	}
 
@@ -227,37 +228,81 @@ public class Robot extends SampleRobot {
 
 	public void autonomous() {
 		// select auto commands
-		ArrayList<AutonomousCommand> autonomousCommands;
+		// ArrayList<AutonomousCommand> autonomousCommands;
 
-		if (mAutonomousRoutine == AutonomousRoutineType.DEFAULT) {
-			autonomousCommands = (new DefaultRoutine(this)).getAutonomousCommands();
-		} else {
-			autonomousCommands = (new DoNothingRoutine()).getAutonomousCommands();
-		}
+		// if (mAutonomousRoutine == AutonomousRoutineType.DEFAULT) {
+		// 	autonomousCommands = (new DefaultRoutine(this)).getAutonomousCommands();
+		// } else {
+		// 	autonomousCommands = (new DoNothingRoutine()).getAutonomousCommands();
+		// }
 
 		// start game
 		startGame();
+		mTimeLastCycleStarted = System.currentTimeMillis();
+		long timeCycleStart;
+		long lastCycleTime;
 
 		// initialize step variables
 		int currentStep = 0;
 		int previousStep = -1;
 
 		while (isAutonomous() && isEnabled()) {
-			SmartDashboard.putNumber("Autonomous step", currentStep);
 
-			if (currentStep < autonomousCommands.size()) {
-				AutonomousCommand command = autonomousCommands.get(currentStep);
+			timeCycleStart = System.currentTimeMillis();
+			lastCycleTime = timeCycleStart - mTimeLastCycleStarted;
+			mTimeLastCycleStarted = timeCycleStart;
+			SmartDashboard.putNumber("Cycle Time", lastCycleTime);
+			SmartDashboard.putNumber("CycleStart", timeCycleStart);
 
-				if (currentStep != previousStep) {
-					command.startup();
-					previousStep = currentStep;
-				}
+			if(RunConstants.LOGGING){
+				log();
+			}
 
-				boolean moveToNextStep = command.runCommand();
-				if (moveToNextStep) {
-					currentStep++;
-				}
-			} // else we're done with auto
+			// if (RunConstants.RUNNING_DRIVE) {
+			// 	//swerveDrive();
+			// 	for (int i = 0; i < 4; i++) {
+			// 		SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].get());
+			// 		SmartDashboard.putNumber("Motor current " + i, mTurn[i].getOutputCurrent());
+			// 		SmartDashboard.putNumber("Wheel offset " + i, mTurn[i].getSelectedSensorPosition() % 4096);
+			// 		SmartDashboard.putNumber("Wheel position " + i, mTurn[i].getSelectedSensorPosition());
+			// 	}
+			// }
+			if(RunConstants.RUNNING_BALL){
+				// SmartDashboard.putBoolean("Ultrasonic value", mBallIntake.isHoldingBall());
+				// SmartDashboard.putNumber("Ultrasonic voltage", mBallIntake.getUltrasonicRight().getValue());
+			}
+		
+			// put info on SmartDashboard
+
+			if (!RunConstants.SECONDARY_JOYSTICK) { // only do this if we're using the logitech attack 3
+				mJoystick.updateProfile();
+				SmartDashboard.putNumber("JOYSTICK PROFILE NUMBER", mJoystick.getProfile());
+			} 
+			SmartDashboard.putString("Bumper State", mBumperSensor.getState().toString());
+			// SmartDashboard.putBoolean("left bumper", mFrontLimitLeft.get());
+			// SmartDashboard.putBoolean("right bumper", mFrontLimitRight.get());
+
+			if (RunConstants.RUNNING_EVERYTHING){
+				doWork();
+				SmartDashboard.putBoolean("BallSensed", mBallIntake.isHoldingBall());
+				SmartDashboard.putBoolean("LeadscrewAligned", mLeadscrew.isInRange());
+			}
+
+			// SmartDashboard.putNumber("Autonomous step", currentStep);
+
+			// if (currentStep < autonomousCommands.size()) {
+			// 	AutonomousCommand command = autonomousCommands.get(currentStep);
+
+			// 	if (currentStep != previousStep) {
+			// 		command.startup();
+			// 		previousStep = currentStep;
+			// 	}
+
+			// 	boolean moveToNextStep = command.runCommand();
+			// 	if (moveToNextStep) {
+			// 		currentStep++;
+			// 	}
+			// } // else we're done with auto
 
 			Timer.delay(0.005);
 		}
@@ -276,6 +321,7 @@ public class Robot extends SampleRobot {
 			lastCycleTime = timeCycleStart - mTimeLastCycleStarted;
 			mTimeLastCycleStarted = timeCycleStart;
 			SmartDashboard.putNumber("Cycle Time", lastCycleTime);
+			SmartDashboard.putNumber("CycleStart", timeCycleStart);
 
 			if(RunConstants.LOGGING){
 				log();
@@ -285,18 +331,16 @@ public class Robot extends SampleRobot {
 				mHatchCamera.setStreamSecondary();
 			}
 
-			if (RunConstants.RUNNING_DRIVE) {
-				mTurn[3].set(ControlMode.Position, 0);
-				mTurn[3].getInverted();
+			// if (RunConstants.RUNNING_DRIVE) {
+			// 	//swerveDrive();
+			// 	for (int i = 0; i < 4; i++) {
+			// 		SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].get());
+			// 		SmartDashboard.putNumber("Motor current " + i, mTurn[i].getOutputCurrent());
+			// 		SmartDashboard.putNumber("Wheel offset " + i, mTurn[i].getSelectedSensorPosition() % 4096);
+			// 		SmartDashboard.putNumber("Wheel position " + i, mTurn[i].getSelectedSensorPosition());
+			// 	}
 				
-				//swerveDrive();
-				for (int i = 0; i < 4; i++) {
-					SmartDashboard.putNumber("Motor Output Percent " + i, mDrive[i].get());
-					SmartDashboard.putNumber("Motor current " + i, mTurn[i].getOutputCurrent());
-					SmartDashboard.putNumber("Wheel offset " + i, mTurn[i].getSelectedSensorPosition() % 4096);
-					SmartDashboard.putNumber("Wheel position " + i, mTurn[i].getSelectedSensorPosition());
-				}
-			}
+			// }
 
 			// hatch intake without leadscrew
 			if (RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_EVERYTHING && !RunConstants.RUNNING_BALL) {
@@ -318,19 +362,7 @@ public class Robot extends SampleRobot {
 			else if (RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_BALL
 					&& !RunConstants.RUNNING_EVERYTHING) {
 				mLeadscrew.enactMovement();
-				SmartDashboard.putNumber("OPERATOR CONTROL: leadscrew inside", System.currentTimeMillis());
-				SmartDashboard.putBoolean("OPERATOR CONTROL: leadscrew fwd limit switch",
-						mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());
-				SmartDashboard.putBoolean("OPERATOR CONTROL: leadscrew rev limit switch",
-						mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
-				SmartDashboard.putNumber("OPERATOR CONTROL: leadscrew ticks",
-						mLeadscrewTalon.getSelectedSensorPosition());
-				SmartDashboard.putNumber("OPERATOR CONTROL: leadscrew inches",
-						LeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getSelectedSensorPosition()));
-				SmartDashboard.putNumber("OPERATOR CONTROL: leadscrew motor goal ticks",
-						mLeadscrewTalon.getClosedLoopTarget());
-				SmartDashboard.putNumber("OPERATOR CONTROL: leadscrew motor output",
-						mLeadscrewTalon.getMotorOutputPercent());
+				
 				// SmartDashboard.putNumber("Limelight angle",
 				// NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0));
 				// SmartDashboard.putNumber("Limelight error",
@@ -344,118 +376,90 @@ public class Robot extends SampleRobot {
 			}
 
 			else if (RunConstants.RUNNING_CLIMBER && !RunConstants.RUNNING_EVERYTHING) {
-				mClimber.test();
-				SmartDashboard.putString("CLIMB Shifter", mClimbShifter.get().toString());
-				SmartDashboard.putNumber("CLIMB Y Axis", mJoystick.getY());
-				SmartDashboard.putNumber("CLIMB Z Axis", mJoystick.getZ());
-				SmartDashboard.putNumber("CLIMB front(?) current draw", mPDP.getCurrent(2));
-				SmartDashboard.putNumber("CLIMB back(?) current draw", mPDP.getCurrent(3));
-				SmartDashboard.putNumber("Climb back other current draw", mPDP.getCurrent(13));
+				mClimber.manualClimb();
+				// SmartDashboard.putString("CLIMB Shifter", mClimbShifter.get().toString());
+				// SmartDashboard.putNumber("CLIMB front(?) current draw", mPDP.getCurrent(2));
+				// SmartDashboard.putNumber("CLIMB back(?) current draw", mPDP.getCurrent(3));
+
+				mClimber.limitSwitchLog();
 			}
 
 			if (RunConstants.RUNNING_EVERYTHING) {
-				SmartDashboard.putNumber("z value", mJoystick.getZ());
-				LeadscrewConstants.LEADSCREW_OVERRIDE = mJoystick.getRawButton(1);
+
+				LeadscrewConstants.LEADSCREW_OVERRIDE = mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE);
 				doWork();
+				SmartDashboard.putBoolean("BallSensed", mBallIntake.isHoldingBall());
+				SmartDashboard.putBoolean("LeadscrewAligned", mLeadscrew.isInRange());
+				//mClimber.limitSwitchLog();
 			}
 
 			if(RunConstants.RUNNING_BALL){
-				SmartDashboard.putBoolean("Ultrasonic value", mBallIntake.isHoldingBall());
-				SmartDashboard.putNumber("Ultrasonic voltage", mBallIntake.getUltrasonic().getValue());
+
 			}
-		
-			// put info on SmartDashboard
-			SmartDashboard.putString("Current State", mCurrentState.toString());
 
 			if (!RunConstants.SECONDARY_JOYSTICK) { // only do this if we're using the logitech attack 3
 				mJoystick.updateProfile();
 				SmartDashboard.putNumber("JOYSTICK PROFILE NUMBER", mJoystick.getProfile());
-			} 
-			SmartDashboard.putString("bumper state", mBumperSensor.getState().toString());
-			SmartDashboard.putBoolean("left bumper", mFrontLimitLeft.get());
-			SmartDashboard.putBoolean("right bumper", mFrontLimitRight.get());
-
-			SmartDashboard.putNumber("BLINKIN value", mBlinkin.get());
+			}
 
 			SmartDashboard.putString("Bumper State", mBumperSensor.getState().toString());
+
+			//SmartDashboard.putNumber("BLINKIN value", mBlinkin.get());
+
 			Timer.delay(0.005); // wait for a motor update time
 		}
 	}
 
-	// SmartDashboard.putNumber("is enacting movement", System.currentTimeMillis());
-	// SmartDashboard.putBoolean("Forward Limit Switch Closed",
-	// mLeadscrewTalon.getSensorCollection().isFwdLimitSwitchClosed());
-	// SmartDashboard.putBoolean("Reverse Limit Switch Closed",
-	// mLeadscrewTalon.getSensorCollection().isRevLimitSwitchClosed());
-	// SmartDashboard.putNumber("Leadscrew raw ticks",
-	// mLeadscrewEncoder.getRawTicks());
-	// SmartDashboard.putNumber("leadscrew cooked ticks",
-	// mLeadscrewEncoder.getTicksFromEnd());
-	// SmartDashboard.putNumber("Leadscrew inches",
-	// mLeadscrewEncoder.getDistanceInInchesFromEnd());
-	// SmartDashboard.putNumber("Limelight angle",
-	// NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0));
-	// SmartDashboard.putNumber("Limelight error",
-	// CameraConstants.LimelightConstants.HEIGHT *
-	// Math.tan(Math.toRadians(NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0))));
-	// SmartDashboard.putNumber("Leadscrew motor goal ticks",
-	// mLeadscrewTalon.getClosedLoopTarget());
-	// SmartDashboard.putNumber("Leadscrew motor goal inches",
-	// LeadscrewEncoder.leadscrewTickToInch(mLeadscrewTalon.getClosedLoopTarget()));
-	// SmartDashboard.putNumber("Leadscrew motor output",
-	// mLeadscrewTalon.getMotorOutputPercent());
-	// SmartDashboard.putNumber("Leadscrew error",
-	// mLeadscrewTalon.getClosedLoopError());
-
 	private void doWork() {
 		switch (mCurrentState) {
-		case INITIAL_HOLDING_HATCH:
-			initialHoldingHatch();
-			break;
-		case INITIAL_HOLDING_BALL:
-			initialHoldingBall();
-			break;
-		case HATCH_SCORE_CARGO:
-			hatchScoreCargo();
-			break;
-		case HATCH_SCORE_ROCKET:
-			hatchScoreRocket();
-			break;
-		case WAITING_TO_LOAD:
-			waitingToLoad();
-			break;
-		case LOADING_HATCH:
-			loadingHatch();
-			break;
-		case LOADING_BALL:
-			loadingBall();
-			break;
-		case HATCH_PRESCORE:
-			hatchPrescore();
-			break;
-		case BALL_PRESCORE:
-			ballPrescore();
-			break;
-		case BALL_FRONT_SCORE:
-			ballFrontScore();
-			break;
-		case BALL_BACK_SCORE:
-			ballBackScore();
-			break;
-		case DEFENSE:
-			defense();
-			break;
-		case CLIMB:
-			climb();
-			break;
-		case DEFAULT:
-			defaultState();
-			break;
-		default:
-			throw new RuntimeException("Unknown state");
+			case INITIAL_HOLDING_HATCH:
+				initialHoldingHatch();
+				break;
+			case INITIAL_HOLDING_BALL:
+				initialHoldingBall();
+				break;
+			case HATCH_SCORE_CARGO:
+				hatchScoreCargo();
+				break;
+			case HATCH_SCORE_ROCKET:
+				hatchScoreRocket();
+				break;
+			case WAITING_TO_LOAD:
+				waitingToLoad();
+				break;
+			case LOADING_HATCH:
+				loadingHatch();
+				break;
+			case LOADING_BALL:
+				loadingBall();
+				break;
+			case HATCH_PRESCORE:
+				hatchPrescore();
+				break;
+			case BALL_PRESCORE:
+				ballPrescore();
+				break;
+			case BALL_FRONT_SCORE:
+				ballFrontScore();
+				break;
+			case BALL_BACK_SCORE:
+				ballBackScore();
+				break;
+			case DEFENSE:
+				defense();
+				break;
+			case CLIMB:
+				climb();
+				break;
+			case DEFAULT:
+				defaultState();
+				break;
+			default:
+				throw new RuntimeException("Unknown state");
 		}
 
 		SmartDashboard.putString("Current State", mCurrentState.name());
+
 	}
 
 	/**
@@ -468,12 +472,14 @@ public class Robot extends SampleRobot {
 
 		// when the robot wants to score...
 		if (mIntake.holdingHatch()
-				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)) {
+				&& (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO))) {
 			mCurrentState = RobotState.HATCH_SCORE_CARGO;
 		}
 
 		else if (mIntake.holdingHatch()
-				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_ROCKET)) {
+				&& (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_ROCKET)
+				 || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_ROCKET))) {
 			mCurrentState = RobotState.HATCH_SCORE_ROCKET;
 		}
 
@@ -491,12 +497,14 @@ public class Robot extends SampleRobot {
 		swerveDrive();
 		
 		if (mIntake.holdingBall()
-				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)) {
+				&& (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO))) {
 			mCurrentState = RobotState.BALL_FRONT_SCORE;
 		}
 
 		else if (mIntake.holdingBall()
-				&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_ROCKET)) {
+				&& (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_ROCKET)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_ROCKET))) {
 			mCurrentState = RobotState.BALL_BACK_SCORE;
 		}
 
@@ -519,13 +527,15 @@ public class Robot extends SampleRobot {
 		}
 
 		if (mBumperSensor.getState() == BumperSensor.BumperState.BOTH
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)) {
+				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO))) {
 			mHatchScoreBumperSensed = true;
 		}
 
 		// if robot or driver says scoring is done...
 		if (mHatchScoreBumperSensed && (mIntake.scorePanel()
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL))) {
+				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)))) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 			mHatchScoreBumperSensed = false;
 		}
@@ -535,7 +545,8 @@ public class Robot extends SampleRobot {
 
 		// if robot or driver says scoring is done...
 		if (mIntake.scorePanel()
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL)) {
+				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL))) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
@@ -560,7 +571,7 @@ public class Robot extends SampleRobot {
 
 		if (waitingElapsedMilliseconds > 500) {
 
-			if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.BALL_PANEL_SWITCH)){
+			if (mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.BALL_PANEL_SWITCH)) {
 				mBallIntake.lock();
 			}
 			else {
@@ -575,6 +586,12 @@ public class Robot extends SampleRobot {
 
 			else if (mIntake.idle() && mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL)) {
 				mCurrentState = RobotState.LOADING_BALL;
+				mStartWaitingToLoad = 0;
+				mHasWaitedToLoad = false;
+			}
+
+			if(mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.CLIMB)) {
+				mCurrentState = RobotState.CLIMB;
 				mStartWaitingToLoad = 0;
 				mHasWaitedToLoad = false;
 			}
@@ -595,12 +612,14 @@ public class Robot extends SampleRobot {
 		}
 
 		if (mBumperSensor.getState() == BumperState.BOTH
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL)) {
+				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL))) {
 			mLoadingBallBumperSensed = true;
 		}
 		
 		if (mLoadingBallBumperSensed &&
-				(mIntake.intakeBall() || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL))) {
+				(mIntake.intakeBall() || (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL)
+				|| mJoystick.getRawButtonReleased((JoystickConstants.FinalRobotButtons.HAS_LOADED_PANEL))))) {
 			mCurrentState = RobotState.BALL_PRESCORE;
 			mLoadingBallBumperSensed = false;
 		}
@@ -618,12 +637,14 @@ public class Robot extends SampleRobot {
 		}
 
 		if (mBumperSensor.getState() == BumperState.BOTH
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)) {
+				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL))) {
 			mLoadingHatchBumperSensed = true;
 		}
 		// either robot or person says the thing has been intaken
 		if (mLoadingHatchBumperSensed && (mIntake.intakePanel()
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_PANEL))) {
+				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_PANEL)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL)))) {
 			mCurrentState = RobotState.HATCH_PRESCORE;
 			mLoadingHatchBumperSensed = false;
 		}
@@ -647,14 +668,16 @@ public class Robot extends SampleRobot {
 		if (hatchPrescoreElapsedMilliseconds > 500) {
 			// when the robot wants to score...
 			if (mIntake.holdingHatch()
-					&& mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)) {
+					&& (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)
+					|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO))) {
 
 				mCurrentState = RobotState.HATCH_SCORE_CARGO;
 				mTimeStartHatchPrescore = 0;
 				mHasStartedHatchPrescore = false;
 			}
 
-			else if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_ROCKET)
+			else if ((mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_ROCKET)
+					|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_ROCKET))
 					&& mIntake.holdingHatch()) {
 
 				mCurrentState = RobotState.HATCH_SCORE_ROCKET;
@@ -696,7 +719,8 @@ public class Robot extends SampleRobot {
 
 			mIntake.holdingBall();
 
-			if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)) {
+			if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO) 
+			|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)) {
 
 				mCurrentState = RobotState.BALL_FRONT_SCORE;
 				mTimeStartBallPrescore = 0;
@@ -704,7 +728,8 @@ public class Robot extends SampleRobot {
 
 			} 
 			
-			else if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_ROCKET)) {
+			else if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_ROCKET)
+			|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_ROCKET)) {
 
 				mCurrentState = RobotState.BALL_BACK_SCORE;
 				mTimeStartBallPrescore = 0;
@@ -734,13 +759,15 @@ public class Robot extends SampleRobot {
 		}
 		// if robot or driver says scoring is done...
 		if (mBumperSensor.getState() == BumperState.BOTH
-		|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)) {
+		|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)
+		|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO))) {
 
 			mBallFrontScoreBumperSensed = true;
 		}
 			
 		if (mBallFrontScoreBumperSensed && (mIntake.scoreBallHigh()
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL))) {
+				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL)))) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 			mBallFrontScoreBumperSensed = false;
 		}
@@ -751,7 +778,8 @@ public class Robot extends SampleRobot {
 
 		// if robot or driver says scoring is done...
 		if (mIntake.scoreBallLow()
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)) {
+				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL))) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
@@ -761,7 +789,16 @@ public class Robot extends SampleRobot {
 	}
 
 	private void climb() {
-		// Do some action... move to a different state?
+		if (mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB_ABORT)) {
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+		}
+
+		if (!mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB_AUTO_MANUAL_SWITCH)) {
+			mClimber.manualClimb();
+		}
+		else {
+			mClimber.autoClimb();
+		}
 	}
 
 	private void defaultState() {
@@ -772,15 +809,27 @@ public class Robot extends SampleRobot {
 
 		long timeDisabledStarted = System.currentTimeMillis();
 		boolean ended = false;
+		createHeaderString();
 
 		while (this.isDisabled()) {
 			long timeElapsed = System.currentTimeMillis() - timeDisabledStarted;
 
 			if (timeElapsed > 3000 && !ended) {
+				if (RunConstants.SECONDARY_JOYSTICK) {
+					if (!mInGame) {
+						SmartDashboard.putString("JoystickCommand", "StartUpdating");
+					} 
+					else {
+						SmartDashboard.putString("JoystickCommand", "StopUpdating");
+					}
+				}
+
 				endGame();
 				ended = true;
 				SmartDashboard.putString("CURRENT ROBOT MODE: ", "DISABLED");
 			}
+
+			SmartDashboard.putString("LEDCommand", DriverStation.getInstance().getAlliance().toString());
 
 			if (mClimbJoystick.getTriggerPressed()) {
 				// rotate autonomous routines to select which one to start with:
@@ -796,10 +845,10 @@ public class Robot extends SampleRobot {
 				mNavX.setAngleAdjustment(0);
 			}
 			else if(mClimbJoystick.getRawButtonPressed(7)){
-				mNavX.setAngleAdjustment(-90);
+				mNavX.setAngleAdjustment(90);
 			}
 			else if(mClimbJoystick.getRawButtonPressed(10)){
-				mNavX.setAngleAdjustment(90);
+				mNavX.setAngleAdjustment(-90);
 			}
 		}
 
@@ -891,9 +940,10 @@ public class Robot extends SampleRobot {
 		mBallRotary = new SingleSolenoidReal(Ports.ActualRobot.BALL_ROTARY);
 		mBallLock = new SingleSolenoidReal(Ports.ActualRobot.BALL_LOCK);
 		mBallRetain = new SingleSolenoidReal(Ports.ActualRobot.BALL_RETAIN);
-		mUltra = new UltrasonicSensor(Ports.ActualRobot.ULTRASONIC_SENSOR);
+		mUltraRight = new UltrasonicSensor(Ports.ActualRobot.ULTRASONIC_SENSOR_RIGHT);
+		mUltraLeft = new UltrasonicSensor(Ports.ActualRobot.ULTRASONIC_SENSOR_LEFT);
 
-		mBallIntake = new BallIntake(mBallRotary, mBallLock, mBallRetain, mUltra);
+		mBallIntake = new BallIntake(mBallRotary, mBallLock, mBallRetain, mUltraRight, mUltraLeft);
 	}
 
 	private void cameraInit() {
@@ -948,30 +998,18 @@ public class Robot extends SampleRobot {
 		mFrontClimbTalon.setIdleMode(IdleMode.kCoast);
 		mFrontClimbTalon.setOpenLoopRampRate(0.2);
 		mFrontClimbTalon.setSmartCurrentLimit(80);
-		mFrontClimbTalon.getForwardLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(true);
-		mFrontClimbTalon.getReverseLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(true);
+
 		mFrontEncoder = new CANEncoder(mFrontClimbTalon);
 		mFrontEncoder.setPosition(0);
-		// mFrontClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_FRONT);
-		// mFrontClimbTalon.setInverted(ClimberConstants.FRONT_REVERSED);
-		// mFrontClimbTalon.setNeutralMode(NeutralMode.Coast);
 
 		mBackClimbTalon = new CANSparkMax(Ports.ActualRobot.CLIMB_BACK, MotorType.kBrushless);
 		mBackClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
 		mBackClimbTalon.setIdleMode(IdleMode.kCoast);
 		mBackClimbTalon.setOpenLoopRampRate(0.2);
 		mBackClimbTalon.setSmartCurrentLimit(80);
-		mBackClimbTalon.getForwardLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(false);
-		mBackClimbTalon.getReverseLimitSwitch(LimitSwitchPolarity.kNormallyOpen).enableLimitSwitch(false);//TODO change
+
 		mBackEncoder = new CANEncoder(mBackClimbTalon);
 		mBackEncoder.setPosition(0);
-		// mBackClimbTalon = new WPI_VictorSPX(Ports.ActualRobot.CLIMB_BACK);
-		// mBackClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
-		// mBackClimbTalon.setNeutralMode(NeutralMode.Coast);
-		
-		// mOtherBackClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_OTHER_BACK);
-		// mOtherBackClimbTalon.setInverted(ClimberConstants.OTHER_BACK_REVERSED);
-		// mOtherBackClimbTalon.setNeutralMode(NeutralMode.Coast);
 
 		mDriveClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_DRIVE);
 		mDriveClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
@@ -979,7 +1017,7 @@ public class Robot extends SampleRobot {
 
 		mClimbShifter = new SingleSolenoidReal(Ports.ActualRobot.SHIFTER_SOLENOID_IN);
 
-		mClimber = new ClimberSpark(mFrontClimbTalon, mBackClimbTalon, /*mOtherBackClimbTalon,*/ mDriveClimbTalon, mClimbShifter, mDriveTrain, mJoystick);
+		mClimber = new ClimberSpark(mFrontClimbTalon, mBackClimbTalon, mDriveClimbTalon, mClimbShifter, mDriveTrain, mClimbJoystick);
 	}
 
 	// ******//
@@ -1064,52 +1102,29 @@ public class Robot extends SampleRobot {
 		long time = System.currentTimeMillis();
 		long timeElapsed = time - mGameStartMillis;
 
-		SmartDashboard.putBoolean("Game Has Started:", mInGame);
-		SmartDashboard.putNumber("Time Game Started:", mGameStartMillis);
-		SmartDashboard.putNumber("Time Elapsed:", timeElapsed);
+		SmartDashboard.putBoolean("Game Has Started: ", mInGame);
+		SmartDashboard.putNumber("Time Game Started: ", mGameStartMillis);
+		SmartDashboard.putNumber("Time Elapsed: ", timeElapsed);
 
 		StringBuilder logString = new StringBuilder();
 
 		// for now it is one frame per line
 		addLogValueInt(logString, (int) timeElapsed);
 
-		addLogValueBoolean(logString, mController.getYButton());
-		addLogValueBoolean(logString, mController.getBButton());
-		addLogValueBoolean(logString, mController.getAButton());
-		addLogValueBoolean(logString, mController.getXButton());
-		addLogValueBoolean(logString, mController.getBumper(Hand.kLeft));
-		addLogValueBoolean(logString, mController.getBumper(Hand.kRight));
-		addLogValueDouble(logString, mController.getTriggerAxis(Hand.kLeft));
-		addLogValueDouble(logString, mController.getTriggerAxis(Hand.kRight));
-		addLogValueInt(logString, mController.getPOV());
-		addLogValueBoolean(logString, mController.getStartButton());
-		addLogValueBoolean(logString, mController.getBackButton());
-		addLogValueDouble(logString, mController.getX(Hand.kLeft));
-		addLogValueDouble(logString, mController.getY(Hand.kLeft));
-		addLogValueDouble(logString, mController.getX(Hand.kRight));
-		addLogValueDouble(logString, mController.getY(Hand.kRight));
-
-		if (RunConstants.SECONDARY_JOYSTICK) {
-			for (int i = 1; i < 19; i++) {
-				addLogValueBoolean(logString, mJoystick.getRawButtonReleased(i));
-			}
-		}
 
 		if (RunConstants.RUNNING_DRIVE) {
 			for (int i = 0; i < 4; i++) {
 				addLogValueDouble(logString, mTurn[i].getOutputCurrent());
-				addLogValueDouble(logString, mDrive[i].getOutputCurrent());
-
 				addLogValueDouble(logString, mTurn[i].getMotorOutputVoltage());
+
+				addLogValueDouble(logString, mDrive[i].getOutputCurrent());
 				addLogValueDouble(logString, mDrive[i].getBusVoltage());
 
 				addLogValueDouble(logString, mEncoder[i].getAngleDegrees());
-				addLogValueDouble(logString, mTurn[i].getSelectedSensorPosition() % 4096);
+
 			}
 
-			addLogValueDouble(logString, mDriveTrain.getDesiredRobotVel().getMagnitude());
-			addLogValueDouble(logString, mDriveTrain.getDesiredRobotVel().getAngle());
-			addLogValueDouble(logString, mDriveTrain.getDesiredAngularVel());
+			addLogValueDouble(logString, mRobotAngle.getAngleDegrees());
 		}
 
 		if (RunConstants.RUNNING_PNEUMATICS) {
@@ -1118,8 +1133,14 @@ public class Robot extends SampleRobot {
 
 		if (RunConstants.RUNNING_CLIMBER){
 			addLogValueDouble(logString, mBackClimbTalon.getBusVoltage());
+			addLogValueDouble(logString, mBackClimbTalon.getOutputCurrent());
+
 			addLogValueDouble(logString, mFrontClimbTalon.getBusVoltage());
+			addLogValueDouble(logString, mFrontClimbTalon.getOutputCurrent());
+
 			addLogValueDouble(logString, mDriveClimbTalon.getMotorOutputVoltage());
+			addLogValueDouble(logString, mDriveClimbTalon.getOutputCurrent());
+
 		}
 
 		if(RunConstants.RUNNING_LEADSCREW){
@@ -1127,13 +1148,35 @@ public class Robot extends SampleRobot {
 			addLogValueDouble(logString, mLeadscrewTalon.getOutputCurrent());
 		}
 
-		addLogValueDouble(logString, mPDP.getTotalCurrent());
-		addLogValueDouble(logString, mPDP.getVoltage());
+		if(RunConstants.RUNNING_BALL){
+			addLogValueBoolean(logString, mBallIntake.isHoldingBall());
+		}
+
+		addLogValueString(logString, mBumperSensor.getState().toString());
 
 		addLogValueString(logString, mCurrentState.toString());
 
-		addLogValueEndDouble(logString, mRobotAngle.getAngleDegrees());
-
 		SmartDashboard.putString("LogString", logString.toString());
+	}
+
+	public void createHeaderString(){
+		StringBuilder headerString = new StringBuilder();
+
+		String[] headers = { "Time left", 
+				"Turn 1 Output Current", "Turn 1 Output Voltage", "Drive 1 Output Current", "Drive 1 Bus Voltage", "Turn 1 Angle",
+				"Turn 2 Output Current", "Turn 2 Output Voltage", "Drive 2 Output Current", "Drive 2 Bus Voltage", "Turn 2 Angle",
+				"Turn 3 Output Current", "Turn 3 Output Voltage", "Drive 3 Output Current", "Drive 3 Bus Voltage", "Turn 3 Angle",
+				"Turn 4 Output Current", "Turn 4 Output Voltage", "Drive 4 Output Current", "Drive 4 Bus Voltage", "Turn 4 Angle",
+				"Robot Angle", "Compressor Current", "Back Climb Bus Voltage", "Back Climb Output Current", "Front Climb Bus Voltage",
+				"Front Climb Output Current", "Drive Climb Output Voltage", "Drive Climb Output Current",
+				"Leadscrew Motor Output Voltage", "Leadscrew Motor Output Current", "Holding Ball", "Bumper Sensor State", "Robot State" };
+
+
+			for(int i = 0; i < headers.length - 1; i++){
+				addLogValueString(headerString, headers[i]);
+			}
+			addLogValueEndString(headerString, headers[headers.length - 1]);
+
+			SmartDashboard.putString("HeaderString", headerString.toString());
 	}
 }

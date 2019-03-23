@@ -13,6 +13,6 @@ package constants;
 public class CameraConstants {
 
     public static final double HEIGHT = 15.16; //16.25, 13.9375;//13.75;
-    public static final int PIPELINE = 1;
+    public static final int PIPELINE = 0;
 
 }

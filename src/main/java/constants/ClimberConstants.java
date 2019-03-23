@@ -21,7 +21,7 @@ public class ClimberConstants {
         SPEEDY_CLIMBER_LEGS_DOWN_SPEED = 0.8,
         SLOW_CLIMBER_LEGS_UP_SPEED = -0.4,
         SLOW_CLIMBER_LEGS_DOWN_SPEED = 0.6,
-        CLIMBER_DRIVE_SPEED = 0.6; 
+        CLIMBER_DRIVE_SPEED = 0.8; 
 
     public static final double
         SPEEDY_LEGS_UP_TIME = 8000,

@@ -44,14 +44,15 @@ public class Ports {
 			BALL_RETAIN = 4;
 
 		public static final	int
-			ULTRASONIC_SENSOR = 0;
+			ULTRASONIC_SENSOR_RIGHT = 0,
+			ULTRASONIC_SENSOR_LEFT = 1;
 
 		// CLIMBER
 		public static final int
 			CLIMB_FRONT = 5,
 			CLIMB_BACK = 6,
-			CLIMB_OTHER_BACK = 5,
-			CLIMB_DRIVE = 8,
+			CLIMB_OTHER_BACK = 8,
+			CLIMB_DRIVE = 5,
 
 			// CLIMB_FRONT_TOP_LIMIT = 100,
 			// CLIMB_BACK_TOP_LIMIT = 101,
