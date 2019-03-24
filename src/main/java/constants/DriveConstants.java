@@ -53,7 +53,7 @@ public class DriveConstants {
 			ROTATION_D = new double[] { 0, 0, 0, 0 };
 
 		public static final int[] 
-			OFFSETS = new int[] { 2241, 30 , 905, 477 },
+			OFFSETS = new int[] { 2311, 125 , 899, 528 },
 			
 			ROTATION_IZONE = new int[] { 500, 500, 500, 500 },
 			ROTATION_TOLERANCE = new int[] { 5, 5, 5, 5 };

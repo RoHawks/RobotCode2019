@@ -22,6 +22,7 @@ import constants.RunConstants;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import resource.ResourceFunctions;
 import robotcode.LocalJoystick;
 import robotcode.driving.DriveTrain;
 import robotcode.driving.DriveTrain.LinearVelocity;
@@ -32,24 +33,22 @@ import sensors.LimitSwitch;
 public class ClimberSpark {
 
     private CANSparkMax mFrontSpark, mBackSpark;
-    // private WPI_VictorSPX mFrontTalon, mBackTalon;
-    // private WPI_TalonSRX mOtherBackTalon;
+    private WPI_TalonSRX mOtherBackTalon;
     private WPI_TalonSRX mDriveTalon;
-    // private LimitSwitch mFrontTopLimit, mBackTopLimit, mFrontBottomLimit,
-    // mBackBottomLimit; // constructor
+
     private LimitSwitch mFrontLegLimit, mBackLegLimit; // constructor
-    private DriveTrain mDrivetrain; // constrctor
+    private DriveTrain mDrivetrain; // constructor
     private SolenoidInterface mShifter;
     private Joystick mJoystick;
 
     public CANDigitalInput mFrontForwardLimit, mFrontReverseLimit, mBackForwardLimit, mBackReverseLimit;
     public CANEncoder mFrontEncoder, mBackEncoder;
 
-    public ClimberSpark(CANSparkMax pFront, CANSparkMax pBack, /* WPI_TalonSRX pOtherBack, */ WPI_TalonSRX pDrive,
+    public ClimberSpark(CANSparkMax pFront, CANSparkMax pBack, WPI_TalonSRX pOtherBack,  WPI_TalonSRX pDrive,
             SolenoidInterface pShifter, DriveTrain pDriveTrain, Joystick pJoystick) {
         mFrontSpark = pFront;
         mBackSpark = pBack;
-        // mOtherBackTalon = pOtherBack;
+        mOtherBackTalon = pOtherBack;
         mDriveTalon = pDrive;
         mShifter = pShifter;
         mDrivetrain = pDriveTrain;
@@ -70,16 +69,6 @@ public class ClimberSpark {
         mFrontEncoder = mFrontSpark.getEncoder();
         mBackEncoder = mBackSpark.getEncoder();
 
-        // mFrontTopLimit = new LimitSwitch(Ports.ActualRobot.CLIMB_FRONT_TOP_LIMIT,
-        // 300000000);
-        // mBackTopLimit = new LimitSwitch(Ports.ActualRobot.CLIMB_BACK_TOP_LIMIT,
-        // 300000000);
-        // mFrontBottomLimit = new
-        // LimitSwitch(Ports.ActualRobot.CLIMB_FRONT_BOTTOM_LIMIT, 300000000);
-        // mBackBottomLimit = new LimitSwitch(Ports.ActualRobot.CLIMB_BACK_BOTTOM_LIMIT,
-        // 300000000);
-        // mFrontLegLimit = new LimitSwitch(Ports.ActualRobot.CLIMB_FRONT_LEG_LIMIT, 300000000);
-        // mBackLegLimit = new LimitSwitch(Ports.ActualRobot.CLIMB_BACK_LEG_LIMIT, 300000000);
     }
 
     public void link() {
@@ -342,6 +331,7 @@ public class ClimberSpark {
     public void manualClimb(){
         double frontClimbSpeed = 0;
         double backClimbSpeed = 0;
+        double otherBackSpeed = 0;
 
         if(mJoystick.getRawButton(4) && mJoystick.getRawButton(5)){
             link();
@@ -356,7 +346,7 @@ public class ClimberSpark {
             }
             else {
                 if (mJoystick.getY() < 0){
-                    frontClimbSpeed = mJoystick.getY() * 0.75;
+                    frontClimbSpeed = mJoystick.getY() * 0.675;
                 }
                 else {
                     frontClimbSpeed = mJoystick.getY() * 0.6;
@@ -370,18 +360,22 @@ public class ClimberSpark {
         if (mJoystick.getRawButton(5) && Math.abs(mJoystick.getY()) > 0.25) {
             if ((mJoystick.getY() > 0 && mBackForwardLimit.get()) || (mJoystick.getY() < 0 && mBackReverseLimit.get())){
                 backClimbSpeed = 0;
+                otherBackSpeed = 0;
             }
             else {
                 if(mJoystick.getY() < 0){
                     backClimbSpeed = mJoystick.getY() * 0.75;
+                    otherBackSpeed = mJoystick.getY();
                 }
                 else{
                     backClimbSpeed = mJoystick.getY() * 0.6;
+                    otherBackSpeed = mJoystick.getY();
                 }
             }
         } 
         else {
             backClimbSpeed = 0;
+            otherBackSpeed = 0;
         }
 //Limit switch on the bottom is forward, limit switch on the top is reverse
         if (mJoystick.getRawButton(4) && mJoystick.getRawButton(5) && (
@@ -389,10 +383,12 @@ public class ClimberSpark {
             || (mJoystick.getY() > 0 && mBackForwardLimit.get()) || (mJoystick.getY() < 0 && mBackReverseLimit.get()))){
             frontClimbSpeed = 0;
             backClimbSpeed = 0;
+            otherBackSpeed = 0;
         }
 
         mBackSpark.set(backClimbSpeed);
         mFrontSpark.set(frontClimbSpeed);
+        mOtherBackTalon.set(otherBackSpeed);
 
         if(RunConstants.RUNNING_DRIVE){
             if(mJoystick.getRawButton(2)) {
@@ -405,6 +401,7 @@ public class ClimberSpark {
         
         if (mJoystick.getRawButton(1)) {
             mDriveTalon.set(ControlMode.PercentOutput, ClimberConstants.CLIMBER_DRIVE_SPEED);
+            mDrivetrain.enactMovement(0, 0, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
         } 
         else {
             mDriveTalon.set(0);

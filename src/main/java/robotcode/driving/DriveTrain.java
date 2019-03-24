@@ -79,7 +79,20 @@ public class DriveTrain {
 	}
 
 	private void enactMovement() {
-		enactMovement(getLetterAngle(), getStickAngle(Hand.kLeft), getLinearVelocityState(), getStickLinearVel(),
+
+		double robotDirectionAngle = getStickAngle(Hand.kLeft);
+
+		if (mController.getStartButtonReleased()) {
+			mIsFieldRelative = !mIsFieldRelative;
+		}
+
+		if (mIsFieldRelative) {
+			robotDirectionAngle = ResourceFunctions.putAngleInRange(robotDirectionAngle - mRobotAngle.getAngleDegrees());
+		}
+
+		SmartDashboard.putBoolean("Field Relative", mIsFieldRelative);
+
+		enactMovement(getLetterAngle(), robotDirectionAngle, getLinearVelocityState(), getStickLinearVel(),
 				getRotationalVelocityState());
 		// enactMovement(mController.getPOV(), getStickAngle(Hand.kLeft), getLinearVelocityState(), getStickLinearVel(),
 		// 		getRotationalVelocityState());
@@ -99,8 +112,8 @@ public class DriveTrain {
 			double pSpecificLinearVelocity, RotationalVelocity pRotationalVel) {
 		SmartDashboard.putNumber("Robot Angle", mRobotAngle.getAngleDegrees());
 
-		double joystickAngle = pRobotDirectionAngle;
-		double robotDirectionAngle = joystickAngle;
+		
+		double robotDirectionAngle = pRobotDirectionAngle;
 
 		double secondaryJoystickAngle = 0;
 
@@ -111,15 +124,7 @@ public class DriveTrain {
 		// SmartDashboard.putString("Previous Linear Velocity", mPrevLinearVel.name());
 		// SmartDashboard.putString("Rotational Velocity State", mRotationalVel.name());
 
-		if (mController.getStartButtonReleased()) {
-			mIsFieldRelative = !mIsFieldRelative;
-		}
-
-		if (mIsFieldRelative) {
-			robotDirectionAngle = ResourceFunctions.putAngleInRange(joystickAngle - mRobotAngle.getAngleDegrees());
-		}
-
-		SmartDashboard.putBoolean("Field Relative", mIsFieldRelative);
+		
 
 		if(mRotationalVel == RotationalVelocity.SECONDARY){
 			if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_BOTTOM)){
@@ -332,10 +337,15 @@ public class DriveTrain {
 	 * @return correct direction vector
 	 */
 	private Vector nudgeMove() {
+		Vector speed = new Vector();
 		if(mController.getPOV() != -1){
-			return Vector.createPolar(mController.getPOV(), DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+			speed = Vector.createPolar(mController.getPOV(), DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
-		return new Vector();
+		
+		if(mController.getTriggerAxis(Hand.kLeft) > 0.25){	// if left trigger axis is pressed, set magnitude
+		 	speed.setTotal((Math.pow(mController.getTriggerAxis(Hand.kLeft), 2) * 0.4) + 0.2);
+		}
+		return speed;
 		// double robotAngle = mRobotAngle.getAngleDegrees();
 
 		
@@ -534,7 +544,7 @@ public class DriveTrain {
 
 		double vel = mGyroOutput.getVal();
 
-		SmartDashboard.putNumber("Gyro PID Setpoint:", mGyroPID.getSetpoint());
+		//SmartDashboard.putNumber("Gyro PID Setpoint:", mGyroPID.getSetpoint());
 		//SmartDashboard.putNumber("Gyro PID Output:", vel);
 
 		return vel;

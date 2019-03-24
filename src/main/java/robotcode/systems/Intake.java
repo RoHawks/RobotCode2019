@@ -159,18 +159,18 @@ public class Intake {
         double position = LeadscrewConstants.MIDDLE;
         double goal = LeadscrewConstants.MIDDLE;
         // start moving to position on button press
-        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+        //if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
             mLeadscrew.centerWithCamera();
             // take these variables to find the error (not sure if motor.getClosedLoopError
             // works, gives weird error)
             position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
             goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
-        } 
-        else {
-            mLeadscrew.setPositionJoystick();
-            position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-            goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
-        }
+        // } 
+        // else {
+        //     mLeadscrew.setPositionJoystick();
+        //     position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+        //     goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
+        // }
 
 
         SmartDashboard.putNumber("INTAKING STEP", 0);
@@ -196,21 +196,26 @@ public class Intake {
             mHatchIntake.contract();
             // TODO this might be redundant, rotary piston should already be contracted whenever you get to this state
         }
-        else if (mHasAlignedHatchIntake && (loadingSequenceElapsedMilliseconds < IntakeConstants.LoadHatchTimes.STEP_TWO)) {
-            mDrivetrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
+        else if(mHasAlignedHatchIntake && (loadingSequenceElapsedMilliseconds < IntakeConstants.LoadHatchTimes.STEP_TWO)){
             SmartDashboard.putNumber("INTAKING STEP", 2);
-            mHatchIntake.expand();
+            mHatchIntake.out();
+            mHatchIntake.contract();
         }
         else if (mHasAlignedHatchIntake && (loadingSequenceElapsedMilliseconds < IntakeConstants.LoadHatchTimes.STEP_THREE)) {
             mDrivetrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
             SmartDashboard.putNumber("INTAKING STEP", 3);
+            mHatchIntake.expand();
+        }
+        else if (mHasAlignedHatchIntake && (loadingSequenceElapsedMilliseconds < IntakeConstants.LoadHatchTimes.STEP_FOUR)) {
+            mDrivetrain.enactMovement(0, 90, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
+            SmartDashboard.putNumber("INTAKING STEP", 4);
             mHatchIntake.in();
         } 
-        else if (mHasAlignedHatchIntake && (loadingSequenceElapsedMilliseconds < IntakeConstants.LoadHatchTimes.STEP_FOUR)){
-            SmartDashboard.putNumber("INTAKING STEP", 4);
+        else if (mHasAlignedHatchIntake && (loadingSequenceElapsedMilliseconds < IntakeConstants.LoadHatchTimes.STEP_FIVE)){
+            SmartDashboard.putNumber("INTAKING STEP", 5);
             mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
         }
-        else if (mHasAlignedHatchIntake && loadingSequenceElapsedMilliseconds > IntakeConstants.LoadHatchTimes.STEP_FOUR){
+        else if (mHasAlignedHatchIntake && loadingSequenceElapsedMilliseconds > IntakeConstants.LoadHatchTimes.STEP_FIVE){
             mDrivetrain.stop();
             mHasAlignedHatchIntake = false;
             mStartIntakeTimeHatch = 0;
@@ -230,11 +235,11 @@ public class Intake {
      */
     public boolean scorePanel() {
         // start moving to position on button press
-        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+        //if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
             mLeadscrew.centerWithCamera();
-        } else {
-            mLeadscrew.setPositionJoystick();
-        }
+        // } else {
+        //     mLeadscrew.setPositionJoystick();
+        // }
 
         // take these variables to find the error (not sure if motor.getClosedLoopError
         // works, gives weird error)
@@ -257,21 +262,26 @@ public class Intake {
             mHatchIntake.out();
             mHasAlignedHatchScore = true;
         }
-        else if (mHasAlignedHatchScore && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_TWO)) {
+        else if (mHasAlignedHatchScore && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_TWO)){
             SmartDashboard.putNumber("SCORING STEP", 2);
-            mDrivetrain.stop();
-            mHatchIntake.contract();
+            mHatchIntake.out();
         }
         else if (mHasAlignedHatchScore && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_THREE)) {
             SmartDashboard.putNumber("SCORING STEP", 3);
             mDrivetrain.stop();
+            mHatchIntake.contract();
+        }
+        else if (mHasAlignedHatchScore && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_FOUR)) {
+            SmartDashboard.putNumber("SCORING STEP", 4);
+            mDrivetrain.stop();
             mHatchIntake.in();
         }
-        else if (mHasAlignedHatchScore && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_FOUR)){
-            SmartDashboard.putNumber("SCORING STEP", 4);
+        else if (mHasAlignedHatchScore && (scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreHatchTimes.STEP_FIVE)){
+            SmartDashboard.putNumber("SCORING STEP", 5);
             mDrivetrain.enactMovement(0, 180, LinearVelocity.NORMAL, 0.3, RotationalVelocity.NONE);
         }
-        else if (mHasAlignedHatchScore && scoringSequenceElapsedMilliseconds > IntakeConstants.ScoreHatchTimes.STEP_FOUR){ // if the time overshoots, we need to be able to exit this mode
+        else if (mHasAlignedHatchScore && scoringSequenceElapsedMilliseconds > IntakeConstants.ScoreHatchTimes.STEP_FIVE){ // if the time overshoots, we need to be able to exit this mode
+            SmartDashboard.putNumber("SCORING STEP", 6);
             mDrivetrain.stop();
             mStartScoreTimeHatch = 0;
             mHasAlignedHatchScore = false;
@@ -293,17 +303,17 @@ public class Intake {
         double position = LeadscrewConstants.MIDDLE;
         double goal = LeadscrewConstants.MIDDLE;
         // start moving to position on button press
-        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+        //if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
             mLeadscrew.centerWithCamera();
             // take these variables to find the error (not sure if motor.getClosedLoopError
             // works, gives weird error)
             position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
             goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
-        } else {
-            mLeadscrew.setPositionJoystick();
-            position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-            goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
-        }
+        // } else {
+        //     mLeadscrew.setPositionJoystick();
+        //     position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+        //     goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
+        // }
 
         SmartDashboard.putNumber("BALL INTAKE STEP", 0);
         //SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
@@ -341,17 +351,17 @@ public class Intake {
         double position = LeadscrewConstants.MIDDLE;
         double goal = LeadscrewConstants.MIDDLE;
         // start moving to position on button press
-        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+        //if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
             mLeadscrew.centerWithCamera();
             // take these variables to find the error (not sure if motor.getClosedLoopError
             // works, gives weird error)
             position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
             goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
-        } else {
-            mLeadscrew.setPositionJoystick();
-            position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-            goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
-        }
+        // } else {
+        //     mLeadscrew.setPositionJoystick();
+        //     position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+        //     goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
+        // }
 
         SmartDashboard.putNumber("BALL SCORE HIGH STEP", 0);
         //SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
@@ -366,21 +376,19 @@ public class Intake {
         }
         else if (mHasAlignedBallScoreHigh && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallHighTimes.STEP_TWO){
             SmartDashboard.putNumber("BALL SCORE HIGH STEP", 2);
-            mBallIntake.forward();
+            mBallIntake.letGo();
         }
         else if (mHasAlignedBallScoreHigh && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallHighTimes.STEP_THREE){
             SmartDashboard.putNumber("BALL SCORE HIGH STEP", 3);
+            mBallIntake.forward();
+        }
+        else if (mHasAlignedBallScoreHigh && scoringSequenceElapsedMilliseconds > IntakeConstants.ScoreBallHighTimes.STEP_THREE){
+            SmartDashboard.putNumber("BALL SCORE HIGH STEP", 4);
             mBallIntake.backward();
             //mBallIntake.lock();
             mStartScoreTimeBallHigh = 0;
             mHasAlignedBallScoreHigh = false;
             return true;
-        }
-        else if (mHasAlignedBallScoreHigh && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallHighTimes.STEP_FOUR) {
-            SmartDashboard.putNumber("BALL SCORE HIGH STEP", 4);
-            mStartScoreTimeBallHigh = 0;
-            mHasAlignedBallScoreHigh = false;
-            return true;            
         }
 
         return false;
@@ -399,17 +407,17 @@ public class Intake {
         double position = LeadscrewConstants.MIDDLE;
         double goal = LeadscrewConstants.MIDDLE;
         // start moving to position on button press
-        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+        //if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
             mLeadscrew.centerWithCamera();
             // take these variables to find the error (not sure if motor.getClosedLoopError
             // works, gives weird error)
             position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
             goal = (LeadscrewConstants.MIDDLE) + mLimelight.xAngleToDistance();
-        } else {
-            mLeadscrew.setPositionJoystick();
-            position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
-            goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
-        }
+        // } else {
+        //     mLeadscrew.setPositionJoystick();
+        //     position = mLeadscrew.getLeadscrewEncoder().getDistanceInInchesFromEnd();
+        //     goal = ((mJoystick.getX() + 1) / 2) * LeadscrewConstants.LENGTH;
+        // }
 
         SmartDashboard.putNumber("BALL SCORE LOW STEP", 0);
         //SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreLow);
@@ -422,14 +430,8 @@ public class Intake {
             mBallIntake.release();
             mHasAlignedBallScoreLow = true;
         }
-        else if (mHasAlignedBallScoreLow && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallLowTimes.STEP_TWO){
+        else if (mHasAlignedBallScoreLow && scoringSequenceElapsedMilliseconds > IntakeConstants.ScoreBallLowTimes.STEP_TWO){
             SmartDashboard.putNumber("BALL SCORE LOW STEP", 2);
-            //mBallIntake.retain();
-            
-        }
-        else if (mHasAlignedBallScoreLow && scoringSequenceElapsedMilliseconds < IntakeConstants.ScoreBallLowTimes.STEP_TWO + 10000){
-            SmartDashboard.putNumber("BALL SCORE LOW STEP", 3);
-
             mStartScoreTimeBallLow = 0;
             mHasAlignedBallScoreLow = false;
             return true;
@@ -439,48 +441,48 @@ public class Intake {
     }
 
     public boolean holdingHatch() {
-        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+       // if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
             mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
-        } else {
-            mLeadscrew.setPositionJoystick();
-        }
+        // } else {
+        //     mLeadscrew.setPositionJoystick();
+        // }
 
         if (RunConstants.RUNNING_HATCH) {
             mHatchIntake.in();
             mHatchIntake.expand();
         }
-        if(mLeadscrew.isInRange()){
+        if (mLeadscrew.isInRange()) {
             return true;
         }
         return false;
     }
 
     public boolean holdingBall(){
-        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+        //if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
             mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
-        }
-        else{
-            mLeadscrew.setPositionJoystick();
-        }
+        // }
+        // else{
+        //     mLeadscrew.setPositionJoystick();
+        // }
 
         if (RunConstants.RUNNING_BALL) {
             mBallIntake.backward();
             mBallIntake.lock();
             mBallIntake.retain();
         }
-        if(mLeadscrew.isInRange()){
+        if (mLeadscrew.isInRange()) {
             return true;
         }
         return false;
     }
 
     public boolean idle(){
-        if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
+      //  if (!LeadscrewConstants.LEADSCREW_OVERRIDE) {
             mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
-        }
-        else{
-            mLeadscrew.setPositionJoystick();
-        }
+        // }
+        // else{
+        //     mLeadscrew.setPositionJoystick();
+        // }
         
         if (RunConstants.RUNNING_HATCH) {
             mHatchIntake.in();
@@ -489,11 +491,11 @@ public class Intake {
         
         if (RunConstants.RUNNING_BALL) {
             mBallIntake.backward();
-            //mBallIntake.letGo();
+            // mBallIntake.letGo();
             mBallIntake.retain();
         }
-        
-        if(mLeadscrew.isInRange()){
+
+        if (mLeadscrew.isInRange()) {
             return true;
         }
         return false;

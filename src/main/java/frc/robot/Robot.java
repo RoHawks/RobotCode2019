@@ -21,6 +21,10 @@ import autonomous.commands.AutonomousCommand;
 import autonomous.routines.DefaultRoutine;
 import autonomous.routines.DoNothingRoutine;
 import constants.*;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -80,7 +84,7 @@ public class Robot extends SampleRobot {
 	private LeadscrewEncoder mLeadscrewEncoder;
 	private Leadscrew mLeadscrew;
 
-	// limelight
+	// cameras
 	private Limelight mHatchCamera;
 
 	// intake
@@ -89,8 +93,7 @@ public class Robot extends SampleRobot {
 	// climber
 	private CANSparkMax mFrontClimbTalon, mBackClimbTalon;
 	private CANEncoder mFrontEncoder, mBackEncoder;
-	// private WPI_VictorSPX mFrontClimbTalon, mBackClimbTalon;
-	// private WPI_TalonSRX mOtherBackClimbTalon;
+	private WPI_TalonSRX mOtherBackClimbTalon;
 	private WPI_TalonSRX mDriveClimbTalon;
 	private SolenoidInterface mClimbShifter;
 	private ClimberSpark mClimber;
@@ -207,9 +210,6 @@ public class Robot extends SampleRobot {
 
 		if (RunConstants.RUNNING_CAMERA) {
 			cameraInit();
-			// UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-			// camera.setResolution(240, 180);
-			// camera.setFPS(30);
 		}
 
 		if (RunConstants.RUNNING_LEADSCREW) {
@@ -223,6 +223,7 @@ public class Robot extends SampleRobot {
 		if (RunConstants.RUNNING_CLIMBER) {
 			climberInit();
 		}
+
 
 	}
 
@@ -238,6 +239,8 @@ public class Robot extends SampleRobot {
 
 		// start game
 		startGame();
+		NetworkTableInstance.getDefault().setUpdateRate(0.015);
+
 		mTimeLastCycleStarted = System.currentTimeMillis();
 		long timeCycleStart;
 		long lastCycleTime;
@@ -286,6 +289,9 @@ public class Robot extends SampleRobot {
 				doWork();
 				SmartDashboard.putBoolean("BallSensed", mBallIntake.isHoldingBall());
 				SmartDashboard.putBoolean("LeadscrewAligned", mLeadscrew.isInRange());
+				SmartDashboard.putNumber("CLIMB front(?) current draw", mPDP.getCurrent(2));
+				SmartDashboard.putNumber("CLIMB back(?) current draw", mPDP.getCurrent(3));
+				SmartDashboard.putNumber("CLIMB other back current draw", mPDP.getCurrent(12));
 			}
 
 			// SmartDashboard.putNumber("Autonomous step", currentStep);
@@ -311,9 +317,15 @@ public class Robot extends SampleRobot {
 	public void operatorControl() {
 		// start game, again
 		startGame();
+		NetworkTableInstance.getDefault().setUpdateRate(0.015);
+
 		mTimeLastCycleStarted = System.currentTimeMillis();
 		long timeCycleStart;
 		long lastCycleTime;
+		SmartDashboard.putString("JoystickCommand", "StartUpdating");
+
+		long lastUpdate = 0;
+		long thisUpdate = NetworkTableInstance.getDefault().getConnections()[0].last_update;
 
 		while (isOperatorControl() && isEnabled()) {
 			
@@ -322,6 +334,12 @@ public class Robot extends SampleRobot {
 			mTimeLastCycleStarted = timeCycleStart;
 			SmartDashboard.putNumber("Cycle Time", lastCycleTime);
 			SmartDashboard.putNumber("CycleStart", timeCycleStart);
+
+
+			thisUpdate = NetworkTableInstance.getDefault().getConnections()[0].last_update;
+			SmartDashboard.putNumber("networktable update diff", thisUpdate - lastUpdate);
+			lastUpdate = thisUpdate;
+
 
 			if(RunConstants.LOGGING){
 				log();
@@ -378,18 +396,24 @@ public class Robot extends SampleRobot {
 			else if (RunConstants.RUNNING_CLIMBER && !RunConstants.RUNNING_EVERYTHING) {
 				mClimber.manualClimb();
 				// SmartDashboard.putString("CLIMB Shifter", mClimbShifter.get().toString());
-				// SmartDashboard.putNumber("CLIMB front(?) current draw", mPDP.getCurrent(2));
-				// SmartDashboard.putNumber("CLIMB back(?) current draw", mPDP.getCurrent(3));
+				SmartDashboard.putNumber("CLIMB front(?) current draw", mPDP.getCurrent(2));
+				SmartDashboard.putNumber("CLIMB back(?) current draw", mPDP.getCurrent(3));
+				SmartDashboard.putNumber("CLIMB other back current draw", mPDP.getCurrent(12));
+				
+				SmartDashboard.putNumber("robot angle", mNavX.getAngle());
 
 				mClimber.limitSwitchLog();
 			}
 
 			if (RunConstants.RUNNING_EVERYTHING) {
 
-				LeadscrewConstants.LEADSCREW_OVERRIDE = mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE);
+				//LeadscrewConstants.LEADSCREW_OVERRIDE = mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE);
 				doWork();
 				SmartDashboard.putBoolean("BallSensed", mBallIntake.isHoldingBall());
 				SmartDashboard.putBoolean("LeadscrewAligned", mLeadscrew.isInRange());
+				SmartDashboard.putNumber("CLIMB front(?) current draw", mPDP.getCurrent(2));
+				SmartDashboard.putNumber("CLIMB back(?) current draw", mPDP.getCurrent(3));
+				SmartDashboard.putNumber("CLIMB other back current draw", mPDP.getCurrent(12));
 				//mClimber.limitSwitchLog();
 			}
 
@@ -403,6 +427,8 @@ public class Robot extends SampleRobot {
 			}
 
 			SmartDashboard.putString("Bumper State", mBumperSensor.getState().toString());
+
+			
 
 			//SmartDashboard.putNumber("BLINKIN value", mBlinkin.get());
 
@@ -490,6 +516,14 @@ public class Robot extends SampleRobot {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
+			mCurrentState = RobotState.CLIMB;
+		}
+
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)){
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+		}
+
 	}
 
 	private void initialHoldingBall() {
@@ -513,6 +547,14 @@ public class Robot extends SampleRobot {
 						|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL))) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
+
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
+			mCurrentState = RobotState.CLIMB;
+		}
+
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)){
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+		}
 	}
 
 
@@ -522,9 +564,9 @@ public class Robot extends SampleRobot {
 	 */
 	private void hatchScoreCargo() {
 
-		if (!mHatchScoreBumperSensed) {
-			swerveDrive();
-		}
+
+		swerveDrive();
+		
 
 		if (mBumperSensor.getState() == BumperSensor.BumperState.BOTH
 				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)
@@ -533,20 +575,33 @@ public class Robot extends SampleRobot {
 		}
 
 		// if robot or driver says scoring is done...
-		if (mHatchScoreBumperSensed && (mIntake.scorePanel()
+		if ((mHatchScoreBumperSensed && mIntake.scorePanel())
 				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL)
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)))) {
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL))) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 			mHatchScoreBumperSensed = false;
+		}
+
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
+			mCurrentState = RobotState.CLIMB;
+		}
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)){
+			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
 
 	private void hatchScoreRocket() {
-
+		swerveDrive();
 		// if robot or driver says scoring is done...
-		if (mIntake.scorePanel()
-				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL)
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL))) {
+		if (mIntake.scorePanel() || mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)) {
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+		}
+
+		if (mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)) {
+			mCurrentState = RobotState.CLIMB;
+		}
+		if (mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
@@ -598,18 +653,19 @@ public class Robot extends SampleRobot {
 
 		}
 
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
+			mCurrentState = RobotState.CLIMB;
+		}
+
 	}
 
 
 	private boolean mLoadingBallBumperSensed = false;
 
 	private void loadingBall() {
-		if (!mLoadingBallBumperSensed) {
+
 			swerveDrive();
-		}
-		else {
-			mDriveTrain.stop();
-		}
+		
 
 		if (mBumperSensor.getState() == BumperState.BOTH
 				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL)
@@ -617,11 +673,18 @@ public class Robot extends SampleRobot {
 			mLoadingBallBumperSensed = true;
 		}
 		
-		if (mLoadingBallBumperSensed &&
-				(mIntake.intakeBall() || (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL)
-				|| mJoystick.getRawButtonReleased((JoystickConstants.FinalRobotButtons.HAS_LOADED_PANEL))))) {
+		if ((mLoadingBallBumperSensed &&
+				mIntake.intakeBall()) || (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_PANEL))) {
 			mCurrentState = RobotState.BALL_PRESCORE;
 			mLoadingBallBumperSensed = false;
+		}
+
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
+			mCurrentState = RobotState.CLIMB;
+		}
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)){
+			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
 
@@ -632,9 +695,8 @@ public class Robot extends SampleRobot {
 	 */
 	private void loadingHatch() {
 
-		if (!mLoadingHatchBumperSensed) {
 			swerveDrive();
-		}
+		
 
 		if (mBumperSensor.getState() == BumperState.BOTH
 				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)
@@ -642,11 +704,18 @@ public class Robot extends SampleRobot {
 			mLoadingHatchBumperSensed = true;
 		}
 		// either robot or person says the thing has been intaken
-		if (mLoadingHatchBumperSensed && (mIntake.intakePanel()
+		if ((mLoadingHatchBumperSensed && mIntake.intakePanel())
 				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_PANEL)
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL)))) {
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_LOADED_BALL))) {
 			mCurrentState = RobotState.HATCH_PRESCORE;
 			mLoadingHatchBumperSensed = false;
+		}
+
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
+			mCurrentState = RobotState.CLIMB;
+		}
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)){
+			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
 
@@ -696,6 +765,13 @@ public class Robot extends SampleRobot {
 			}
 		}
 
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
+			mCurrentState = RobotState.CLIMB;
+		}
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)){
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+		}
+
 	}
 
 	private long mTimeStartBallPrescore = 0;
@@ -717,32 +793,39 @@ public class Robot extends SampleRobot {
 
 		// if (ballPrescoreElapsedMilliseconds > 500) {
 
-			mIntake.holdingBall();
+		mIntake.holdingBall();
 
-			if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO) 
-			|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)) {
+		if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_CARGO)) {
 
-				mCurrentState = RobotState.BALL_FRONT_SCORE;
-				mTimeStartBallPrescore = 0;
-				mHasStartedBallPrescore = false;
+			mCurrentState = RobotState.BALL_FRONT_SCORE;
+			mTimeStartBallPrescore = 0;
+			mHasStartedBallPrescore = false;
 
-			} 
-			
-			else if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_ROCKET)
-			|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_ROCKET)) {
+		}
 
-				mCurrentState = RobotState.BALL_BACK_SCORE;
-				mTimeStartBallPrescore = 0;
-				mHasStartedBallPrescore = false;
-			}
+		else if (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_ROCKET)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_PANEL_ROCKET)) {
 
-			else if ((mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)
-					|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL))) {
+			mCurrentState = RobotState.BALL_BACK_SCORE;
+			mTimeStartBallPrescore = 0;
+			mHasStartedBallPrescore = false;
+		}
 
-				mCurrentState = RobotState.WAITING_TO_LOAD;
-				mTimeStartHatchPrescore = 0;
-				mHasStartedHatchPrescore = false;
-			}
+		else if ((mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_PANEL)
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LOAD_BALL))) {
+
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+			mTimeStartHatchPrescore = 0;
+			mHasStartedHatchPrescore = false;
+		}
+
+		if (mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)) {
+			mCurrentState = RobotState.CLIMB;
+		}
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)){
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+		}
 		//}
 	}
 
@@ -751,12 +834,12 @@ public class Robot extends SampleRobot {
 	
 	private void ballFrontScore() {
 
-		if(!mBallFrontScoreBumperSensed){
+		//if(!mBallFrontScoreBumperSensed){
 			swerveDrive();
-		}
-		else {
-			mDriveTrain.stop();
-		}
+		//}
+	//	else {
+	//		mDriveTrain.stop();
+//		}
 		// if robot or driver says scoring is done...
 		if (mBumperSensor.getState() == BumperState.BOTH
 		|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.SCORE_BALL_CARGO)
@@ -765,21 +848,33 @@ public class Robot extends SampleRobot {
 			mBallFrontScoreBumperSensed = true;
 		}
 			
-		if (mBallFrontScoreBumperSensed && (mIntake.scoreBallHigh()
+		if ((mBallFrontScoreBumperSensed && mIntake.scoreBallHigh())
 				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)
-				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL)))) {
+				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL))) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 			mBallFrontScoreBumperSensed = false;
+		}
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
+			mCurrentState = RobotState.CLIMB;
+		}
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)){
+			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
 	
 
 	private void ballBackScore() {
-
+		swerveDrive();
 		// if robot or driver says scoring is done...
 		if (mIntake.scoreBallLow()
 				|| (mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_BALL)
 				|| mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.HAS_SCORED_PANEL))) {
+			mCurrentState = RobotState.WAITING_TO_LOAD;
+		}
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
+			mCurrentState = RobotState.CLIMB;
+		}
+		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)){
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
@@ -809,7 +904,7 @@ public class Robot extends SampleRobot {
 
 		long timeDisabledStarted = System.currentTimeMillis();
 		boolean ended = false;
-		createHeaderString();
+		//createHeaderString();
 
 		while (this.isDisabled()) {
 			long timeElapsed = System.currentTimeMillis() - timeDisabledStarted;
@@ -826,7 +921,7 @@ public class Robot extends SampleRobot {
 
 				endGame();
 				ended = true;
-				SmartDashboard.putString("CURRENT ROBOT MODE: ", "DISABLED");
+				//SmartDashboard.putString("CURRENT ROBOT MODE: ", "DISABLED");
 			}
 
 			SmartDashboard.putString("LEDCommand", DriverStation.getInstance().getAlliance().toString());
@@ -949,11 +1044,17 @@ public class Robot extends SampleRobot {
 	private void cameraInit() {
 
 		mHatchCamera = new Limelight();
-		mHatchCamera.setStreamSecondary();
+		// mHatchCamera.setStreamSecondary();
+		mHatchCamera.setStreamMain();
 		mHatchCamera.setVisionProcessor();
 		mHatchCamera.setPipeline(CameraConstants.PIPELINE);
 		mHatchCamera.setLedFromPipeline();
 
+		UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+		//camera.setResolution(480, 360);
+		//camera.setFPS(60);
+		camera.setVideoMode(new VideoMode(VideoMode.PixelFormat.kMJPEG, 240, 180, 30));
+		//camera.setBrightness(45);
 	}
 
 	private void leadscrewInit() {
@@ -1007,17 +1108,27 @@ public class Robot extends SampleRobot {
 		mBackClimbTalon.setIdleMode(IdleMode.kCoast);
 		mBackClimbTalon.setOpenLoopRampRate(0.2);
 		mBackClimbTalon.setSmartCurrentLimit(80);
+		
 
 		mBackEncoder = new CANEncoder(mBackClimbTalon);
 		mBackEncoder.setPosition(0);
 
+		mOtherBackClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_OTHER_BACK);
+		mOtherBackClimbTalon.configFactoryDefault();
+		mOtherBackClimbTalon.setInverted(ClimberConstants.OTHER_BACK_REVERSED);
+		mOtherBackClimbTalon.setNeutralMode(NeutralMode.Coast);
+		mOtherBackClimbTalon.configPeakCurrentLimit(40, 10);
+		mOtherBackClimbTalon.configPeakCurrentDuration(50, 10);
+		mOtherBackClimbTalon.configContinuousCurrentLimit(38, 10);
+		mOtherBackClimbTalon.enableCurrentLimit(true);
+
 		mDriveClimbTalon = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_DRIVE);
-		mDriveClimbTalon.setInverted(ClimberConstants.BACK_REVERSED);
+		mDriveClimbTalon.setInverted(ClimberConstants.DRIVE_REVERSED);
 		mDriveClimbTalon.setNeutralMode(NeutralMode.Brake);
 
 		mClimbShifter = new SingleSolenoidReal(Ports.ActualRobot.SHIFTER_SOLENOID_IN);
 
-		mClimber = new ClimberSpark(mFrontClimbTalon, mBackClimbTalon, mDriveClimbTalon, mClimbShifter, mDriveTrain, mClimbJoystick);
+		mClimber = new ClimberSpark(mFrontClimbTalon, mBackClimbTalon, mOtherBackClimbTalon, mDriveClimbTalon, mClimbShifter, mDriveTrain, mClimbJoystick);
 	}
 
 	// ******//
@@ -1102,8 +1213,8 @@ public class Robot extends SampleRobot {
 		long time = System.currentTimeMillis();
 		long timeElapsed = time - mGameStartMillis;
 
-		SmartDashboard.putBoolean("Game Has Started: ", mInGame);
-		SmartDashboard.putNumber("Time Game Started: ", mGameStartMillis);
+		// SmartDashboard.putBoolean("Game Has Started: ", mInGame);
+		// SmartDashboard.putNumber("Time Game Started: ", mGameStartMillis);
 		SmartDashboard.putNumber("Time Elapsed: ", timeElapsed);
 
 		StringBuilder logString = new StringBuilder();
@@ -1134,6 +1245,9 @@ public class Robot extends SampleRobot {
 		if (RunConstants.RUNNING_CLIMBER){
 			addLogValueDouble(logString, mBackClimbTalon.getBusVoltage());
 			addLogValueDouble(logString, mBackClimbTalon.getOutputCurrent());
+
+			addLogValueDouble(logString, mOtherBackClimbTalon.getBusVoltage());
+			addLogValueDouble(logString, mOtherBackClimbTalon.getOutputCurrent());
 
 			addLogValueDouble(logString, mFrontClimbTalon.getBusVoltage());
 			addLogValueDouble(logString, mFrontClimbTalon.getOutputCurrent());
@@ -1167,7 +1281,8 @@ public class Robot extends SampleRobot {
 				"Turn 2 Output Current", "Turn 2 Output Voltage", "Drive 2 Output Current", "Drive 2 Bus Voltage", "Turn 2 Angle",
 				"Turn 3 Output Current", "Turn 3 Output Voltage", "Drive 3 Output Current", "Drive 3 Bus Voltage", "Turn 3 Angle",
 				"Turn 4 Output Current", "Turn 4 Output Voltage", "Drive 4 Output Current", "Drive 4 Bus Voltage", "Turn 4 Angle",
-				"Robot Angle", "Compressor Current", "Back Climb Bus Voltage", "Back Climb Output Current", "Front Climb Bus Voltage",
+				"Robot Angle", "Compressor Current", "Back Climb Bus Voltage", "Back Climb Output Current", "Other Back Climb Bus Voltage", 
+				"Other Back Climb Output Current", "Front Climb Bus Voltage",
 				"Front Climb Output Current", "Drive Climb Output Voltage", "Drive Climb Output Current",
 				"Leadscrew Motor Output Voltage", "Leadscrew Motor Output Current", "Holding Ball", "Bumper Sensor State", "Robot State" };
 

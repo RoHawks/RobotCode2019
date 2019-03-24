@@ -191,4 +191,15 @@ public class LocalJoystick extends Joystick {
         return mCurrentProfile;
     }
 
+    public void reset(){
+        
+    }
+
+    public void resetReleased(){
+
+    }
+
+    public void resetPressed(){
+
+    }
 }

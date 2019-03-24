@@ -296,8 +296,11 @@ public class Leadscrew {
      */
     public void leadscrewInitialZero() {
         while (mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
-            mLeadscrew.set(ControlMode.PercentOutput, -0.2);
+            mLeadscrew.set(ControlMode.PercentOutput, -0.3);
+            SmartDashboard.putBoolean("in lead screw initial zero", true);
         }
+        SmartDashboard.putBoolean("in lead screw initial zero", false);
+
         mLeadscrew.set(ControlMode.PercentOutput, 0);
         mLeadscrew.configForwardSoftLimitEnable(false, 10);
 		mLeadscrew.configReverseSoftLimitEnable(false, 10);
