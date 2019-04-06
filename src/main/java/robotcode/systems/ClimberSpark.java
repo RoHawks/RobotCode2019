@@ -44,7 +44,7 @@ public class ClimberSpark {
     public CANDigitalInput mFrontForwardLimit, mFrontReverseLimit, mBackForwardLimit, mBackReverseLimit;
     public CANEncoder mFrontEncoder, mBackEncoder;
 
-    public ClimberSpark(CANSparkMax pFront, CANSparkMax pBack, WPI_TalonSRX pOtherBack,  WPI_TalonSRX pDrive,
+    public ClimberSpark(CANSparkMax pFront, CANSparkMax pBack, WPI_TalonSRX pOtherBack, WPI_TalonSRX pDrive,
             SolenoidInterface pShifter, DriveTrain pDriveTrain, Joystick pJoystick) {
         mFrontSpark = pFront;
         mBackSpark = pBack;
@@ -84,24 +84,21 @@ public class ClimberSpark {
             mShifter.setOpposite();
         }
 
-        if (mJoystick.getRawButton(JoystickConstants.ClimbButtons.FRONT)
-                && Math.abs(mJoystick.getY()) > 0.25) {
-            mFrontSpark.set(mJoystick.getY()*0.85);
+        if (mJoystick.getRawButton(JoystickConstants.ClimbButtons.FRONT) && Math.abs(mJoystick.getY()) > 0.25) {
+            mFrontSpark.set(mJoystick.getY() * 0.85);
         } else {
             mFrontSpark.set(0);
         }
 
-        if (mJoystick.getRawButton(JoystickConstants.ClimbButtons.BACK)
-                && Math.abs(mJoystick.getY()) > 0.25) {
-            mBackSpark.set(mJoystick.getY()*0.85);
+        if (mJoystick.getRawButton(JoystickConstants.ClimbButtons.BACK) && Math.abs(mJoystick.getY()) > 0.25) {
+            mBackSpark.set(mJoystick.getY() * 0.85);
         } else {
             mBackSpark.set(0);
         }
 
-        if (mJoystick.getRawButton(JoystickConstants.ClimbButtons.DRIVE)
-                && Math.abs(mJoystick.getZ()) > 0.5) {
-            mDriveTalon.set(ControlMode.PercentOutput, -Math.signum(mJoystick.getZ())
-                    * (Math.abs(mJoystick.getZ()) - 0.5));
+        if (mJoystick.getRawButton(JoystickConstants.ClimbButtons.DRIVE) && Math.abs(mJoystick.getZ()) > 0.5) {
+            mDriveTalon.set(ControlMode.PercentOutput,
+                    -Math.signum(mJoystick.getZ()) * (Math.abs(mJoystick.getZ()) - 0.5));
         } else {
             mDriveTalon.set(0);
         }
@@ -113,26 +110,25 @@ public class ClimberSpark {
      * @return Whether either leg is at the top.
      */
     public boolean upLegs() {
-        
+
         if (!mFrontForwardLimit.get() && !mBackForwardLimit.get()) {
             link();
             if (mFrontEncoder.getPosition() < ClimberConstants.TEN_FROM_TOP
                     || mBackEncoder.getPosition() < ClimberConstants.TEN_FROM_TOP) { // legs 10% from top = slow
                 mFrontSpark.set(ClimberConstants.SLOW_CLIMBER_LEGS_UP_SPEED);
                 mBackSpark.set(ClimberConstants.SLOW_CLIMBER_LEGS_UP_SPEED);
-            }
-            else {
+            } else {
                 mFrontSpark.set(ClimberConstants.SPEEDY_CLIMBER_LEGS_UP_SPEED);
                 mBackSpark.set(ClimberConstants.SPEEDY_CLIMBER_LEGS_UP_SPEED);
             }
         }
 
-        else if(mFrontForwardLimit.get() && !mBackForwardLimit.get()){
+        else if (mFrontForwardLimit.get() && !mBackForwardLimit.get()) {
             backUpLegs();
             mFrontSpark.set(0);
         }
 
-        else if (!mFrontForwardLimit.get() && mBackForwardLimit.get()){
+        else if (!mFrontForwardLimit.get() && mBackForwardLimit.get()) {
             frontUpLegs();
             mBackSpark.set(0);
         }
@@ -153,25 +149,24 @@ public class ClimberSpark {
      * @return Whether either leg is at the bottom.
      */
     public boolean downLegs() {
-       if (!mFrontReverseLimit.get() && !mBackReverseLimit.get()) {
+        if (!mFrontReverseLimit.get() && !mBackReverseLimit.get()) {
             link();
             if (mFrontEncoder.getPosition() > ClimberConstants.NINETY_FROM_TOP
                     || mBackEncoder.getPosition() > ClimberConstants.NINETY_FROM_TOP) {
                 mFrontSpark.set(ClimberConstants.SLOW_CLIMBER_LEGS_DOWN_SPEED);
                 mBackSpark.set(ClimberConstants.SLOW_CLIMBER_LEGS_DOWN_SPEED);
-            }
-            else {
+            } else {
                 mFrontSpark.set(ClimberConstants.SPEEDY_CLIMBER_LEGS_DOWN_SPEED);
                 mBackSpark.set(ClimberConstants.SPEEDY_CLIMBER_LEGS_DOWN_SPEED);
             }
         }
 
-        else if(mFrontReverseLimit.get() && !mBackReverseLimit.get()){
+        else if (mFrontReverseLimit.get() && !mBackReverseLimit.get()) {
             backDownLegs();
             mFrontSpark.set(0);
         }
 
-        else if (!mFrontReverseLimit.get() && mBackReverseLimit.get()){
+        else if (!mFrontReverseLimit.get() && mBackReverseLimit.get()) {
             frontDownLegs();
             mBackSpark.set(0);
         }
@@ -181,7 +176,7 @@ public class ClimberSpark {
             mBackSpark.set(0);
             return true;
         }
-        
+
         return false;
     }
 
@@ -197,16 +192,13 @@ public class ClimberSpark {
         if (mFrontForwardLimit.get()) {
             mFrontSpark.set(0);
             return true;
-        } 
-        else if (mFrontEncoder.getPosition() < ClimberConstants.TEN_FROM_TOP) {
+        } else if (mFrontEncoder.getPosition() < ClimberConstants.TEN_FROM_TOP) {
             mFrontSpark.set(ClimberConstants.SLOW_CLIMBER_LEGS_UP_SPEED);
-        } 
-        else {
+        } else {
             mFrontSpark.set(ClimberConstants.SPEEDY_CLIMBER_LEGS_UP_SPEED);
         }
         return false;
     }
-
 
     public boolean frontDownLegs() {
         unlink();
@@ -215,16 +207,13 @@ public class ClimberSpark {
         if (mFrontReverseLimit.get()) {
             mFrontSpark.set(0);
             return true;
-        } 
-        else if (mFrontEncoder.getPosition() > ClimberConstants.NINETY_FROM_TOP) {
+        } else if (mFrontEncoder.getPosition() > ClimberConstants.NINETY_FROM_TOP) {
             mFrontSpark.set(ClimberConstants.SLOW_CLIMBER_LEGS_DOWN_SPEED);
-        } 
-        else {
+        } else {
             mFrontSpark.set(ClimberConstants.SPEEDY_CLIMBER_LEGS_DOWN_SPEED);
         }
         return false;
     }
-
 
     public boolean backUpLegs() {
         unlink();
@@ -233,16 +222,13 @@ public class ClimberSpark {
         if (mBackForwardLimit.get()) {
             mBackSpark.set(0);
             return true;
-        } 
-        else if (mBackEncoder.getPosition() < ClimberConstants.TEN_FROM_TOP) {
+        } else if (mBackEncoder.getPosition() < ClimberConstants.TEN_FROM_TOP) {
             mBackSpark.set(ClimberConstants.SLOW_CLIMBER_LEGS_UP_SPEED);
-        } 
-        else {
+        } else {
             mBackSpark.set(ClimberConstants.SPEEDY_CLIMBER_LEGS_UP_SPEED);
         }
         return false;
     }
-
 
     public boolean backDownLegs() {
         unlink();
@@ -251,11 +237,9 @@ public class ClimberSpark {
         if (mBackReverseLimit.get()) {
             mBackSpark.set(0);
             return true;
-        } 
-        else if (mBackEncoder.getPosition() > ClimberConstants.NINETY_FROM_TOP) {
+        } else if (mBackEncoder.getPosition() > ClimberConstants.NINETY_FROM_TOP) {
             mBackSpark.set(ClimberConstants.SLOW_CLIMBER_LEGS_DOWN_SPEED);
-        } 
-        else {
+        } else {
             mBackSpark.set(ClimberConstants.SPEEDY_CLIMBER_LEGS_DOWN_SPEED);
         }
         return false;
@@ -273,7 +257,7 @@ public class ClimberSpark {
     private boolean mStepFiveDone = false;
 
     public boolean autoClimb() {
-
+        
         if (!mStepOneDone) { // go up (legs down)
             mDrivetrain.stop();
             mDriveTalon.set(ControlMode.PercentOutput, 0);
@@ -327,60 +311,57 @@ public class ClimberSpark {
         return false;
     }
 
-//Positive value brings the legs down
-    public void manualClimb(){
+    // Positive value brings the legs down
+    public void manualClimb() {
         double frontClimbSpeed = 0;
         double backClimbSpeed = 0;
         double otherBackSpeed = 0;
 
-        if(mJoystick.getRawButton(4) && mJoystick.getRawButton(5)){
+        if (mJoystick.getRawButton(4) && mJoystick.getRawButton(5)) {
             link();
-        }
-        else {
+        } else {
             unlink();
         }
 
         if (mJoystick.getRawButton(4) && Math.abs(mJoystick.getY()) > 0.25) {
-            if ((mJoystick.getY() > 0 && mFrontForwardLimit.get()) || (mJoystick.getY() < 0 && mFrontReverseLimit.get())){
+            if ((mJoystick.getY() > 0 && mFrontForwardLimit.get())
+                    || (mJoystick.getY() < 0 && mFrontReverseLimit.get())) {
                 frontClimbSpeed = 0;
-            }
-            else {
-                if (mJoystick.getY() < 0){
+            } else {
+                if (mJoystick.getY() < 0) {
                     frontClimbSpeed = mJoystick.getY() * 0.675;
-                }
-                else {
+                } else {
                     frontClimbSpeed = mJoystick.getY() * 0.6;
                 }
             }
-        } 
-        else {
+        } else {
             frontClimbSpeed = 0;
         }
 
         if (mJoystick.getRawButton(5) && Math.abs(mJoystick.getY()) > 0.25) {
-            if ((mJoystick.getY() > 0 && mBackForwardLimit.get()) || (mJoystick.getY() < 0 && mBackReverseLimit.get())){
+            if ((mJoystick.getY() > 0 && mBackForwardLimit.get())
+                    || (mJoystick.getY() < 0 && mBackReverseLimit.get())) {
                 backClimbSpeed = 0;
                 otherBackSpeed = 0;
-            }
-            else {
-                if(mJoystick.getY() < 0){
+            } else {
+                if (mJoystick.getY() < 0) {
                     backClimbSpeed = mJoystick.getY() * 0.75;
                     otherBackSpeed = mJoystick.getY();
-                }
-                else{
+                } else {
                     backClimbSpeed = mJoystick.getY() * 0.6;
                     otherBackSpeed = mJoystick.getY();
                 }
             }
-        } 
-        else {
+        } else {
             backClimbSpeed = 0;
             otherBackSpeed = 0;
         }
-//Limit switch on the bottom is forward, limit switch on the top is reverse
-        if (mJoystick.getRawButton(4) && mJoystick.getRawButton(5) && (
-            (mJoystick.getY() > 0 && mFrontForwardLimit.get()) || (mJoystick.getY() < 0 && mFrontReverseLimit.get())
-            || (mJoystick.getY() > 0 && mBackForwardLimit.get()) || (mJoystick.getY() < 0 && mBackReverseLimit.get()))){
+        // Limit switch on the bottom is forward, limit switch on the top is reverse
+        if (mJoystick.getRawButton(4) && mJoystick.getRawButton(5)
+                && ((mJoystick.getY() > 0 && mFrontForwardLimit.get())
+                        || (mJoystick.getY() < 0 && mFrontReverseLimit.get())
+                        || (mJoystick.getY() > 0 && mBackForwardLimit.get())
+                        || (mJoystick.getY() < 0 && mBackReverseLimit.get()))) {
             frontClimbSpeed = 0;
             backClimbSpeed = 0;
             otherBackSpeed = 0;
@@ -390,25 +371,23 @@ public class ClimberSpark {
         mFrontSpark.set(frontClimbSpeed);
         mOtherBackTalon.set(otherBackSpeed);
 
-        if(RunConstants.RUNNING_DRIVE){
-            if(mJoystick.getRawButton(2)) {
+        if (RunConstants.RUNNING_DRIVE) {
+            if (mJoystick.getRawButton(2)) {
                 mDrivetrain.enactMovement(0, 0, LinearVelocity.NORMAL, 0.2, RotationalVelocity.NONE);
-            }
-            else {
+            } else {
                 mDrivetrain.stop();
             }
         }
-        
+
         if (mJoystick.getRawButton(1)) {
             mDriveTalon.set(ControlMode.PercentOutput, ClimberConstants.CLIMBER_DRIVE_SPEED);
             mDrivetrain.enactMovement(0, 0, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
-        } 
-        else {
+        } else {
             mDriveTalon.set(0);
         }
     }
 
-    public void limitSwitchLog(){
+    public void limitSwitchLog() {
         SmartDashboard.putBoolean("Front forward limit switch", mFrontForwardLimit.get());
         SmartDashboard.putBoolean("Front reverse limit switch", mFrontReverseLimit.get());
         SmartDashboard.putBoolean("Back forward limit switch", mBackForwardLimit.get());

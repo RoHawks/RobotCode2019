@@ -30,8 +30,8 @@ public class DriveConstants {
 		public static final double 
 			SPEED_MULT = 0.75,
 			ANGULAR_SPEED_MULT = 0.75,
-			NUDGE_MOVE_SPEED = 0.1,
-			NUDGE_TURN_SPEED = 0.1;
+			NUDGE_MOVE_SPEED = 0.2,
+			NUDGE_TURN_SPEED = 0.2;
 	}
 
 	

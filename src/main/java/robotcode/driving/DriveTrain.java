@@ -592,6 +592,13 @@ public class DriveTrain {
 		return true;
 	}
 
+	public boolean allWheelsInRange(double pAngle0, double pAngle1, double pAngle2, double pAngle3){
+		return(mWheels[0].isInRange(pAngle0)
+				&& mWheels[1].isInRange(pAngle1)
+				&& mWheels[2].isInRange(pAngle2)
+				&& mWheels[3].isInRange(pAngle3));
+	}
+
 	public boolean gyroInRange() {
 		return mGyroPID.onTarget();
 	}

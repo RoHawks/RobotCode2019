@@ -12,10 +12,8 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 public class ClimberConstants {
 
     public static final boolean
-        DRIVE_REVERSED = false, // positive is forward
-        FRONT_REVERSED = true, // negative brings legs up
-        BACK_REVERSED = true, // negative brings legs up
-        OTHER_BACK_REVERSED = false;
+        DRIVE0_REVERSED = false, // positive is forward
+        DRIVE1_REVERSED = false;
 
     public static final double 
         SPEEDY_CLIMBER_LEGS_UP_SPEED = -0.6,
@@ -33,6 +31,16 @@ public class ClimberConstants {
         NINETY_FROM_TOP = 0.9 * HUNDRED_FROM_TOP,
         TEN_FROM_TOP = 0.1 * HUNDRED_FROM_TOP;
     
+    public static final Value  
+        BACK_LEGS_DOWN = Value.kForward,
+        BACK_LEGS_UP = Value.kReverse,
+        FRONT_LEGS_DOWN = Value.kReverse,
+        FRONT_LEGS_UP = Value.kForward,
+        BACK_BREAK = Value.kForward,
+        BACK_THROUGH = Value.kReverse,
+        FRONT_BREAK = Value.kForward,
+        FRONT_THROUGH = Value.kReverse;
+        
     public static final Value 
         ENABLED = Value.kForward,
         DISABLED = Value.kReverse;
