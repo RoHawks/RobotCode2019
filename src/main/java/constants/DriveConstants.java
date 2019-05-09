@@ -31,7 +31,7 @@ public class DriveConstants {
 			SPEED_MULT = 0.75,
 			ANGULAR_SPEED_MULT = 0.75,
 			NUDGE_MOVE_SPEED = 0.2,
-			NUDGE_TURN_SPEED = 0.2;
+			NUDGE_TURN_SPEED = 0.15;
 	}
 
 	

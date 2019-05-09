@@ -291,13 +291,27 @@ public class Leadscrew {
         mLeadscrew.setSelectedSensorPosition(0);
     }
 
+    private long timeStartedZeroing = 0;
     /**
      * when the robot starts up, drive the leadscrew to the end that zeroes it and set to zero
      */
     public void leadscrewInitialZero() {
+
+        timeStartedZeroing = System.currentTimeMillis();
+        
+
         while (mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
-            mLeadscrew.set(ControlMode.PercentOutput, -0.3);
-            SmartDashboard.putBoolean("in lead screw initial zero", true);
+           // if(System.currentTimeMillis() - timeStartedZeroing < 5000){
+                mLeadscrew.set(ControlMode.PercentOutput, -0.3);
+        
+                SmartDashboard.putBoolean("in lead screw initial zero", true);
+                if(mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)){
+                    break;
+                }
+            // }
+            // else {
+            //     mLeadscrew.set(ControlMode.PercentOutput, -0.4);
+            // }
         }
         SmartDashboard.putBoolean("in lead screw initial zero", false);
 

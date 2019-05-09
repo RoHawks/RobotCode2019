@@ -13,7 +13,7 @@ public class ClimberConstants {
 
     public static final boolean
         DRIVE0_REVERSED = false, // positive is forward
-        DRIVE1_REVERSED = false;
+        DRIVE1_REVERSED = true;
 
     public static final double 
         SPEEDY_CLIMBER_LEGS_UP_SPEED = -0.6,

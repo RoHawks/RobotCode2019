@@ -166,8 +166,8 @@ public class Robot extends SampleRobot {
 			if (RunConstants.RUNNING_LEADSCREW) {
 				mLeadscrew.leadscrewInitialZero();
 				mLeadscrew.setPosition(LeadscrewConstants.MIDDLE);
-				while (dummy()) {
-				}
+				// while (dummy()) {
+				// }
 			}
 
 			if (RunConstants.RUNNING_CLIMBER) {

@@ -12,10 +12,11 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 
 import constants.ClimberConstants;
+import constants.Ports;
 import constants.RunConstants;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.Relay.Direction;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import robotcode.driving.DriveTrain;
 import robotcode.driving.DriveTrain.LinearVelocity;
@@ -30,6 +31,8 @@ public class ClimberPiston {
     private Joystick mJoystick;
     private AHRS mNavX;
 
+    private Relay mFrontRelay, mBackRelayBrake, mBackRelayThrough;
+
     public ClimberPiston(SolenoidInterface pBackPiston, SolenoidInterface pFrontPiston, WPI_TalonSRX pDriveTalon0,
             WPI_TalonSRX pDriveTalon1, DriveTrain pDriveTrain, Joystick pJoystick, 
             SolenoidInterface pBackBreak, SolenoidInterface pFrontBreak, AHRS pNavX) {
@@ -42,60 +45,46 @@ public class ClimberPiston {
         mBackBreak = pBackBreak;
         mFrontBreak = pFrontBreak;
         mNavX = pNavX;
+
+        mFrontRelay = new Relay(Ports.ActualRobot.CLIMB_FRONT_RELAY, Direction.kForward);
+        mBackRelayBrake = new Relay(Ports.ActualRobot.CLIMB_BACK_RELAY_BRAKE, Direction.kForward);
+        mBackRelayThrough = new Relay(Ports.ActualRobot.CLIMB_BACK_RELAY_THROUGH, Direction.kForward);
     }
 
-    private Value frontPistonValue = ClimberConstants.FRONT_LEGS_UP;
-    private Value backPistonValue = ClimberConstants.BACK_LEGS_UP;
-
-    public void enactMovement() {
-        if (mJoystick.getRawButtonReleased(1)) {
-            frontPistonValue = ClimberConstants.FRONT_LEGS_UP;
+    public void enactMovement(){
+        if(mJoystick.getRawButton(4)){
+            mFrontRelay.set(edu.wpi.first.wpilibj.Relay.Value.kForward); // brake
         }
-        if (mJoystick.getRawButtonReleased(2)) {
-            frontPistonValue = ClimberConstants.FRONT_LEGS_DOWN;
-        }
-        if (mJoystick.getRawButtonReleased(3)) {
-            backPistonValue = ClimberConstants.BACK_LEGS_UP;
-        }
-        if (mJoystick.getRawButtonReleased(4)) {
-            backPistonValue = ClimberConstants.BACK_LEGS_DOWN;
-        }
-        if (mJoystick.getRawButton(5)) {
-            mDriveTalon0.set(ControlMode.PercentOutput, ClimberConstants.CLIMBER_DRIVE_SPEED);
-            mDriveTalon1.set(ControlMode.PercentOutput, ClimberConstants.CLIMBER_DRIVE_SPEED);
-            mDriveTrain.enactMovement(0, 0, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
+        else{
+            mFrontRelay.set(edu.wpi.first.wpilibj.Relay.Value.kOff); // not brake
         }
 
-        else {
-            mDriveTalon0.set(0);
-            mDriveTalon1.set(0);
+        if(mJoystick.getRawButton(5)){
+            mBackRelayBrake.set(edu.wpi.first.wpilibj.Relay.Value.kOff);
+            mBackRelayThrough.set(edu.wpi.first.wpilibj.Relay.Value.kForward);  // not brake
+        }
+        else{
+            mBackRelayBrake.set(edu.wpi.first.wpilibj.Relay.Value.kForward);
+            mBackRelayThrough.set(edu.wpi.first.wpilibj.Relay.Value.kOff); // brake
+        }
+
+        if(mJoystick.getRawButtonReleased(2)){
+            mFrontPiston.setOpposite();
+        }
+        if(mJoystick.getRawButtonReleased(3)){
+            mBackPiston.setOpposite();
         }
     }
 
-    public void frontLegsDown() {
-        mFrontPiston.set(ClimberConstants.FRONT_LEGS_DOWN);
-    }
-
-    public void frontLegsUp() {
-        mFrontPiston.set(ClimberConstants.FRONT_LEGS_UP);
-    }
-
-    public void backLegsDown() {
-        mBackPiston.set(ClimberConstants.BACK_LEGS_DOWN);
-    }
-
-    public void backLegsUp() {
-        mBackPiston.set(ClimberConstants.BACK_LEGS_UP);
-    }
 
     public void bothLegsDown() {
-        backLegsDown();
-        frontLegsDown();
+        extendFrontPiston();
+        extendBackPiston();
     }
 
     public void bothLegsUp() {
-        backLegsUp();
-        frontLegsUp();
+        retractFrontPiston();
+        retractBackPiston();
     }
 
     public void manualClimb() {
@@ -110,20 +99,19 @@ public class ClimberPiston {
             if (backButton) {
                 retractBackPiston();
             }
-        } 
-        else if (mJoystick.getRawButtonReleased(3)) {
-            bothLegsDown();
-        } 
+        }
         else if (mJoystick.getRawButton(6)) {
-            manualClimb4();
+            manualClimb3();
+        }
+        else if (mJoystick.getRawButtonReleased(6)){
+            mBackBreak.set(ClimberConstants.BACK_THROUGH);
+            mFrontBreak.set(ClimberConstants.FRONT_THROUGH);
+            climb3State = ALL_GOOD;
         }
 
-        if(mJoystick.getRawButtonReleased(7)){
-            mBackBreak.setOpposite();
-        }
-        if(mJoystick.getRawButtonReleased(8)){
-            mFrontBreak.setOpposite();
-        }
+        SmartDashboard.putString("CLIMB front", mFrontRelay.get().toString());
+        SmartDashboard.putString("CLIMB back brake", mBackRelayBrake.get().toString());
+        SmartDashboard.putString("CLIMB back through", mBackRelayThrough.get().toString());
 
 
 
@@ -148,207 +136,164 @@ public class ClimberPiston {
         }
     }
 
-    public double GetTilt()
-    {
+    public double GetTilt(){
         return mNavX.getPitch();
-        //return mNavX.getRoll();
     }
 
 
-    int ALL_GOOD = 0;
-    int CORRECTING_FRONT_TOO_HIGH;
+    final int ALL_GOOD = 0;
+    final int CORRECTING_FRONT_TOO_HIGH = 1;
     int AFTER_FRONT_TOO_HIGH_CORRECTION;
-    int CORRECTING_BACK_TOO_HIGH;
+    final int CORRECTING_BACK_TOO_HIGH = 2;
     int AFTER_CORRECTING_BACK_TOO_HIGH;
     int climb4State = ALL_GOOD;
     long stateStart;
-    long AFTER_TIME = 200;
-    long CORRECTION_TIME = 100;
+    final long AFTER_TIME = 200;
+    final long CORRECTION_TIME = 100;
 
-public void manualClimb4()
-{
-    
-    double tooTilted = 3;
-    if(climb4State == ALL_GOOD)
-    {
-        extendFrontPiston();
-        extendBackPiston();
-        if(GetTilt() > tooTilted)
-        {
-            climb4State = CORRECTING_BACK_TOO_HIGH;
-            stateStart = System.currentTimeMillis();
-        }
-         if(GetTilt() < -tooTilted)
-         {
-            climb4State = CORRECTING_FRONT_TOO_HIGH;
-            stateStart = System.currentTimeMillis();             
-         }
-    }
-    else if(climb4State == CORRECTING_FRONT_TOO_HIGH)
-    {
-        breakFrontPiston();
-        extendBackPiston();
-        if(System.currentTimeMillis() - stateStart > CORRECTION_TIME)
-        {
-            climb4State = AFTER_FRONT_TOO_HIGH_CORRECTION;
-            stateStart = System.currentTimeMillis();
-        }
-    }
-    else if(climb4State == CORRECTING_BACK_TOO_HIGH)
-    {
-        breakBackPiston();
-        extendFrontPiston();
-        if(System.currentTimeMillis() - stateStart > CORRECTION_TIME)
-        {
-            climb4State = AFTER_CORRECTING_BACK_TOO_HIGH;
-            stateStart = System.currentTimeMillis();
-        }
-    }
-    else if(climb4State == AFTER_FRONT_TOO_HIGH_CORRECTION)
-    {
-        extendFrontPiston();
-        extendBackPiston();
-        if(System.currentTimeMillis() - stateStart > AFTER_TIME)
-        {
-            if(GetTilt() > tooTilted)
-            {
-                climb4State = CORRECTING_BACK_TOO_HIGH;
-                stateStart = System.currentTimeMillis();
-            }
-            else if(GetTilt() < -tooTilted)
-             {
-                climb4State = CORRECTING_FRONT_TOO_HIGH;
-                stateStart = System.currentTimeMillis();             
-             }
-             else
-             {
-                climb4State = ALL_GOOD;
-                stateStart = System.currentTimeMillis();
-             }
-        }
-    }
-    else
-    {
-        extendFrontPiston();
-        breakBackPiston();
-        if(System.currentTimeMillis() - stateStart > AFTER_TIME)
-        {
-            if(GetTilt() > tooTilted)
-            {
-                climb4State = CORRECTING_BACK_TOO_HIGH;
-                stateStart = System.currentTimeMillis();
-            }
-            else if(GetTilt() < -tooTilted)
-             {
-                climb4State = CORRECTING_FRONT_TOO_HIGH;
-                stateStart = System.currentTimeMillis();             
-             }
-             else
-             {
-                climb4State = ALL_GOOD;
-                stateStart = System.currentTimeMillis();
-             }
-        }
-    }
+    public void manualClimb4() {
 
-}
-
-
-    public void manualClimb2(){
         double tooTilted = 3;
-        SmartDashboard.putNumber("ClimberTilt", GetTilt());
-        if(GetTilt() > tooTilted)
-        {
-            //Front has gotten too high
-            SmartDashboard.putString("ClimberState", "Front Too High");
-            breakFrontPiston();
-            extendBackPiston();
-        }
-        else if(GetTilt() < -tooTilted)
-        {
-            
-            SmartDashboard.putString("ClimberState", "Back Too High");
-            extendFrontPiston();
-            breakBackPiston();
-        }
-        else{
-            
-            SmartDashboard.putString("ClimberState", "Looking Good!");
+        if (climb4State == ALL_GOOD) {
             extendFrontPiston();
             extendBackPiston();
+            if (GetTilt() < -tooTilted) {
+                climb4State = CORRECTING_BACK_TOO_HIGH;
+                stateStart = System.currentTimeMillis();
+            }
+            if (GetTilt() > tooTilted) {
+                climb4State = CORRECTING_FRONT_TOO_HIGH;
+                stateStart = System.currentTimeMillis();
+            }
+        } else if (climb4State == CORRECTING_FRONT_TOO_HIGH) {
+            brakeFrontPiston();
+            extendBackPiston();
+            if (System.currentTimeMillis() - stateStart > CORRECTION_TIME) {
+                climb4State = AFTER_FRONT_TOO_HIGH_CORRECTION;
+                stateStart = System.currentTimeMillis();
+            }
+        } else if (climb4State == CORRECTING_BACK_TOO_HIGH) {
+            brakeBackPiston();
+            extendFrontPiston();
+            if (System.currentTimeMillis() - stateStart > CORRECTION_TIME) {
+                climb4State = AFTER_CORRECTING_BACK_TOO_HIGH;
+                stateStart = System.currentTimeMillis();
+            }
+        } else if (climb4State == AFTER_FRONT_TOO_HIGH_CORRECTION) {
+            extendFrontPiston();
+            extendBackPiston();
+            if (System.currentTimeMillis() - stateStart > AFTER_TIME) {
+                if (GetTilt() < -tooTilted) {
+                    climb4State = CORRECTING_BACK_TOO_HIGH;
+                    stateStart = System.currentTimeMillis();
+                } else if (GetTilt() > tooTilted) {
+                    climb4State = CORRECTING_FRONT_TOO_HIGH;
+                    stateStart = System.currentTimeMillis();
+                } else {
+                    climb4State = ALL_GOOD;
+                    stateStart = System.currentTimeMillis();
+                }
+            }
+        } else {
+            extendFrontPiston();
+            brakeBackPiston();
+            if (System.currentTimeMillis() - stateStart > AFTER_TIME) {
+                if (GetTilt() < -tooTilted) {
+                    climb4State = CORRECTING_BACK_TOO_HIGH;
+                    stateStart = System.currentTimeMillis();
+                } else if (GetTilt() > tooTilted) {
+                    climb4State = CORRECTING_FRONT_TOO_HIGH;
+                    stateStart = System.currentTimeMillis();
+                } else {
+                    climb4State = ALL_GOOD;
+                    stateStart = System.currentTimeMillis();
+                }
+            }
         }
+
     }
 
+    int climb3State = ALL_GOOD;
     public void manualClimb3(){
-        double tooTilted = 10;
-        double restartMoving = 3;
-        boolean wasJustCorrecting = false;
-        SmartDashboard.putNumber("ClimberTilt", GetTilt());
-        if(GetTilt() > tooTilted)
-        {
-            SmartDashboard.putString("ClimberState", "Front Too High");
-            breakFrontPiston();
-            extendBackPiston();
-            wasJustCorrecting = true;
-        }
-        else if(GetTilt() > restartMoving && GetTilt() < tooTilted){
-            if(wasJustCorrecting){
-                breakFrontPiston();
-                extendBackPiston();
-            }
-            else{
-            }
-        }
-        else if(GetTilt() < -tooTilted)
-        {
-            SmartDashboard.putString("ClimberState", "Back Too High");
-            extendFrontPiston();
-            breakBackPiston();
-            wasJustCorrecting = true;
-        }
-        else{
-            SmartDashboard.putString("ClimberState", "Looking Good!");
-            extendFrontPiston();
-            extendBackPiston();
-            wasJustCorrecting = false;
+        double frontTilted = 3;
+        double backTilted = -3;
+        double currentTilt = GetTilt();
+        SmartDashboard.putNumber("ClimberTilt", currentTilt);
+        switch(climb3State) {
+            case ALL_GOOD:
+                if(currentTilt > frontTilted) {
+                    SmartDashboard.putString("ClimberState", "Front Too High");
+                    brakeFrontPiston();
+                    extendBackPiston();
+                    climb3State = CORRECTING_FRONT_TOO_HIGH;
+                }
+                else if(currentTilt < backTilted) {
+                    SmartDashboard.putString("ClimberState", "Back Too High");
+                    extendFrontPiston();
+                    brakeBackPiston();
+                    climb3State = CORRECTING_BACK_TOO_HIGH;
+                }
+                else {
+                    SmartDashboard.putString("ClimberState", "Looking Good!");
+                    extendFrontPiston();
+                    extendBackPiston();
+                }
+                break;
+            case CORRECTING_FRONT_TOO_HIGH:
+                if(currentTilt < backTilted) {
+                    SmartDashboard.putString("ClimberState", "Back Too High");
+                    extendFrontPiston();
+                    brakeBackPiston();
+                    climb3State = CORRECTING_BACK_TOO_HIGH;
+                }
+                break;
+            case CORRECTING_BACK_TOO_HIGH:
+                if(currentTilt > frontTilted) {
+                    SmartDashboard.putString("ClimberState", "Front Too High");
+                    brakeFrontPiston();
+                    extendBackPiston();
+                    climb3State = CORRECTING_FRONT_TOO_HIGH;
+                }
+                break;
         }
     }    
 
-    public void breakFrontPiston()
+    public void brakeFrontPiston()
     {
-        mFrontBreak.set(ClimberConstants.FRONT_BREAK);
-        mFrontPiston.set(ClimberConstants.FRONT_LEGS_DOWN);
+        mFrontRelay.set(edu.wpi.first.wpilibj.Relay.Value.kForward);
     }
 
-    public void breakBackPiston()
+    public void brakeBackPiston()
     {
-        mBackBreak.set(ClimberConstants.BACK_BREAK);
-        mBackPiston.set(ClimberConstants.BACK_LEGS_DOWN);
+        mBackRelayBrake.set(edu.wpi.first.wpilibj.Relay.Value.kForward);
+        mBackRelayThrough.set(edu.wpi.first.wpilibj.Relay.Value.kOff);
     }
 
     public void extendFrontPiston()
     {
-        mFrontBreak.set(ClimberConstants.FRONT_THROUGH);
+        mFrontRelay.set(edu.wpi.first.wpilibj.Relay.Value.kOff);
         mFrontPiston.set(ClimberConstants.FRONT_LEGS_DOWN);
     }
 
     
     public void extendBackPiston()
     {
-        mBackBreak.set(ClimberConstants.BACK_THROUGH);
+        mBackRelayBrake.set(edu.wpi.first.wpilibj.Relay.Value.kOff);
+        mBackRelayThrough.set(edu.wpi.first.wpilibj.Relay.Value.kForward);
         mBackPiston.set(ClimberConstants.BACK_LEGS_DOWN);
     }
 
     public void retractFrontPiston()
     {
-        mFrontBreak.set(ClimberConstants.FRONT_THROUGH);
+        mFrontRelay.set(edu.wpi.first.wpilibj.Relay.Value.kOff);
         mFrontPiston.set(ClimberConstants.FRONT_LEGS_UP);
     }
 
     
     public void retractBackPiston()
     {
-        mBackBreak.set(ClimberConstants.BACK_THROUGH);
+        mBackRelayBrake.set(edu.wpi.first.wpilibj.Relay.Value.kOff);
+        mBackRelayThrough.set(edu.wpi.first.wpilibj.Relay.Value.kForward);
         mBackPiston.set(ClimberConstants.BACK_LEGS_UP);
     }
 
