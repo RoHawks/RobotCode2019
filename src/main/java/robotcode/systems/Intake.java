@@ -5,12 +5,16 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
+//TODO: secondary joystick should have Ball/Hatch switch and Front/Back switch (for ball) emergency reset button (waiting to load) and climb buttons
+
 package robotcode.systems;
 
 import constants.IntakeConstants;
 import constants.JoystickConstants;
 import constants.LeadscrewConstants;
 import constants.RunConstants;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import robotcode.LocalJoystick;
 import robotcode.camera.Limelight;
@@ -29,21 +33,23 @@ public class Intake {
     private Limelight mLimelight;
     private DriveTrain mDrivetrain;
     private LocalJoystick mJoystick;
+    private XboxController mController;
 
     private IntakeState mIntakeState = IntakeState.IDLE;
-
+    private boolean holdingItem = true;
+    private boolean frontBall = true;
     // ***********//
     // INITIALIZE //
     // ***********//
 
-    public Intake(HatchIntake pHatchIntake, BallIntake pBallIntake, Leadscrew pLeadscrew, Limelight pLimelight, DriveTrain pDrivetrain, LocalJoystick pJoystick) {
+    public Intake(HatchIntake pHatchIntake, BallIntake pBallIntake, Leadscrew pLeadscrew, Limelight pLimelight, DriveTrain pDrivetrain, LocalJoystick pJoystick, XboxController pController) {
         mHatchIntake = pHatchIntake;
         mBallIntake = pBallIntake;
         mLeadscrew = pLeadscrew;
         mLimelight = pLimelight;
         mDrivetrain = pDrivetrain;
         mJoystick = pJoystick;
-        
+        mController = pController;
     }
 
     private enum IntakeState {
@@ -70,23 +76,39 @@ public class Intake {
     private boolean mDoneScoringBallLow = false;
 
     public void enactMovement() {
-        if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.INTAKE_HATCH)) {
-            mIntakeState = IntakeState.HATCH_INTAKE;
-        } 
-        else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.INTAKE_BALL)) {
-            mIntakeState = IntakeState.BALL_INTAKE;
-        } 
-        else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.SCORE_HATCH)) {
-            mIntakeState = IntakeState.HATCH_SCORE;
-        } 
-        else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.SCORE_BALL_HIGH)) {
-            mIntakeState = IntakeState.BALL_SCORE_HIGH;
-        } 
-        else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.SCORE_BALL_LOW)) {
-            mIntakeState = IntakeState.BALL_SCORE_LOW;
+        if(mJoystick.getTriggerReleased()) { //use joystick trigger to change whether ball score is front or back (starts as front)
+            frontBall = !frontBall;
         }
-        else if (mJoystick.getRawButton(JoystickConstants.IntakeButtons.MANUAL)) {
-            mIntakeState = IntakeState.MANUAL;
+        if (mController.getTriggerAxis(Hand.kLeft) > .25) { //assume left trigger returns positive 1 for fully pressed
+            if (mJoystick.getThrottle() > 0) { //get rolly tab value. Assume positive is up. Up is ball, down is hatch
+                //Ball Mode
+                if (holdingItem) {
+                    //Scoring mode
+                    if(frontBall) {
+                        //Score front
+                        mIntakeState = IntakeState.BALL_SCORE_HIGH;
+                    } 
+                    else {
+                        //Score rear
+                        mIntakeState = IntakeState.BALL_SCORE_LOW;
+                    }
+                }
+                else {
+                    //Loading mode
+                    mIntakeState = IntakeState.BALL_INTAKE;
+                }
+            }
+            else {
+                //Hatch Mode
+                if(holdingItem) {
+                    //scoring mode
+                    mIntakeState = IntakeState.HATCH_SCORE;
+                }
+                else {
+                    //loading mode
+                    mIntakeState =  IntakeState.HATCH_INTAKE;
+                }
+            }
         }
 
         switch (mIntakeState) {

@@ -342,9 +342,6 @@ public class DriveTrain {
 			speed = Vector.createPolar(mController.getPOV(), DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
 		}
 		
-		if(mController.getTriggerAxis(Hand.kLeft) > 0.25){	// if left trigger axis is pressed, set magnitude
-		 	speed.setTotal((Math.pow(mController.getTriggerAxis(Hand.kLeft), 2) * 0.4) + 0.2);
-		}
 		return speed;
 		// double robotAngle = mRobotAngle.getAngleDegrees();
 
