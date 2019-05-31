@@ -655,7 +655,7 @@ public class Robot extends SampleRobot {
 			//extend all
 			for(int i = 0; i< 4; i++) {
 				//drive left side at 95% right at 100%
-				mCCClimberSparks[i].set(i == 0 ? 1 : .95);
+				mCCClimberSparks[i].set(1);
 			}
 			//orient swerve wheels to robot relative front
 		}
@@ -667,7 +667,7 @@ public class Robot extends SampleRobot {
 		else if(mClimbController.getBumperPressed(Hand.kRight)) {
 			//retract front
 			for(int i = 1; i < 2; i++) {
-				mCCClimberSparks[i].set(i == 0 ? -1 : -.95);
+				mCCClimberSparks[i].set(-1);
 			}
 		}
 		else if(mClimbController.getStickButtonPressed(Hand.kRight)) {
@@ -677,7 +677,7 @@ public class Robot extends SampleRobot {
 		else if(mClimbController.getXButtonPressed()) {
 			//retract rear
 			for(int i = 3; i >= 0; i -= 3) {
-				mCCClimberSparks[i].set(i == 0 ? -1 : -.95);
+				mCCClimberSparks[i].set(-1);
 			}
 		}
 		else if(mClimbController.getBButtonReleased()) {
