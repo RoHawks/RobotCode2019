@@ -314,7 +314,6 @@ public class Intake {
 
 
     private boolean mHasAlignedBallIntake = false;
-    private long mStartIntakeTimeBall = 0;
 
     /**
      * does nothing yet
@@ -340,25 +339,18 @@ public class Intake {
         SmartDashboard.putNumber("BALL INTAKE STEP", 0);
         //SmartDashboard.putBoolean("has aligned", mHasAlignedBallScoreHigh);
 
-        long ballLoadingSequenceElapsedMilliseconds = System.currentTimeMillis() - mStartIntakeTimeBall;
-
         if (!mHasAlignedBallIntake && Math.abs(position - goal) < LeadscrewConstants.LEADSCREW_CAMERA_TOLERANCE) {
             SmartDashboard.putNumber("BALL INTAKE STEP", 1);
-            mStartIntakeTimeBall = System.currentTimeMillis();
             mBallIntake.letGo();
             mBallIntake.retain();
             mHasAlignedBallIntake = true;
         }
-        
-        else if (mHasAlignedBallIntake && ballLoadingSequenceElapsedMilliseconds < IntakeConstants.LoadBallTimes.STEP_TWO && mBallIntake.isHoldingBall()){
-            SmartDashboard.putNumber("BALL INTAKE STEP", 2);
-            mBallIntake.lock();
-            return true;
-        }
 
-        return false;
+        return mHasAlignedBallIntake;
     }
-
+    public void resetBallIntake() {
+        mHasAlignedBallIntake = false;
+    }
 
     private boolean mHasAlignedBallScoreHigh = false;
     private long mStartScoreTimeBallHigh = 0;
