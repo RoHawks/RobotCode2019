@@ -331,6 +331,7 @@ public class DriveTrain {
 		return 0;
 	}
 
+	private double lastDirection = -1;
 	/**
 	 * Get the direction vector for nudge driving using the letter buttons
 	 * 
@@ -338,10 +339,28 @@ public class DriveTrain {
 	 */
 	private Vector nudgeMove() {
 		Vector speed = new Vector();
-		if(mController.getPOV() != -1){
-			speed = Vector.createPolar(mController.getPOV(), DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+		double dir = mController.getPOV();
+		double direction;
+		//only nudge if EXACTLY one cardinal direction is being pushed
+		if(dir == -1 || dir % 90 == 0){
+			direction = dir;
 		}
-		
+		else {
+			double diff = Math.abs(lastDirection - dir);
+			if(diff == 315 || diff == 45) {
+				direction = lastDirection;
+			}
+			else{
+				direction = -1;
+			}
+		}
+		if(direction != -1) {
+			if (mIsFieldRelative) {
+				direction = ResourceFunctions.putAngleInRange(direction - mRobotAngle.getAngleDegrees());
+			}
+			speed = Vector.createPolar(direction, DriveConstants.SwerveSpeeds.NUDGE_MOVE_SPEED);
+		}
+		lastDirection = direction;
 		return speed;
 		// double robotAngle = mRobotAngle.getAngleDegrees();
 
