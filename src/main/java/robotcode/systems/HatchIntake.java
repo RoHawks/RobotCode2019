@@ -19,9 +19,6 @@ public class HatchIntake {
     // VARIABLES //
     // **********//
 
-    // joysticks used
-    private LocalJoystick mJoystick;
-
     // pistons
     private SolenoidInterface 
         mRotaryPiston,
@@ -30,11 +27,9 @@ public class HatchIntake {
     // ***********//
     // INITIALIZE //
     // ***********//
-    public HatchIntake(SolenoidInterface pRotaryPiston, SolenoidInterface pLinearPiston, LocalJoystick pJoystick) {
+    public HatchIntake(SolenoidInterface pRotaryPiston, SolenoidInterface pLinearPiston) {
         mRotaryPiston = pRotaryPiston;
         mLinearPiston = pLinearPiston;
-
-        mJoystick = pJoystick;
     }
 
 
@@ -66,30 +61,6 @@ public class HatchIntake {
 
     public void setLinearOpposite() {
         mLinearPiston.setOpposite();
-    }
-
-    public void enactMovement() {
-        // rotary piston
-        if (mJoystick.getRawButtonReleased(JoystickConstants.HatchIntakeButtons.EXPAND)) {
-            mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.EXPANDED);
-        }
-        else if (mJoystick.getRawButtonReleased(JoystickConstants.HatchIntakeButtons.CONTRACT)) {
-            mRotaryPiston.set(HatchIntakeConstants.RotaryPiston.CONTRACTED);
-        }
-        else if (mJoystick.getRawButtonReleased(JoystickConstants.HatchIntakeButtons.EXPAND_CONTRACT_OPPOSITE)) {
-            mRotaryPiston.setOpposite();
-        }
-
-        // linear piston
-        if (mJoystick.getRawButtonReleased(JoystickConstants.HatchIntakeButtons.IN)) {
-            mLinearPiston.set(HatchIntakeConstants.LinearPiston.IN);
-        }
-        else if (mJoystick.getRawButtonReleased(JoystickConstants.HatchIntakeButtons.OUT)) {
-            mLinearPiston.set(HatchIntakeConstants.LinearPiston.OUT);
-        }
-        else if (mJoystick.getRawButtonReleased(JoystickConstants.HatchIntakeButtons.IN_OUT_OPPOSITE)) {
-            mLinearPiston.setOpposite();
-        }
     }
 }
 

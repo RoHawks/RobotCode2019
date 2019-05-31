@@ -29,9 +29,6 @@ public class Leadscrew {
     // VARIABLES //
     // **********//
 
-    // joysticks used
-    private LocalJoystick mJoystick;
-
     private DriveTrain mDrivetrain;
 
     // leadscrew
@@ -45,70 +42,15 @@ public class Leadscrew {
     // ***********//
     // INITIALIZE //
     // ***********//
-    public Leadscrew(WPI_TalonSRX pLeadscrew, LeadscrewEncoder pEncoder, Limelight pLimelight, LocalJoystick pJoystick, DriveTrain pDrivetrain) {
+    public Leadscrew(WPI_TalonSRX pLeadscrew, LeadscrewEncoder pEncoder, Limelight pLimelight, DriveTrain pDrivetrain) {
         mLeadscrew = pLeadscrew;
         mEncoder = pEncoder;
         mHatchCamera = pLimelight;
-        mJoystick = pJoystick;
         mDrivetrain = pDrivetrain;
     }
 
     private enum LeadscrewState {
         MANUAL, CAMERA_ALIGN, IDLE, CENTER
-    }
-
-
-    // *********//
-    // DO STUFF //
-    // *********//
-    
-    /**
-     * Control of ONLY leadscrew -- manual, camera align, or fixed loading station distance
-     */
-    public void enactMovement() {
-
-        SmartDashboard.putString("LEADSCREW STATE", mLeadscrewState.toString());
-
-
-        // change states
-        if (mJoystick.getRawButtonPressed(26)) {
-            mLeadscrewState = LeadscrewState.MANUAL;
-        } 
-        else if (mJoystick.getRawButtonPressed(22)) {
-            mLeadscrewState = LeadscrewState.CAMERA_ALIGN;
-        } 
-        else if (mJoystick.getRawButtonPressed(23)){
-            mLeadscrewState = LeadscrewState.CENTER;
-        }
-        // else {
-        //     mLeadscrewState = LeadscrewState.IDLE;e
-        // }
-
-        // zero sensor
-        if (!mLeadscrew.getSensorCollection().isRevLimitSwitchClosed()) {
-            zero();
-        }
-
-        // do stuff
-        switch (mLeadscrewState) {
-            case MANUAL:
-                mLeadscrew.set(ControlMode.PercentOutput, (Math.abs(mJoystick.getX()) > 0.25) ? mJoystick.getX() : 0);
-                break;
-            case CAMERA_ALIGN:
-                centerWithCamera();
-                //centerWithCameraDrivetrain();
-                break;
-            case IDLE:
-                setSpeed(0);
-                break;
-            case CENTER:
-                setPosition(LeadscrewConstants.MIDDLE);
-                break;
-            default:
-                setSpeed(0);
-                throw new RuntimeException("Unknown leadscrew state");
-            }
-
     }
 
     /**
@@ -133,13 +75,6 @@ public class Leadscrew {
             speed = Math.signum(speed) * Math.min(0.15, Math.abs(speed));
         }
         mLeadscrew.set(ControlMode.PercentOutput, speed);
-    }
-
-    public void setSpeedJoystick() {
-        double joystickLocation = mJoystick.getX(JoystickConstants.LEADSCREW_PROFILE);
-
-        double speed = Math.abs(joystickLocation) > 0.25 ? -1 * joystickLocation * Math.abs(joystickLocation) : 0;
-        setSpeed(speed);
     }
 
     /**
@@ -278,12 +213,6 @@ public class Leadscrew {
         }
     }
 
-    public void setPositionJoystick(){
-        setPosition(mJoystick.getX());
-        // double percentGoal = (mJoystick.getX() + 1) / 2; //this should be between 0 and 1
-        // setPosition(percentGoal * LeadscrewConstants.LENGTH);
-    }
-
     /**
      * sets the current position of the lead screw to be zero
      */
@@ -305,9 +234,6 @@ public class Leadscrew {
                 mLeadscrew.set(ControlMode.PercentOutput, -0.3);
         
                 SmartDashboard.putBoolean("in lead screw initial zero", true);
-                if(mJoystick.getRawButtonReleased(JoystickConstants.FinalRobotButtons.LEADSCREW_OVERRIDE)){
-                    break;
-                }
             // }
             // else {
             //     mLeadscrew.set(ControlMode.PercentOutput, -0.4);

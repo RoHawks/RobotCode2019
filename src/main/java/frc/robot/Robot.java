@@ -64,8 +64,6 @@ public class Robot extends SampleRobot {
 	// controllers
 	private XboxController mController;
 	private XboxController mClimbController;
-	private LocalJoystick mJoystick;
-	private Joystick mClimbJoystick;
 
 	// drive train
 	private DriveTrain mDriveTrain;
@@ -192,8 +190,6 @@ public class Robot extends SampleRobot {
 	public void robotInit() {
 
 		mController = new XboxController(Ports.XBOX);
-		mJoystick = new LocalJoystick(Ports.JOYSTICK);
-		mClimbJoystick = new Joystick(Ports.CLIMB_JOYSTICK);
 		mClimbController = new XboxController(Ports.CLIMB_CONTROLLER);
 		mNavX = new AHRS(Ports.NAVX);
 
@@ -287,11 +283,6 @@ public class Robot extends SampleRobot {
 		
 			// put info on SmartDashboard
 
-			if (!RunConstants.SECONDARY_JOYSTICK) { // only do this if we're using the logitech attack 3
-				mJoystick.updateProfile();
-				SmartDashboard.putNumber("JOYSTICK PROFILE NUMBER", mJoystick.getProfile());
-			} 
-
 			if (RunConstants.RUNNING_EVERYTHING){
 				doWork();
 				SmartDashboard.putBoolean("BallSensed", mBallIntake.isHoldingBall());
@@ -321,7 +312,7 @@ public class Robot extends SampleRobot {
 		}
 	}
 
-	public void operatorControl()
+	public void operatorControlTest()
 	{
 		startGame();
 		
@@ -342,7 +333,7 @@ public class Robot extends SampleRobot {
 		}
 	}
 
-	public void operatorControlReal() {
+	public void operatorControl() {
 		// start game, again
 		startGame();
 		NetworkTableInstance.getDefault().setUpdateRate(0.015);
@@ -388,11 +379,6 @@ public class Robot extends SampleRobot {
 				
 			// }
 
-			// hatch intake without leadscrew
-			if (RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_EVERYTHING && !RunConstants.RUNNING_BALL) {
-				mHatchIntake.enactMovement();
-			}
-
 			// ball
 			else if (RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING && !RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_LEADSCREW) {
 				
@@ -402,23 +388,6 @@ public class Robot extends SampleRobot {
 				mIntake.holdingBall();
 				mIntake.idle();
 
-			}
-
-			// leadscrew without hatch intake or ball
-			else if (RunConstants.RUNNING_LEADSCREW && !RunConstants.RUNNING_HATCH && !RunConstants.RUNNING_BALL
-					&& !RunConstants.RUNNING_EVERYTHING) {
-				mLeadscrew.enactMovement();
-				
-				// SmartDashboard.putNumber("Limelight angle",
-				// NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0));
-				// SmartDashboard.putNumber("Limelight error",
-				// CameraConstants.LimelightConstants.HEIGHT *
-				// Math.tan(Math.toRadians(NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0))));
-			}
-
-			// all intake things but not states -- for testing
-			else if (RunConstants.RUNNING_HATCH && RunConstants.RUNNING_LEADSCREW && RunConstants.RUNNING_BALL && !RunConstants.RUNNING_EVERYTHING) {
-				mIntake.enactMovement();
 			}
 
 			else if (RunConstants.RUNNING_CLIMBER && !RunConstants.RUNNING_EVERYTHING) {
@@ -437,17 +406,12 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putBoolean("LeadscrewAligned", mLeadscrew.isInRange());
 			}
 
-			if (!RunConstants.SECONDARY_JOYSTICK) { // only do this if we're using the logitech attack 3
-				mJoystick.updateProfile();
-				SmartDashboard.putNumber("JOYSTICK PROFILE NUMBER", mJoystick.getProfile());
-			}	
-
 			//SmartDashboard.putNumber("BLINKIN value", mBlinkin.get());
 			SmartDashboard.putNumber("NAVX pitch", mNavX.getPitch());
 			SmartDashboard.putNumber("NAVX roll", mNavX.getRoll());
 			SmartDashboard.putNumber("NAVX yaw", mNavX.getYaw());
-			SmartDashboard.putString("CLIMBER front break", mFrontBreak.get().toString());
-			SmartDashboard.putString("CLIMBER back break", mBackBreak.get().toString());
+			//SmartDashboard.putString("CLIMBER front break", mFrontBreak.get().toString());
+			//SmartDashboard.putString("CLIMBER back break", mBackBreak.get().toString());
 			Timer.delay(0.005); // wait for a motor update time
 		}
 	}
@@ -759,26 +723,6 @@ public class Robot extends SampleRobot {
 			}
 
 			SmartDashboard.putString("LEDCommand", DriverStation.getInstance().getAlliance().toString());
-
-			if (mClimbJoystick.getTriggerPressed()) {
-				// rotate autonomous routines to select which one to start with:
-				if (mAutonomousRoutine == AutonomousRoutineType.DEFAULT) {
-					mAutonomousRoutine = AutonomousRoutineType.DO_NOTHING;
-				} 
-				else if (mAutonomousRoutine == AutonomousRoutineType.DO_NOTHING) {
-					mAutonomousRoutine = AutonomousRoutineType.DEFAULT;
-				}
-			}
-
-			if(mClimbJoystick.getRawButtonPressed(2)){
-				mNavX.setAngleAdjustment(0);
-			}
-			else if(mClimbJoystick.getRawButtonPressed(7)){
-				mNavX.setAngleAdjustment(90);
-			}
-			else if(mClimbJoystick.getRawButtonPressed(10)){
-				mNavX.setAngleAdjustment(-90);
-			}
 		}
 
 		SmartDashboard.putString("AUTO ROUTINE:", mAutonomousRoutine.toString());
@@ -854,14 +798,14 @@ public class Robot extends SampleRobot {
 		}
 
 		mRobotAngle = new RobotAngle(mNavX, false, 0);
-		mDriveTrain = new DriveTrain(mWheel, mController, mRobotAngle, mJoystick);
+		mDriveTrain = new DriveTrain(mWheel, mController, mRobotAngle);
 	}
 
 	private void hatchIntakeInit() {
 		mHatchRotaryPiston = new SingleSolenoidReal(Ports.ActualRobot.HATCH_ROTARY_SOLENOID_IN);
 		mHatchLinearPiston = new SingleSolenoidReal(Ports.ActualRobot.HATCH_LINEAR_SOLENOID_IN);
 
-		mHatchIntake = new HatchIntake(mHatchRotaryPiston, mHatchLinearPiston, mJoystick);
+		mHatchIntake = new HatchIntake(mHatchRotaryPiston, mHatchLinearPiston);
 	}
 
 	private void ballInit() {
@@ -919,12 +863,12 @@ public class Robot extends SampleRobot {
 
 		mLeadscrewEncoder = new LeadscrewEncoder(mLeadscrewTalon);
 
-		mLeadscrew = new Leadscrew(mLeadscrewTalon, mLeadscrewEncoder, mHatchCamera, mJoystick, mDriveTrain);
+		mLeadscrew = new Leadscrew(mLeadscrewTalon, mLeadscrewEncoder, mHatchCamera, mDriveTrain);
 		
 	}
 
 	private void intakeInit() {
-		mIntake = new Intake(mHatchIntake, mBallIntake, mLeadscrew, mHatchCamera, mDriveTrain, mJoystick, mController);
+		mIntake = new Intake(mHatchIntake, mBallIntake, mLeadscrew, mHatchCamera, mDriveTrain, mController);
 	}
 
 	private void ccClimberInit()
@@ -962,9 +906,6 @@ public class Robot extends SampleRobot {
 		mDriveClimbTalon1 = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_DRIVE1);
 		mDriveClimbTalon1.setInverted(ClimberConstants.DRIVE1_REVERSED);
 		mDriveClimbTalon1.setNeutralMode(NeutralMode.Brake);
-
-		mClimber = new ClimberPiston(mBackClimbPiston, mFrontClimbPiston, mDriveClimbTalon0, mDriveClimbTalon1,
-				mDriveTrain, mClimbJoystick, mBackBreak, mFrontBreak, mNavX);
 	}
 
 	// ******//

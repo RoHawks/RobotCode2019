@@ -32,7 +32,6 @@ public class Intake {
     private Leadscrew mLeadscrew;
     private Limelight mLimelight;
     private DriveTrain mDrivetrain;
-    private LocalJoystick mJoystick;
     private XboxController mController;
 
     private IntakeState mIntakeState = IntakeState.IDLE;
@@ -42,130 +41,17 @@ public class Intake {
     // INITIALIZE //
     // ***********//
 
-    public Intake(HatchIntake pHatchIntake, BallIntake pBallIntake, Leadscrew pLeadscrew, Limelight pLimelight, DriveTrain pDrivetrain, LocalJoystick pJoystick, XboxController pController) {
+    public Intake(HatchIntake pHatchIntake, BallIntake pBallIntake, Leadscrew pLeadscrew, Limelight pLimelight, DriveTrain pDrivetrain, XboxController pController) {
         mHatchIntake = pHatchIntake;
         mBallIntake = pBallIntake;
         mLeadscrew = pLeadscrew;
         mLimelight = pLimelight;
         mDrivetrain = pDrivetrain;
-        mJoystick = pJoystick;
         mController = pController;
     }
 
     private enum IntakeState {
         HATCH_INTAKE, BALL_INTAKE, HATCH_SCORE, BALL_SCORE_HIGH, BALL_SCORE_LOW, MANUAL, IDLE
-    }
-
-    // private Intake mInstance = null;
-
-    // public Intake getInstance(){
-    //     if (mInstance == null){
-    //         mInstance = new Intake();
-    //     }
-    //     else return
-    // }
-
-
-    // *********//
-    // DO STUFF //
-    // *********//
-    private boolean mDoneIntakingHatch = false;
-    private boolean mDoneScoringHatch = false;
-    private boolean mDoneIntakingBall = false;
-    private boolean mDoneScoringBallHigh = false;
-    private boolean mDoneScoringBallLow = false;
-
-    public void enactMovement() {
-        if(mJoystick.getTriggerReleased()) { //use joystick trigger to change whether ball score is front or back (starts as front)
-            frontBall = !frontBall;
-        }
-        if (mController.getTriggerAxis(Hand.kLeft) > .25) { //assume left trigger returns positive 1 for fully pressed
-            if (mJoystick.getThrottle() > 0) { //get rolly tab value. Assume positive is up. Up is ball, down is hatch
-                //Ball Mode
-                if (holdingItem) {
-                    //Scoring mode
-                    if(frontBall) {
-                        //Score front
-                        mIntakeState = IntakeState.BALL_SCORE_HIGH;
-                    } 
-                    else {
-                        //Score rear
-                        mIntakeState = IntakeState.BALL_SCORE_LOW;
-                    }
-                }
-                else {
-                    //Loading mode
-                    mIntakeState = IntakeState.BALL_INTAKE;
-                }
-            }
-            else {
-                //Hatch Mode
-                if(holdingItem) {
-                    //scoring mode
-                    mIntakeState = IntakeState.HATCH_SCORE;
-                }
-                else {
-                    //loading mode
-                    mIntakeState =  IntakeState.HATCH_INTAKE;
-                }
-            }
-        }
-
-        switch (mIntakeState) {
-            case HATCH_INTAKE:
-                if (!mDoneIntakingHatch) {
-                    mDoneIntakingHatch = intakePanel();
-                }
-                else {
-                    mIntakeState = IntakeState.MANUAL;
-                    mDoneIntakingHatch = false;
-                }
-                break;
-            case BALL_INTAKE:
-                if (!mDoneIntakingBall) {
-                    mDoneIntakingBall = intakeBall();
-                }
-                else {
-                    mIntakeState = IntakeState.MANUAL;
-                    mDoneIntakingBall = false;
-                }
-                break;
-            case HATCH_SCORE:
-                if (!mDoneScoringHatch) {
-                    mDoneScoringHatch = scorePanel();
-                }
-                else {
-                    mIntakeState = IntakeState.MANUAL;
-                    mDoneScoringHatch = false;
-                }
-                break;
-            case BALL_SCORE_HIGH:
-                if (!mDoneScoringBallHigh) {
-                    mDoneScoringBallHigh = scoreBallHigh();
-                }
-                else {
-                    mIntakeState = IntakeState.MANUAL;
-                    mDoneScoringBallHigh = false;
-                }
-                break;
-            case BALL_SCORE_LOW:
-                if (!mDoneScoringBallLow) {
-                    mDoneScoringBallLow = scoreBallLow();
-                }
-                else {
-                    mIntakeState = IntakeState.MANUAL;
-                    mDoneScoringBallLow = false;
-                }
-                break;
-            case MANUAL:
-                mHatchIntake.enactMovement();
-                mLeadscrew.enactMovement();
-                break;
-            case IDLE:
-                break;
-            default:
-                throw new RuntimeException("Unknown intake state");
-        }
     }
 
     private boolean mHasAlignedHatchIntake = false;

@@ -22,7 +22,6 @@ public class DriveTrain {
 	private RobotAngle mRobotAngle;
 	private XboxController mController;
 	private double mJoystickAngle;
-	private LocalJoystick mJoystick;
 
 	// End products
 	private Vector mDesiredRobotVel;
@@ -42,11 +41,10 @@ public class DriveTrain {
 	private LinearVelocity mPrevLinearVel;
 	private RotationalVelocity mRotationalVel;
 
-	public DriveTrain(Wheel[] pWheels, XboxController pController, RobotAngle pRobotAngle, LocalJoystick pJoystick) {
+	public DriveTrain(Wheel[] pWheels, XboxController pController, RobotAngle pRobotAngle) {
 		mWheels = pWheels;
 		mController = pController;
 		mSwerveDrive = new SwerveDrive(mWheels);
-		mJoystick = pJoystick;
 
 		mRobotAngle = pRobotAngle;
 
@@ -123,23 +121,6 @@ public class DriveTrain {
 		// SmartDashboard.putString("Linear Velocity State", mLinearVel.name());
 		// SmartDashboard.putString("Previous Linear Velocity", mPrevLinearVel.name());
 		// SmartDashboard.putString("Rotational Velocity State", mRotationalVel.name());
-
-		
-
-		if(mRotationalVel == RotationalVelocity.SECONDARY){
-			if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_BOTTOM)){
-				secondaryJoystickAngle = 331.3;
-			}
-			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_TOP)){
-				secondaryJoystickAngle = 208.7;
-			}
-			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_BOTTOM)){
-				secondaryJoystickAngle = 28.7;
-			}
-			else if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_TOP)){
-				secondaryJoystickAngle = 151.3;
-			}
-		}
 
 		
 		Vector linearVel = new Vector();
@@ -473,13 +454,7 @@ public class DriveTrain {
 	 * @return bumper --> nudge; no move --> none; else --> normal
 	 */
 	private RotationalVelocity getRotationalVelocityState() {
-		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_BOTTOM)
-		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.LEFT_ROCKET_TOP)
-		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_BOTTOM)
-		 || mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.RIGHT_ROCKET_TOP)){
-			return RotationalVelocity.SECONDARY;
-		 }
-		 else if(getLetterAngle() >= 0){
+		if(getLetterAngle() >= 0){
 			 return RotationalVelocity.POV;
 		 }
 		// else if (mController.getPOV() >= 0) {

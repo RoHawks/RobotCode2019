@@ -13,10 +13,8 @@ public class Ports {
 	public static final int
 		//Controllers
 		XBOX = 0,
-		JOYSTICK = 1,
 		CLIMB_CONTROLLER = 2,
-		CLIMB_JOYSTICK = 3,
-	
+			
 		COMPRESSOR = 0;
 	
 	//************************//
