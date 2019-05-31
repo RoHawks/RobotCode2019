@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj.SampleRobot;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import resource.ResourceFunctions;
@@ -62,6 +63,7 @@ public class Robot extends SampleRobot {
 
 	// controllers
 	private XboxController mController;
+	private XboxController mClimbController;
 	private LocalJoystick mJoystick;
 	private Joystick mClimbJoystick;
 
@@ -101,6 +103,8 @@ public class Robot extends SampleRobot {
 	private WPI_TalonSRX mDriveClimbTalon0, mDriveClimbTalon1;
 	private DoubleSolenoidReal mFrontClimbPiston, mBackClimbPiston, mFrontBreak, mBackBreak;
 	private ClimberPiston mClimber;
+	private CANSparkMax[] mCCClimberSparks = new CANSparkMax[4];
+	private DoubleSolenoidReal mClimbTiltPiston;
 
 	// LEDs
 	private Spark mBlinkin;
@@ -190,7 +194,7 @@ public class Robot extends SampleRobot {
 		mController = new XboxController(Ports.XBOX);
 		mJoystick = new LocalJoystick(Ports.JOYSTICK);
 		mClimbJoystick = new Joystick(Ports.CLIMB_JOYSTICK);
-
+		mClimbController = new XboxController(Ports.CLIMB_CONTROLLER);
 		mNavX = new AHRS(Ports.NAVX);
 
 		mPDP = new PowerDistributionPanel();
@@ -224,6 +228,11 @@ public class Robot extends SampleRobot {
 
 		if (RunConstants.RUNNING_CLIMBER) {
 			climberInit();
+		}
+
+		if(RunConstants.RUNNING_CC_CLIMBER)
+		{
+			ccClimberInit();
 		}
 
 	}
@@ -312,7 +321,28 @@ public class Robot extends SampleRobot {
 		}
 	}
 
-	public void operatorControl() {
+	public void operatorControl()
+	{
+		startGame();
+		
+		while (isOperatorControl() && isEnabled()) 
+		{
+			double speed = 1 * (mController.getTriggerAxis(Hand.kRight) - mController.getTriggerAxis(Hand.kLeft));
+			mCCClimberSparks[0].set(mController.getAButton() ? speed : 0);
+			mCCClimberSparks[1].set(mController.getXButton() ? speed : 0);
+			mCCClimberSparks[2].set(mController.getYButton() ? speed : 0);
+			mCCClimberSparks[3].set(mController.getBButton() ? speed : 0);
+			SmartDashboard.putNumber("CCCLimberCurrent2", mPDP.getCurrent(2));
+			SmartDashboard.putNumber("CCCLimberCurrent3", mPDP.getCurrent(3));
+			SmartDashboard.putNumber("CCCLimberCurrent12", mPDP.getCurrent(12));
+			SmartDashboard.putNumber("CCCLimberCurrent13", mPDP.getCurrent(13));
+			
+			Timer.delay(0.005); // wait for a motor update time
+		
+		}
+	}
+
+	public void operatorControlReal() {
 		// start game, again
 		startGame();
 		NetworkTableInstance.getDefault().setUpdateRate(0.015);
@@ -427,11 +457,16 @@ public class Robot extends SampleRobot {
 	private boolean ScoreFront = true;
 	private boolean BallMode = false;
 	private boolean EscapePressed = false;
+	private boolean LoadedPressed = false;
+	private boolean ClimbStarted = false;
 	private void doWork() {
 		ScorePressed = mController.getTriggerAxis(Hand.kLeft) > .5;
-		ScoreFront = mJoystick.getThrottle() > 0; //use potentiometer on joystick. assume up is positive down is negative
-		if(mJoystick.getTriggerReleased()) BallMode = !BallMode; //use trigger to switch between ball and hatch states
-		EscapePressed = mJoystick.getTopReleased();
+		ScoreFront = mClimbController.getTriggerAxis(Hand.kRight) > .5;
+		BallMode = mClimbController.getTriggerAxis(Hand.kLeft) > .5;
+		EscapePressed = mClimbController.getYButtonReleased();
+		LoadedPressed = mClimbController.getAButtonReleased();
+		ClimbStarted = mClimbController.getStickButtonPressed(Hand.kLeft);
+
 		switch (mCurrentState) {
 			case INITIAL_HOLDING_HATCH:
 				initialHoldingHatch();
@@ -475,7 +510,8 @@ public class Robot extends SampleRobot {
 			default:
 				throw new RuntimeException("Unknown state");
 		}
-
+		if(EscapePressed) mCurrentState = RobotState.WAITING_TO_LOAD;
+		if(ClimbStarted) mCurrentState = RobotState.CLIMB;
 		SmartDashboard.putString("Current State", mCurrentState.name());
 
 	}
@@ -491,15 +527,6 @@ public class Robot extends SampleRobot {
 		if (mIntake.holdingHatch() && ScorePressed) {
 			mCurrentState = RobotState.HATCH_SCORE;
 		}
-
-		if (mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)) {
-			mCurrentState = RobotState.CLIMB;
-		}
-
-		if (EscapePressed) {
-			mCurrentState = RobotState.WAITING_TO_LOAD;
-		}
-
 	}
 
 	private void initialHoldingBall() {
@@ -508,14 +535,6 @@ public class Robot extends SampleRobot {
 		
 		if (mIntake.holdingBall() && ScorePressed ){
 			mCurrentState = ScoreFront ? RobotState.BALL_FRONT_SCORE : RobotState.BALL_BACK_SCORE;
-		}
-
-		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
-			mCurrentState = RobotState.CLIMB;
-		}
-
-		if(EscapePressed){
-			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
 
@@ -528,14 +547,6 @@ public class Robot extends SampleRobot {
 
 		// if robot or driver says scoring is done...
 		if (mIntake.scorePanel()) {
-			mCurrentState = RobotState.WAITING_TO_LOAD;
-		}
-
-		if (mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)) {
-			mCurrentState = RobotState.CLIMB;
-		}
-
-		if (EscapePressed) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
@@ -559,48 +570,25 @@ public class Robot extends SampleRobot {
 		long waitingElapsedMilliseconds = System.currentTimeMillis() - mStartWaitingToLoad;
 
 		if (waitingElapsedMilliseconds > 500) {
-
-			if (BallMode) {
-				mBallIntake.lock();
-			}
-			else {
-				mBallIntake.letGo();
-			}
-
 			if (mIntake.idle() && ScorePressed) {
 				mCurrentState = BallMode ? RobotState.LOADING_BALL : RobotState.LOADING_HATCH;
 				mStartWaitingToLoad = 0;
 				mHasWaitedToLoad = false;
 			}
-
-			if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)) {
-				mCurrentState = RobotState.CLIMB;
+			if(ClimbStarted) {
 				mStartWaitingToLoad = 0;
 				mHasWaitedToLoad = false;
 			}
-
 		}
-
-		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
-			mCurrentState = RobotState.CLIMB;
-		}
-
 	}
-
 
 	private void loadingBall() {
 
 		swerveDrive();
-
-		if (mIntake.intakeBall()) {
+		if (mIntake.intakeBall() && LoadedPressed) {
+			mBallIntake.lock();
+			mIntake.resetBallIntake();
 			mCurrentState = RobotState.BALL_PRESCORE;
-		}
-
-		if (mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)) {
-			mCurrentState = RobotState.CLIMB;
-		}
-		if (EscapePressed) {
-			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
 
@@ -616,13 +604,6 @@ public class Robot extends SampleRobot {
 		// either robot or person says the thing has been intaken
 		if (mIntake.intakePanel()) {
 			mCurrentState = RobotState.HATCH_PRESCORE;
-		}
-
-		if (mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)) {
-			mCurrentState = RobotState.CLIMB;
-		}
-		if (EscapePressed) {
-			mCurrentState = RobotState.WAITING_TO_LOAD;
 		}
 	}
 
@@ -648,27 +629,13 @@ public class Robot extends SampleRobot {
 				mTimeStartHatchPrescore = 0;
 				mHasStartedHatchPrescore = false;
 			}
-
-
-			// if we accidentally drop the panel... TODO check transition
 		}
-
-		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
-			mCurrentState = RobotState.CLIMB;
+		if(EscapePressed || ClimbStarted) {
 			mTimeStartHatchPrescore = 0;
 			mHasStartedHatchPrescore = false;
 		}
-		if(EscapePressed){
-			mCurrentState = RobotState.WAITING_TO_LOAD;
-			mTimeStartHatchPrescore = 0;
-			mHasStartedHatchPrescore = false;
-		}
-
 	}
 
-	/**
-	 * 
-	 */
 	private void ballPrescore() {
 
 		swerveDrive();
@@ -678,14 +645,6 @@ public class Robot extends SampleRobot {
 		if (ScorePressed) {
 			mCurrentState = ScoreFront ? RobotState.BALL_FRONT_SCORE : RobotState.BALL_BACK_SCORE;
 		}
-
-		if (mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)) {
-			mCurrentState = RobotState.CLIMB;
-
-		}
-		if (EscapePressed) {
-			mCurrentState = RobotState.WAITING_TO_LOAD;
-		}
 	}
 
 	
@@ -693,23 +652,16 @@ public class Robot extends SampleRobot {
 
 		swerveDrive();
 
-		if (mIntake.scoreBallHigh() || EscapePressed) {
+		if (mIntake.scoreBallHigh()) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
-		}
-
-		if (mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)) {
-			mCurrentState = RobotState.CLIMB;
 		}
 	}
 
 	private void ballBackScore() {
 		swerveDrive();
 		// if robot or driver says scoring is done...
-		if (mIntake.scoreBallLow() || EscapePressed) {
+		if (mIntake.scoreBallLow()) {
 			mCurrentState = RobotState.WAITING_TO_LOAD;
-		}
-		if(mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB)){
-			mCurrentState = RobotState.CLIMB;
 		}
 	}
 
@@ -718,15 +670,63 @@ public class Robot extends SampleRobot {
 	}
 
 	private void climb() {
-		if (mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB_ABORT)) {
-			mCurrentState = RobotState.WAITING_TO_LOAD;
-		}
+		/* buttons
+		 * A - ball loaded
+		 * L stick button - lift all
+		 * L bumper - drive green wheels (orient swerve robot relative front)
+		 * L trigger - ball/disk - disk:100 ball:0
+		 * R trigger - front/rear - rear:100 front:0
+		 * R bumper - retract front
+		 * R stick button - drive swerve forward
+		 * X - retract rear
+		 * Y - reset
+		 * B - tilt robot???
+		 */
 
-		if (!mJoystick.getRawButton(JoystickConstants.FinalRobotButtons.CLIMB_AUTO_MANUAL_SWITCH)) {
-			mClimber.manualClimb();
+		//escape climbing
+		if(EscapePressed) {
+			//should we retract the legs in this case?
+		}
+		else if(mClimbController.getStickButtonPressed(Hand.kLeft)) {
+			//extend all
+			for(int i = 0; i< 4; i++) {
+				//drive left side at 95% right at 100%
+				mCCClimberSparks[i].set(i == 0 ? 1 : .95);
+			}
+			//orient swerve wheels to robot relative front
+		}
+		else if(mClimbController.getBumperPressed(Hand.kLeft)) {
+			//drive green wheels
+			mDriveClimbTalon0.set(.5);
+			mDriveClimbTalon1.set(.5);
+		}
+		else if(mClimbController.getBumperPressed(Hand.kRight)) {
+			//retract front
+			for(int i = 1; i < 2; i++) {
+				mCCClimberSparks[i].set(i == 0 ? -1 : -.95);
+			}
+		}
+		else if(mClimbController.getStickButtonPressed(Hand.kRight)) {
+			//drive swerve forward
+			
+		}
+		else if(mClimbController.getXButtonPressed()) {
+			//retract rear
+			for(int i = 3; i >= 0; i -= 3) {
+				mCCClimberSparks[i].set(i == 0 ? -1 : -.95);
+			}
+		}
+		else if(mClimbController.getBButtonReleased()) {
+			//tilt robot
+			mClimbTiltPiston.setOpposite();
 		}
 		else {
-			mClimber.autoClimb();
+			//set motor speeds to zero
+			for(int i = 0; i < 4; i++) {
+				mCCClimberSparks[i].set(0);
+			}
+			mDriveClimbTalon0.set(0);
+			mDriveClimbTalon1.set(0);
 		}
 	}
 
@@ -925,6 +925,24 @@ public class Robot extends SampleRobot {
 
 	private void intakeInit() {
 		mIntake = new Intake(mHatchIntake, mBallIntake, mLeadscrew, mHatchCamera, mDriveTrain, mJoystick, mController);
+	}
+
+	private void ccClimberInit()
+	{
+		mCCClimberSparks[0] = new CANSparkMax(Ports.ActualRobot.CC_CLIMBER_SW, MotorType.kBrushless);		
+		mCCClimberSparks[1] = new CANSparkMax(Ports.ActualRobot.CC_CLIMBER_NW, MotorType.kBrushless);
+		mCCClimberSparks[2] = new CANSparkMax(Ports.ActualRobot.CC_CLIMBER_NE, MotorType.kBrushless);
+		mCCClimberSparks[3] = new CANSparkMax(Ports.ActualRobot.CC_CLIMBER_SE, MotorType.kBrushless);
+		
+		mClimbTiltPiston = new DoubleSolenoidReal(Ports.ActualRobot.CLIMB_TILT_IN, Ports.ActualRobot.CLIMB_TILT_OUT, 1);
+		
+		mDriveClimbTalon0 = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_DRIVE0);
+		mDriveClimbTalon0.setInverted(ClimberConstants.DRIVE0_REVERSED);
+		mDriveClimbTalon0.setNeutralMode(NeutralMode.Brake);
+
+		mDriveClimbTalon1 = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_DRIVE1);
+		mDriveClimbTalon1.setInverted(ClimberConstants.DRIVE1_REVERSED);
+		mDriveClimbTalon1.setNeutralMode(NeutralMode.Brake);
 	}
 
 	private void climberInit() {

@@ -14,7 +14,8 @@ public class Ports {
 		//Controllers
 		XBOX = 0,
 		JOYSTICK = 1,
-		CLIMB_JOYSTICK = 2,
+		CLIMB_CONTROLLER = 2,
+		CLIMB_JOYSTICK = 3,
 	
 		COMPRESSOR = 0;
 	
@@ -68,6 +69,18 @@ public class Ports {
 		public static final int
 			BLINKIN_CHANNEL = 0;
 
+			
+		//CC Climber
+		public static final int
+		CC_CLIMBER_SW = 51,
+		CC_CLIMBER_NW = 52,
+		CC_CLIMBER_NE = 53,
+		CC_CLIMBER_SE = 54;
+
+		//Climb Tilt Piston
+		public static final int 
+		CLIMB_TILT_IN = 3,
+		CLIMB_TILT_OUT = 6;
 	}
 	
 	//***************************//
@@ -110,5 +123,6 @@ public class Ports {
 
 			SHIFTER_SOLENOID_IN = 0,
 			SHIFTER_SOLENOID_OUT = 0;
+
 	}
 }
