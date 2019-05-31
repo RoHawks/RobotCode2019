@@ -651,7 +651,7 @@ public class Robot extends SampleRobot {
 		if(EscapePressed) {
 			//should we retract the legs in this case?
 		}
-		else if(mClimbController.getStickButtonPressed(Hand.kLeft)) {
+		else if(mClimbController.getStickButton(Hand.kLeft)) {
 			//extend all
 			for(int i = 0; i< 4; i++) {
 				//drive left side at 95% right at 100%
@@ -659,22 +659,22 @@ public class Robot extends SampleRobot {
 			}
 			//orient swerve wheels to robot relative front
 		}
-		else if(mClimbController.getBumperPressed(Hand.kLeft)) {
+		else if(mClimbController.getBumper(Hand.kLeft)) {
 			//drive green wheels
 			mDriveClimbTalon0.set(.5);
 			mDriveClimbTalon1.set(.5);
 		}
-		else if(mClimbController.getBumperPressed(Hand.kRight)) {
+		else if(mClimbController.getBumper(Hand.kRight)) {
 			//retract front
 			for(int i = 1; i < 2; i++) {
 				mCCClimberSparks[i].set(-1);
 			}
 		}
-		else if(mClimbController.getStickButtonPressed(Hand.kRight)) {
+		else if(mClimbController.getStickButton(Hand.kRight)) {
 			//drive swerve forward
 			
 		}
-		else if(mClimbController.getXButtonPressed()) {
+		else if(mClimbController.getXButton()) {
 			//retract rear
 			for(int i = 3; i >= 0; i -= 3) {
 				mCCClimberSparks[i].set(-1);
