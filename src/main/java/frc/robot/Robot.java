@@ -321,8 +321,8 @@ public class Robot extends SampleRobot {
 		while (isOperatorControl() && isEnabled()) 
 		{
 			double climberHeight = 500;
-			double slowZonePercentage = .2;
-			double slowSpeedLimit = .1;
+			double slowZonePercentage = .1;
+			double slowSpeedLimit = .3;
 
 			double speed = 1 * (mController.getTriggerAxis(Hand.kRight) - mController.getTriggerAxis(Hand.kLeft));
 			boolean goingUp = speed > 0;
@@ -343,7 +343,7 @@ public class Robot extends SampleRobot {
 						}
 					}
 				}
-				mCCClimberSparks[i].set(mController.getAButton() ? speed : 0);
+				mCCClimberSparks[i].set(mController.getAButton() ? i < 2 ? speed * .92 : speed : 0);
 			}
 
 			SmartDashboard.putNumber("CCCLimberCurrent2", mPDP.getCurrent(2));
@@ -689,9 +689,9 @@ public class Robot extends SampleRobot {
 			//drive green wheels
 			mDriveClimbTalon0.set(.5);
 			mDriveClimbTalon1.set(.5);
-			//orient swerve wheels to robot relative front
+			//drive swerve wheels to robot relative front to help get up edge of hab
 			//Check if this is robot or field relative
-			mDriveTrain.enactMovement(0, 0, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
+			mDriveTrain.enactMovement(0, 0, LinearVelocity.NORMAL, .5, RotationalVelocity.NONE);
 		}
 		else if(mClimbController.getBumper(Hand.kRight)) {
 			//retract front
