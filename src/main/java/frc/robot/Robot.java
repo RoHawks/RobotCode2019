@@ -314,7 +314,7 @@ public class Robot extends SampleRobot {
 		}
 	}
 
-	public void operatorControlTest()
+	public void operatorControl()
 	{
 		startGame();
 		
@@ -322,20 +322,23 @@ public class Robot extends SampleRobot {
 		{
 			double speed = 1 * (mController.getTriggerAxis(Hand.kRight) - mController.getTriggerAxis(Hand.kLeft));
 			mCCClimberSparks[0].set(mController.getAButton() ? speed : 0);
-			mCCClimberSparks[1].set(mController.getXButton() ? speed : 0);
-			mCCClimberSparks[2].set(mController.getYButton() ? speed : 0);
-			mCCClimberSparks[3].set(mController.getBButton() ? speed : 0);
+			mCCClimberSparks[1].set(mController.getAButton() ? speed : 0);
+			mCCClimberSparks[2].set(mController.getAButton() ? speed : 0);
+			mCCClimberSparks[3].set(mController.getAButton() ? speed : 0);
 			SmartDashboard.putNumber("CCCLimberCurrent2", mPDP.getCurrent(2));
 			SmartDashboard.putNumber("CCCLimberCurrent3", mPDP.getCurrent(3));
 			SmartDashboard.putNumber("CCCLimberCurrent12", mPDP.getCurrent(12));
 			SmartDashboard.putNumber("CCCLimberCurrent13", mPDP.getCurrent(13));
-			
+			SmartDashboard.putNumber("CCClimberEncoderSE", mCCClimberSparks[0].getEncoder().getPosition());
+			SmartDashboard.putNumber("CCClimberEncoderNE", mCCClimberSparks[1].getEncoder().getPosition());
+			SmartDashboard.putNumber("CCClimberEncoderNW", mCCClimberSparks[2].getEncoder().getPosition());
+			SmartDashboard.putNumber("CCClimberEncoderSW", mCCClimberSparks[3].getEncoder().getPosition());
 			Timer.delay(0.005); // wait for a motor update time
 		
 		}
 	}
 
-	public void operatorControl() {
+	public void operatorControlReal() {
 		// start game, again
 		startGame();
 		NetworkTableInstance.getDefault().setUpdateRate(0.015);
