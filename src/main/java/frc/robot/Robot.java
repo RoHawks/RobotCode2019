@@ -314,7 +314,7 @@ public class Robot extends SampleRobot {
 		}
 	}
 
-	public void operatorControl()
+	public void operatorControlTest()
 	{
 		startGame();
 		
@@ -359,7 +359,7 @@ public class Robot extends SampleRobot {
 		}
 	}
 
-	public void operatorControlReal() {
+	public void operatorControl() {
 		// start game, again
 		startGame();
 		NetworkTableInstance.getDefault().setUpdateRate(0.015);
@@ -679,11 +679,7 @@ public class Robot extends SampleRobot {
 		}
 		else if(mClimbController.getStickButton(Hand.kLeft)) {
 			//extend all
-			for(int i = 0; i< 4; i++) {
-				//drive left side at 95% right at 100%
-				mCCClimberSparks[i].set(1);
-				//slow down before either end!!!
-			}
+			runClimber(1, ClimberMode.BOTH);
 		}
 		else if(mClimbController.getBumper(Hand.kLeft)) {
 			//drive green wheels
@@ -695,9 +691,7 @@ public class Robot extends SampleRobot {
 		}
 		else if(mClimbController.getBumper(Hand.kRight)) {
 			//retract front
-			for(int i = 1; i < 2; i++) {
-				mCCClimberSparks[i].set(-1);
-			}
+			runClimber(-1, ClimberMode.FRONT);
 		}
 		else if(mClimbController.getStickButton(Hand.kRight)) {
 			//drive swerve forward at 30 speed
@@ -705,9 +699,7 @@ public class Robot extends SampleRobot {
 		}
 		else if(mClimbController.getXButton()) {
 			//retract rear
-			for(int i = 3; i >= 0; i -= 3) {
-				mCCClimberSparks[i].set(-1);
-			}
+			runClimber(-1, ClimberMode.REAR);
 		}
 		else if(mClimbController.getBButtonReleased()) {
 			//tilt robot
@@ -715,12 +707,66 @@ public class Robot extends SampleRobot {
 		}
 		else {
 			//set motor speeds to zero
-			for(int i = 0; i < 4; i++) {
-				mCCClimberSparks[i].set(0);
-			}
+			runClimber(0, ClimberMode.BOTH);
 			mDriveClimbTalon0.set(0);
 			mDriveClimbTalon1.set(0);
 		}
+	}
+	
+	private enum ClimberMode {
+		FRONT, 
+		REAR, 
+		BOTH
+	}
+	private void runClimber(double speed, ClimberMode mode) {
+		double climberHeight = 500;
+		double slowZonePercentage = .1;
+		double slowSpeedLimit = .3;
+
+		boolean goingUp = speed > 0;
+		int[] corners;
+		switch(mode) {
+			case FRONT:
+				corners = new int[] {1,2};
+				break;
+			case REAR:
+				corners = new int[] {0,3};
+				break;
+			case BOTH:
+				corners = new int[] {1,2,3,4};
+				break;
+			default:
+				corners = new int[] {};
+				break;
+		}
+		for(int i = 0; i < corners.length; i++) {
+			double pos = mCCClimberSparks[corners[i]].getEncoder().getPosition();
+			if(goingUp) {
+				if(pos > (1-slowZonePercentage) * climberHeight) {
+					if(Math.abs(speed) > slowSpeedLimit) {
+						speed = slowSpeedLimit;
+					}
+				}
+			}
+			else {
+				if(pos < slowZonePercentage * climberHeight) {
+					if(Math.abs(speed) > slowSpeedLimit) {
+						speed = -slowSpeedLimit;
+					}
+				}
+			}
+			//drive left side at 92% right at 100%
+			mCCClimberSparks[corners[i]].set(corners[i] < 2 ? speed * .92 : speed);
+		}
+
+		SmartDashboard.putNumber("CCCLimberCurrent2", mPDP.getCurrent(2));
+		SmartDashboard.putNumber("CCCLimberCurrent3", mPDP.getCurrent(3));
+		SmartDashboard.putNumber("CCCLimberCurrent12", mPDP.getCurrent(12));
+		SmartDashboard.putNumber("CCCLimberCurrent13", mPDP.getCurrent(13));
+		SmartDashboard.putNumber("CCClimberEncoderSE", mCCClimberSparks[0].getEncoder().getPosition());
+		SmartDashboard.putNumber("CCClimberEncoderNE", mCCClimberSparks[1].getEncoder().getPosition());
+		SmartDashboard.putNumber("CCClimberEncoderNW", mCCClimberSparks[2].getEncoder().getPosition());
+		SmartDashboard.putNumber("CCClimberEncoderSW", mCCClimberSparks[3].getEncoder().getPosition());
 	}
 
 	private void defaultState() {
