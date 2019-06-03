@@ -339,7 +339,7 @@ public class Robot extends SampleRobot {
 				else {
 					if(pos < slowZonePercentage * climberHeight) {
 						if(Math.abs(speed) > slowSpeedLimit) {
-							speed = slowSpeedLimit;
+							speed = -slowSpeedLimit;
 						}
 					}
 				}
