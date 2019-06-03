@@ -451,8 +451,8 @@ public class Robot extends SampleRobot {
 	private boolean ClimbStarted = false;
 	private void doWork() {
 		ScorePressed = mController.getTriggerAxis(Hand.kLeft) > .5;
-		ScoreFront = mClimbController.getTriggerAxis(Hand.kRight) > .5;
-		BallMode = mClimbController.getTriggerAxis(Hand.kLeft) > .5;
+		ScoreFront = mClimbController.getTriggerAxis(Hand.kRight) < .5;
+		BallMode = mClimbController.getTriggerAxis(Hand.kLeft) < .5;
 		EscapePressed = mClimbController.getYButtonReleased();
 		LoadedPressed = mClimbController.getAButtonReleased();
 		ClimbStarted = mClimbController.getStickButtonPressed(Hand.kLeft);
