@@ -40,6 +40,8 @@ import robotcode.LocalJoystick;
 import robotcode.camera.Limelight;
 import robotcode.driving.DriveTrain;
 import robotcode.driving.Wheel;
+import robotcode.driving.DriveTrain.LinearVelocity;
+import robotcode.driving.DriveTrain.RotationalVelocity;
 import robotcode.pneumatics.DoubleSolenoidReal;
 import robotcode.pneumatics.SingleSolenoidReal;
 import robotcode.pneumatics.SolenoidInterface;
@@ -656,13 +658,16 @@ public class Robot extends SampleRobot {
 			for(int i = 0; i< 4; i++) {
 				//drive left side at 95% right at 100%
 				mCCClimberSparks[i].set(1);
+				//slow down before either end!!!
 			}
-			//orient swerve wheels to robot relative front
 		}
 		else if(mClimbController.getBumper(Hand.kLeft)) {
 			//drive green wheels
 			mDriveClimbTalon0.set(.5);
 			mDriveClimbTalon1.set(.5);
+			//orient swerve wheels to robot relative front
+			//Check if this is robot or field relative
+			mDriveTrain.enactMovement(0, 0, LinearVelocity.ANGLE_ONLY, 0, RotationalVelocity.NONE);
 		}
 		else if(mClimbController.getBumper(Hand.kRight)) {
 			//retract front
@@ -671,8 +676,8 @@ public class Robot extends SampleRobot {
 			}
 		}
 		else if(mClimbController.getStickButton(Hand.kRight)) {
-			//drive swerve forward
-			
+			//drive swerve forward at 30 speed
+			mDriveTrain.enactMovement(0, 0, LinearVelocity.NORMAL, .3, RotationalVelocity.NONE);
 		}
 		else if(mClimbController.getXButton()) {
 			//retract rear
