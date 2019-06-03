@@ -320,11 +320,32 @@ public class Robot extends SampleRobot {
 		
 		while (isOperatorControl() && isEnabled()) 
 		{
+			double climberHeight = 500;
+			double slowZonePercentage = .2;
+			double slowSpeedLimit = .1;
+
 			double speed = 1 * (mController.getTriggerAxis(Hand.kRight) - mController.getTriggerAxis(Hand.kLeft));
-			mCCClimberSparks[0].set(mController.getAButton() ? speed : 0);
-			mCCClimberSparks[1].set(mController.getAButton() ? speed : 0);
-			mCCClimberSparks[2].set(mController.getAButton() ? speed : 0);
-			mCCClimberSparks[3].set(mController.getAButton() ? speed : 0);
+			boolean goingUp = speed > 0;
+
+			for(int i = 0; i<4; i++) {
+				double pos = mCCClimberSparks[i].getEncoder().getPosition();
+				if(goingUp) {
+					if(pos > (1-slowZonePercentage) * climberHeight) {
+						if(Math.abs(speed) > slowSpeedLimit) {
+							speed = slowSpeedLimit;
+						}
+					}
+				}
+				else {
+					if(pos < slowZonePercentage * climberHeight) {
+						if(Math.abs(speed) > slowSpeedLimit) {
+							speed = slowSpeedLimit;
+						}
+					}
+				}
+				mCCClimberSparks[i].set(mController.getAButton() ? speed : 0);
+			}
+
 			SmartDashboard.putNumber("CCCLimberCurrent2", mPDP.getCurrent(2));
 			SmartDashboard.putNumber("CCCLimberCurrent3", mPDP.getCurrent(3));
 			SmartDashboard.putNumber("CCCLimberCurrent12", mPDP.getCurrent(12));
