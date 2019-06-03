@@ -733,7 +733,7 @@ public class Robot extends SampleRobot {
 				corners = new int[] {0,3};
 				break;
 			case BOTH:
-				corners = new int[] {1,2,3,4};
+				corners = new int[] {0,1,2,3};
 				break;
 			default:
 				corners = new int[] {};
