@@ -970,7 +970,7 @@ public class Robot extends SampleRobot {
 		mCCClimberSparks[2] = new CANSparkMax(Ports.ActualRobot.CC_CLIMBER_NE, MotorType.kBrushless);
 		mCCClimberSparks[3] = new CANSparkMax(Ports.ActualRobot.CC_CLIMBER_SE, MotorType.kBrushless);
 		
-		mClimbTiltPiston = new DoubleSolenoidReal(Ports.ActualRobot.CLIMB_TILT_IN, Ports.ActualRobot.CLIMB_TILT_OUT, 1);
+		mClimbTiltPiston = new DoubleSolenoidReal(Ports.ActualRobot.CLIMB_TILT_IN, Ports.ActualRobot.CLIMB_TILT_OUT, 0);
 		
 		mDriveClimbTalon0 = new WPI_TalonSRX(Ports.ActualRobot.CLIMB_DRIVE0);
 		mDriveClimbTalon0.setInverted(ClimberConstants.DRIVE0_REVERSED);
