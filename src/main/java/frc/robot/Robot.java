@@ -676,40 +676,57 @@ public class Robot extends SampleRobot {
 		//escape climbing
 		if(EscapePressed) {
 			//should we retract the legs in this case?
+			return;
 		}
-		else if(mClimbController.getStickButton(Hand.kLeft)) {
+		boolean liftBoth = mClimbController.getStickButton(Hand.kLeft);
+		boolean retractFront = mClimbController.getBumper(Hand.kRight);
+		boolean retractRear = mClimbController.getXButton();
+		boolean driveClimbWheels = mClimbController.getBumper(Hand.kLeft);
+		boolean driveSwerveWheels = mClimbController.getStickButton(Hand.kRight);
+		boolean tiltRobot = mClimbController.getBButtonReleased();
+
+		if(liftBoth) {
 			//extend all
 			runClimber(1, ClimberMode.BOTH);
 		}
-		else if(mClimbController.getBumper(Hand.kLeft)) {
+		else if(retractFront || retractRear){
+			if(retractFront) {
+				//retract front
+				runClimber(-1, ClimberMode.FRONT);
+			}
+			if(retractRear) {
+				//retract rear
+				runClimber(-1, ClimberMode.REAR);
+			}
+		}
+		else {
+			//set climb motors to zero
+			runClimber(0, ClimberMode.BOTH);
+		}
+
+		if(driveClimbWheels) {
 			//drive green wheels
 			mDriveClimbTalon0.set(.5);
 			mDriveClimbTalon1.set(.5);
-			//drive swerve wheels to robot relative front to help get up edge of hab
-			//Check if this is robot or field relative
-			mDriveTrain.enactMovement(0, 0, LinearVelocity.NORMAL, .5, RotationalVelocity.NONE);
 		}
-		else if(mClimbController.getBumper(Hand.kRight)) {
-			//retract front
-			runClimber(-1, ClimberMode.FRONT);
+		else {
+			//set climb drive motors to zero
+			mDriveClimbTalon0.set(0);
+			mDriveClimbTalon1.set(0);
 		}
-		else if(mClimbController.getStickButton(Hand.kRight)) {
+
+		if(driveSwerveWheels) {
 			//drive swerve forward at 30 speed
 			mDriveTrain.enactMovement(0, 0, LinearVelocity.NORMAL, .3, RotationalVelocity.NONE);
 		}
-		else if(mClimbController.getXButton()) {
-			//retract rear
-			runClimber(-1, ClimberMode.REAR);
+		else {
+			//set swerve drive motors to zero
+			mDriveTrain.stop();
 		}
-		else if(mClimbController.getBButtonReleased()) {
+
+		if(tiltRobot) {
 			//tilt robot
 			mClimbTiltPiston.setOpposite();
-		}
-		else {
-			//set motor speeds to zero
-			runClimber(0, ClimberMode.BOTH);
-			mDriveClimbTalon0.set(0);
-			mDriveClimbTalon1.set(0);
 		}
 	}
 	
